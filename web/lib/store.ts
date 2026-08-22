@@ -1,5 +1,6 @@
 import fs from 'fs';
 import path from 'path';
+import os from 'os';
 
 export interface PlayerProfile {
   name: string;
@@ -26,34 +27,49 @@ export interface PlayerProfile {
   lastUpdated: string;
 }
 
-const DATA_FILE = path.join(process.cwd(), 'data', 'players.json');
+// In-memory global store to preserve state across warm Vercel Lambdas
+const globalStore = globalThis as unknown as { _matrixPlayersStore?: PlayerProfile[] };
+if (!globalStore._matrixPlayersStore) {
+  globalStore._matrixPlayersStore = [];
+}
 
-const INITIAL_SEED: PlayerProfile[] = [];
-
-function ensureDirectoryExists() {
-  const dir = path.dirname(DATA_FILE);
-  if (!fs.existsSync(dir)) {
-    fs.mkdirSync(dir, { recursive: true });
+function getDataFilePath(): string {
+  // On Vercel / serverless environment, process.cwd() is read-only. Use os.tmpdir()
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return path.join(os.tmpdir(), 'players.json');
   }
+  return path.join(process.cwd(), 'data', 'players.json');
 }
 
 export function getAllPlayers(): PlayerProfile[] {
-  ensureDirectoryExists();
-  if (!fs.existsSync(DATA_FILE)) {
-    saveAllPlayers(INITIAL_SEED);
-    return INITIAL_SEED;
-  }
+  const filePath = getDataFilePath();
   try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    return JSON.parse(raw);
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed) && parsed.length > 0) {
+        globalStore._matrixPlayersStore = parsed;
+        return parsed;
+      }
+    }
   } catch (e) {
-    return INITIAL_SEED;
+    console.warn('[STORE] Error reading player file, using in-memory store:', e);
   }
+  return globalStore._matrixPlayersStore || [];
 }
 
 export function saveAllPlayers(players: PlayerProfile[]) {
-  ensureDirectoryExists();
-  fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2), 'utf8');
+  globalStore._matrixPlayersStore = players;
+  const filePath = getDataFilePath();
+  try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(filePath, JSON.stringify(players, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[STORE] File write warning (relying on in-memory store):', e);
+  }
 }
 
 export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
