@@ -261,7 +261,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
                     <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
                       <span className="text-[10px] text-zinc-400 font-sans">Critical Strike</span>
-                      <span className="text-emerald-400 font-bold">{p.critical}%</span>
+                      <span className="text-emerald-400 font-bold">{p.critical}</span>
                     </div>
 
                     <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
@@ -276,7 +276,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
                     <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
                       <span className="text-[10px] text-zinc-400 font-sans">Pain Reduce</span>
-                      <span className="text-purple-400 font-bold">-{p.reducePain}%</span>
+                      <span className="text-purple-400 font-bold">{p.reducePain}</span>
                     </div>
                   </div>
                 </div>
@@ -316,22 +316,22 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
             {/* Health & Mana Points */}
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between p-3 bg-black rounded-xl border border-rose-500/20">
-                <span className="text-rose-400 font-sans flex items-center space-x-1.5">
+                <span className="text-rose-400 font-sans flex items-center space-x-1.5 font-semibold">
                   <Activity className="w-4 h-4" />
-                  <span>Hit Points (HP)</span>
+                  <span>HP</span>
                 </span>
                 <span className="text-sm font-bold text-white">{selectedPlayer.hp} / {selectedPlayer.maxHp}</span>
               </div>
               <div className="flex items-center justify-between p-3 bg-black rounded-xl border border-cyan-500/20">
-                <span className="text-cyan-400 font-sans flex items-center space-x-1.5">
+                <span className="text-cyan-400 font-sans flex items-center space-x-1.5 font-semibold">
                   <Zap className="w-4 h-4" />
-                  <span>Mana Points (MP)</span>
+                  <span>MP</span>
                 </span>
                 <span className="text-sm font-bold text-white">{selectedPlayer.mp} / {selectedPlayer.maxMp}</span>
               </div>
             </div>
 
-            {/* Unified 18 Bytecode Attribute Vertical List */}
+            {/* Unified 18 Bytecode Attribute Vertical List (No + or %) */}
             <div className="space-y-1.5 text-xs font-mono">
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
                 <span className="text-zinc-400 font-sans">Attack Min</span>
@@ -350,7 +350,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
                 <span className="text-zinc-400 font-sans">Critical Strike</span>
-                <span className="text-emerald-400 font-bold">{selectedPlayer.critical}%</span>
+                <span className="text-emerald-400 font-bold">{selectedPlayer.critical}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
@@ -365,37 +365,37 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-amber-500/20">
                 <span className="text-amber-400 font-sans">Anti Fire</span>
-                <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
+                <span className="text-white font-bold">{selectedPlayer.antiFire}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-cyan-500/20">
                 <span className="text-cyan-400 font-sans">Anti Ice</span>
-                <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
+                <span className="text-white font-bold">{selectedPlayer.antiIce}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-emerald-500/20">
                 <span className="text-emerald-400 font-sans">Anti Wind</span>
-                <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
+                <span className="text-white font-bold">{selectedPlayer.antiWind}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-purple-500/20">
                 <span className="text-purple-400 font-sans">Pain Reduce</span>
-                <span className="text-white font-bold">-{selectedPlayer.reducePain}%</span>
+                <span className="text-white font-bold">{selectedPlayer.reducePain}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
                 <span className="text-zinc-400 font-sans">Counter Strike</span>
-                <span className="text-white font-bold">+{selectedPlayer.counterStrike}</span>
+                <span className="text-white font-bold">{selectedPlayer.counterStrike}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
                 <span className="text-zinc-400 font-sans">Anti Chakra</span>
-                <span className="text-white font-bold">+{selectedPlayer.antiChakra}</span>
+                <span className="text-white font-bold">{selectedPlayer.antiChakra}</span>
               </div>
 
               <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
                 <span className="text-zinc-400 font-sans">Anti Chakra Back</span>
-                <span className="text-white font-bold">+{selectedPlayer.antiChakraBack}</span>
+                <span className="text-white font-bold">{selectedPlayer.antiChakraBack}</span>
               </div>
             </div>
 
