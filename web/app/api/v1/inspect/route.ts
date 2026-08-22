@@ -1,45 +1,60 @@
 import { NextResponse } from 'next/server';
+import { popInspectQueue, pushInspectQueue } from '@/lib/store';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
-// Global queue to persist pending target inspections across warm Vercel serverless Lambdas
-const globalStore = globalThis as unknown as { _pendingInspectQueue?: string[] };
-if (!globalStore._pendingInspectQueue) {
-  globalStore._pendingInspectQueue = [];
-}
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, max-age=0, must-revalidate',
+  'Pragma': 'no-cache',
+};
 
 export async function GET() {
-  const target = globalStore._pendingInspectQueue?.shift() || null;
-  return NextResponse.json({
-    status: 200,
-    target: target
-  });
+  const target = popInspectQueue();
+  return NextResponse.json(
+    {
+      status: 200,
+      target: target
+    },
+    {
+      status: 200,
+      headers: NO_CACHE_HEADERS
+    }
+  );
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  // Rate limit: Max 10 inspect fetch requests per minute per IP
+  const rate = checkRateLimit(ip, 10, 60000);
+  if (rate.isLimited) {
+    return rateLimitResponse(rate.resetMs);
+  }
+
   try {
     const body = await request.json();
-    if (!body || !body.name || typeof body.name !== 'string' || body.name.trim().length === 0) {
+    if (!body || !body.name || typeof body.name !== 'string' || !body.name.trim()) {
       return NextResponse.json(
         { status: 400, error: 'Valid player name string required' },
-        { status: 400 }
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
     const targetName = body.name.trim();
-    if (!globalStore._pendingInspectQueue?.includes(targetName)) {
-      globalStore._pendingInspectQueue?.push(targetName);
-    }
+    pushInspectQueue(targetName);
 
-    console.log(`[NSO-MATRIX-REST] Remote inspect trigger queued for target: "${targetName}"`);
+    console.log(`[MTX-API-REST] Remote inspect fetch queued for target: "${targetName}"`);
 
-    return NextResponse.json({
-      status: 200,
-      message: `Remote inspect trigger queued for "${targetName}"`,
-      target: targetName
-    });
+    return NextResponse.json(
+      {
+        status: 200,
+        message: `Remote inspect fetch queued for "${targetName}"`,
+        target: targetName
+      },
+      { status: 200, headers: NO_CACHE_HEADERS }
+    );
   } catch (error: any) {
     return NextResponse.json(
       { status: 500, error: 'Failed to process inspect request' },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }

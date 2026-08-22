@@ -1,5 +1,11 @@
 import { NextResponse } from 'next/server';
 import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers } from '@/lib/store';
+import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
+
+const NO_CACHE_HEADERS = {
+  'Cache-Control': 'no-store, max-age=0, must-revalidate',
+  'Pragma': 'no-cache',
+};
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -19,26 +25,39 @@ export async function GET(request: Request) {
     players = players.filter(p => p.class.toLowerCase() === className.toLowerCase());
   }
 
-  return NextResponse.json({
-    status: 200,
-    count: players.length,
-    players: players
-  });
+  return NextResponse.json(
+    {
+      status: 200,
+      count: players.length,
+      players: players
+    },
+    {
+      status: 200,
+      headers: NO_CACHE_HEADERS
+    }
+  );
 }
 
 export async function POST(request: Request) {
+  const ip = getClientIp(request);
+  // Rate limit: Max 30 requests per minute per IP
+  const rate = checkRateLimit(ip, 30, 60000);
+  if (rate.isLimited) {
+    return rateLimitResponse(rate.resetMs);
+  }
+
   try {
     const body = await request.json();
 
-    if (!body || !body.name) {
+    if (!body || !body.name || typeof body.name !== 'string' || !body.name.trim()) {
       return NextResponse.json(
-        { status: 400, error: 'Missing character name attribute' },
-        { status: 400 }
+        { status: 400, error: 'Missing or invalid character name attribute' },
+        { status: 400, headers: NO_CACHE_HEADERS }
       );
     }
 
     const saved = saveOrUpdatePlayer({
-      name: body.name,
+      name: body.name.trim(),
       level: Number(body.level) || 1,
       class: body.class || 'Unknown',
       school: body.school || 'Unknown',
@@ -63,24 +82,30 @@ export async function POST(request: Request) {
 
     console.log(`[MTX-API-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);
 
-    return NextResponse.json({
-      status: 201,
-      message: 'Player stats successfully stored',
-      player: saved
-    }, { status: 201 });
+    return NextResponse.json(
+      {
+        status: 201,
+        message: 'Player stats successfully stored',
+        player: saved
+      },
+      { status: 201, headers: NO_CACHE_HEADERS }
+    );
   } catch (error: any) {
     console.error('[MTX-API-REST] Error processing POST player stats:', error);
     return NextResponse.json(
       { status: 500, error: 'Internal Server Error', details: error.message },
-      { status: 500 }
+      { status: 500, headers: NO_CACHE_HEADERS }
     );
   }
 }
 
 export async function DELETE() {
   clearAllPlayers();
-  return NextResponse.json({
-    status: 200,
-    message: 'All player profiles successfully cleared'
-  });
+  return NextResponse.json(
+    {
+      status: 200,
+      message: 'All player profiles and pending inspect queues successfully cleared'
+    },
+    { status: 200, headers: NO_CACHE_HEADERS }
+  );
 }

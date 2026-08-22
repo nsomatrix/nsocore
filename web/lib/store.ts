@@ -30,9 +30,16 @@ export interface PlayerProfile {
 const AUTO_CLEAR_MS = 30 * 60 * 1000; // Auto clear after 30 minutes
 
 // In-memory global store to preserve state across warm Vercel Lambdas
-const globalStore = globalThis as unknown as { _matrixPlayersStore?: PlayerProfile[] };
+const globalStore = globalThis as unknown as {
+  _matrixPlayersStore?: PlayerProfile[];
+  _pendingInspectQueue?: string[];
+};
+
 if (!globalStore._matrixPlayersStore) {
   globalStore._matrixPlayersStore = [];
+}
+if (!globalStore._pendingInspectQueue) {
+  globalStore._pendingInspectQueue = [];
 }
 
 function getDataFilePath(): string {
@@ -93,6 +100,25 @@ export function saveAllPlayers(players: PlayerProfile[]) {
 
 export function clearAllPlayers() {
   saveAllPlayers([]);
+  // Clear any pending target inspection queue so J2ME doesn't inspect stale targets
+  globalStore._pendingInspectQueue = [];
+}
+
+// Queue functions for J2ME inspect triggers
+export function pushInspectQueue(targetName: string) {
+  if (!globalStore._pendingInspectQueue) {
+    globalStore._pendingInspectQueue = [];
+  }
+  if (!globalStore._pendingInspectQueue.includes(targetName)) {
+    globalStore._pendingInspectQueue.push(targetName);
+  }
+}
+
+export function popInspectQueue(): string | null {
+  if (!globalStore._pendingInspectQueue || globalStore._pendingInspectQueue.length === 0) {
+    return null;
+  }
+  return globalStore._pendingInspectQueue.shift() || null;
 }
 
 export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
