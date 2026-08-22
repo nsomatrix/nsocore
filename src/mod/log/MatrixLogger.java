@@ -46,6 +46,11 @@ public class MatrixLogger {
         }
         lastLoggedPlayer = player.ab;
 
+        // Trigger REST API Sync
+        try {
+            mod.web.MatrixWebClient.postPlayerStats(player);
+        } catch (Exception e) {}
+
         String schoolName = "Unknown";
         try {
             int schoolId = player.a();

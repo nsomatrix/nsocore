@@ -5,6 +5,7 @@ import bp;
 import mod.ui.MatrixUI;
 import mod.net.MatrixNet;
 import mod.log.MatrixLogger;
+import mod.web.MatrixWebClient;
 
 /**
  * MatrixAPI — Central Facade & Bytecode Hook Entrypoint.
@@ -14,12 +15,15 @@ import mod.log.MatrixLogger;
  *  - mod.ui.MatrixUI
  *  - mod.net.MatrixNet
  *  - mod.log.MatrixLogger
+ *  - mod.web.MatrixWebClient
  */
 public class MatrixAPI {
 
     // Configuration flags
     public static boolean enableLogging = MatrixLogger.enableLogging;
     public static boolean logMovementPackets = MatrixLogger.logMovementPackets;
+    public static boolean enableWebSync = MatrixWebClient.enableWebSync;
+    public static String restApiEndpoint = MatrixWebClient.restApiEndpoint;
 
     // =========================================================================
     // UI & MENU HOOKS
@@ -88,4 +92,19 @@ public class MatrixAPI {
     public static void resetLoggedPlayer() {
         MatrixLogger.resetLoggedPlayer();
     }
+
+    // =========================================================================
+    // WEB REST API HOOKS
+    // =========================================================================
+
+    public static void postPlayerStats(bp player) {
+        MatrixWebClient.postPlayerStats(player);
+    }
+
+    public static void toggleWebSync() {
+        MatrixWebClient.enableWebSync = !MatrixWebClient.enableWebSync;
+        enableWebSync = MatrixWebClient.enableWebSync;
+        log("WEB-REST", "Web REST Sync set to: " + (enableWebSync ? "ENABLED" : "DISABLED"));
+    }
 }
+

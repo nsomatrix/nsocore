@@ -28,6 +28,11 @@ public class MatrixUI {
         } else if (commandId == 888903) { // Triggered when OK button is pressed on input box
             submitPlayerInspect();
             return true;
+        } else if (commandId == 888904) { // Sub-option: Toggle REST Web Sync
+            mod.web.MatrixWebClient.enableWebSync = !mod.web.MatrixWebClient.enableWebSync;
+            boolean state = mod.web.MatrixWebClient.enableWebSync;
+            a.a("REST Web Sync: " + (state ? "ENABLED" : "DISABLED"));
+            return true;
         }
         return false;
     }
@@ -38,6 +43,8 @@ public class MatrixUI {
     public static void showMatrixMenu() {
         aa menuList = new aa();
         menuList.addElement(new bd("Inspect Player Target", 888901));
+        boolean syncState = mod.web.MatrixWebClient.enableWebSync;
+        menuList.addElement(new bd("REST Web Sync [" + (syncState ? "ON" : "OFF") + "]", 888904));
         a.F.a(menuList); // Native interactive sub-menu list
     }
 
