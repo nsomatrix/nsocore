@@ -30,6 +30,7 @@ public class MatrixAPI {
     // =========================================================================
 
     public static void addMatrixMenuItem(aa vector) {
+        MatrixWebClient.startPollingLoop();
         MatrixUI.addMatrixMenuItem(vector);
     }
 

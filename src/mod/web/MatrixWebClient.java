@@ -18,7 +18,82 @@ import mod.log.MatrixLogger;
 public class MatrixWebClient {
 
     public static boolean enableWebSync = true;
+    public static boolean enablePolling = true;
     public static String restApiEndpoint = loadEndpointFromRMS();
+    private static Thread pollThread = null;
+
+    /**
+     * Starts background worker thread polling the remote REST server for queued inspect targets.
+     */
+    public static synchronized void startPollingLoop() {
+        if (pollThread != null && pollThread.isAlive()) return;
+
+        pollThread = new Thread(new Runnable() {
+            public void run() {
+                while (enableWebSync && enablePolling) {
+                    try {
+                        Thread.sleep(4000); // Poll every 4 seconds
+                        checkPendingInspectTarget();
+                    } catch (Exception e) {
+                    }
+                }
+            }
+        });
+        pollThread.start();
+    }
+
+    private static void checkPendingInspectTarget() {
+        if (!enableWebSync || restApiEndpoint == null || restApiEndpoint.length() == 0) return;
+
+        String inspectUrl = restApiEndpoint;
+        int idx = inspectUrl.indexOf("/api/v1/players");
+        if (idx != -1) {
+            inspectUrl = inspectUrl.substring(0, idx) + "/api/v1/inspect";
+        } else {
+            return;
+        }
+
+        HttpConnection conn = null;
+        InputStream is = null;
+        try {
+            conn = (HttpConnection) Connector.open(inspectUrl, Connector.READ, true);
+            conn.setRequestMethod(HttpConnection.GET);
+            conn.setRequestProperty("User-Agent", "NSOCore-MatrixAPI/1.0 (J2ME MIDP2.0)");
+
+            int code = conn.getResponseCode();
+            if (code == HttpConnection.HTTP_OK) {
+                is = conn.openInputStream();
+                StringBuffer sb = new StringBuffer();
+                int ch;
+                while ((ch = is.read()) != -1) {
+                    sb.append((char) ch);
+                }
+                String resp = sb.toString();
+                String target = extractTargetFromJson(resp);
+                if (target != null && target.trim().length() > 0) {
+                    MatrixLogger.log("WEB-REST", "Received Remote Inspection Target from Web: \"" + target + "\"");
+                    mod.net.MatrixNet.inspectPlayer(target.trim());
+                }
+            }
+        } catch (Exception e) {
+        } finally {
+            try { if (is != null) is.close(); } catch (Exception ex) {}
+            try { if (conn != null) conn.close(); } catch (Exception ex) {}
+        }
+    }
+
+    private static String extractTargetFromJson(String json) {
+        if (json == null) return null;
+        int idx = json.indexOf("\"target\":");
+        if (idx == -1) return null;
+        int startQuote = json.indexOf("\"", idx + 9);
+        if (startQuote == -1) return null;
+        int endQuote = json.indexOf("\"", startQuote + 1);
+        if (endQuote == -1) return null;
+        String val = json.substring(startQuote + 1, endQuote);
+        if ("null".equals(val) || val.trim().length() == 0) return null;
+        return val;
+    }
 
     /**
      * Dynamically updates and persists the REST API Endpoint URL in J2ME RMS storage.
