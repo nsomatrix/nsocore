@@ -1,17 +1,15 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Shield, PlusCircle, Radio, Menu, X, Activity, Database } from 'lucide-react';
+import { Shield, Menu, X, Activity } from 'lucide-react';
 
 interface NavbarProps {
-  onOpenInspectModal?: () => void;
   playerCount?: number;
   activeTab?: string;
   onTabChange?: (tab: string) => void;
 }
 
 export function Navbar({
-  onOpenInspectModal,
   playerCount = 0,
   activeTab = 'dashboard',
   onTabChange,
@@ -20,14 +18,10 @@ export function Navbar({
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', icon: Activity },
-    { id: 'targets', label: 'Targets', icon: Database },
-    { id: 'inspect', label: 'Remote Inspect', icon: Radio },
   ];
 
   const handleTabClick = (id: string) => {
-    if (id === 'inspect' && onOpenInspectModal) {
-      onOpenInspectModal();
-    } else if (onTabChange) {
+    if (onTabChange) {
       onTabChange(id);
     }
     setMobileMenuOpen(false);
@@ -80,7 +74,7 @@ export function Navbar({
           </nav>
         </div>
 
-        {/* Right: Status Pill & Action Button (Desktop) */}
+        {/* Right: Status Pill (Desktop) */}
         <div className="hidden md:flex items-center space-x-4">
           {/* Live REST Status Indicator Pill */}
           <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-zinc-900/80 border border-zinc-800 text-xs font-mono">
@@ -92,17 +86,6 @@ export function Navbar({
             <span className="text-zinc-800">|</span>
             <span className="text-emerald-400 font-medium text-[11px]">{playerCount} TARGETS</span>
           </div>
-
-          {/* Primary Action CTA */}
-          {onOpenInspectModal && (
-            <button
-              onClick={onOpenInspectModal}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] active:scale-95"
-            >
-              <PlusCircle className="w-4 h-4" />
-              <span>Inspect Target</span>
-            </button>
-          )}
         </div>
 
         {/* Mobile Hamburger Toggle Button */}
@@ -151,21 +134,6 @@ export function Navbar({
               );
             })}
           </nav>
-
-          {onOpenInspectModal && (
-            <div className="pt-2 border-t border-zinc-800">
-              <button
-                onClick={() => {
-                  onOpenInspectModal();
-                  setMobileMenuOpen(false);
-                }}
-                className="w-full flex items-center justify-center space-x-2 px-4 py-2.5 rounded-lg bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 transition-all active:scale-95 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-              >
-                <PlusCircle className="w-4 h-4" />
-                <span>Inspect New Target</span>
-              </button>
-            </div>
-          )}
         </div>
       )}
     </header>

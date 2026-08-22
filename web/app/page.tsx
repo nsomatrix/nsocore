@@ -35,7 +35,6 @@ export default function Home() {
   }, [fetchPlayers]);
 
   const scrollToInspector = () => {
-    setActiveTab('targets');
     const el = document.getElementById('player-inspector-module');
     if (el) {
       el.scrollIntoView({ behavior: 'smooth' });
@@ -49,7 +48,6 @@ export default function Home() {
         activeTab={activeTab}
         onTabChange={setActiveTab}
         playerCount={players.length}
-        onOpenInspectModal={scrollToInspector}
       />
 
       {/* Main Platform Body */}
@@ -60,13 +58,13 @@ export default function Home() {
           totalTargetCount={players.length}
         />
 
-        {/* Platform Feature Suite Modules Grid */}
+        {/* Operational Modules Grid */}
         <ModuleGrid
           onOpenPlayerInspector={scrollToInspector}
           targetCount={players.length}
         />
 
-        {/* Active Module #1: Player Inspector */}
+        {/* Operational Module #1: Player Inspector */}
         <PlayerInspectorModule
           players={players}
           loading={loading}
