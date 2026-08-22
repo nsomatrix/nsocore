@@ -6,13 +6,10 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PlatformHero } from '@/components/PlatformHero';
 import { ModuleGrid } from '@/components/ModuleGrid';
-import { PlayerInspectorModule } from '@/components/PlayerInspectorModule';
 import { ApiExplorer } from '@/components/ApiExplorer';
 
 export default function Home() {
-  const [activeTab, setActiveTab] = useState('dashboard');
   const [players, setPlayers] = useState<PlayerProfile[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const fetchPlayers = useCallback(async () => {
     try {
@@ -23,8 +20,6 @@ export default function Home() {
       }
     } catch (e) {
       console.error('Error fetching player profiles:', e);
-    } finally {
-      setLoading(false);
     }
   }, []);
 
@@ -34,21 +29,10 @@ export default function Home() {
     return () => clearInterval(interval);
   }, [fetchPlayers]);
 
-  const scrollToInspector = () => {
-    const el = document.getElementById('player-inspector-module');
-    if (el) {
-      el.scrollIntoView({ behavior: 'smooth' });
-    }
-  };
-
   return (
     <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
       {/* Industry Standard Responsive Navbar */}
-      <Navbar
-        activeTab={activeTab}
-        onTabChange={setActiveTab}
-        playerCount={players.length}
-      />
+      <Navbar playerCount={players.length} />
 
       {/* Main Platform Body */}
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-12">
@@ -58,18 +42,8 @@ export default function Home() {
           totalTargetCount={players.length}
         />
 
-        {/* Operational Modules Grid */}
-        <ModuleGrid
-          onOpenPlayerInspector={scrollToInspector}
-          targetCount={players.length}
-        />
-
-        {/* Operational Module #1: Player Inspector */}
-        <PlayerInspectorModule
-          players={players}
-          loading={loading}
-          onRefresh={fetchPlayers}
-        />
+        {/* Operational Platform Modules Suite */}
+        <ModuleGrid targetCount={players.length} />
 
         {/* REST API Directory */}
         <ApiExplorer />

@@ -1,24 +1,24 @@
 'use client';
 
 import React from 'react';
+import Link from 'next/link';
 import { UserCheck, ArrowRight } from 'lucide-react';
 
 interface ModuleGridProps {
-  onOpenPlayerInspector: () => void;
   targetCount: number;
 }
 
-export function ModuleGrid({ onOpenPlayerInspector, targetCount }: ModuleGridProps) {
+export function ModuleGrid({ targetCount }: ModuleGridProps) {
   const activeModules = [
     {
       id: 'player-inspector',
-      title: 'Player Inspector',
+      title: 'Player Inspector Engine',
       version: 'v1.0 ACTIVE',
+      href: '/inspector',
       icon: UserCheck,
-      description: 'Capture 18-attribute player profiles via J2ME REST streaming & dispatch Packet 93 remote inspections.',
+      description: 'Fetch 18-attribute player profiles via Packet 93 remote requests & stream live REST telemetry.',
       badgeText: `${targetCount} Profiles`,
       actionText: 'Launch Module',
-      onClick: onOpenPlayerInspector,
     },
   ];
 
@@ -31,7 +31,7 @@ export function ModuleGrid({ onOpenPlayerInspector, targetCount }: ModuleGridPro
             Operational Platform Modules
           </h2>
           <p className="text-xs text-zinc-400 font-sans mt-0.5">
-            Active REST services currently online for J2ME client integration.
+            Dedicated module environments available for live execution.
           </p>
         </div>
       </div>
@@ -41,9 +41,9 @@ export function ModuleGrid({ onOpenPlayerInspector, targetCount }: ModuleGridPro
         {activeModules.map((mod) => {
           const Icon = mod.icon;
           return (
-            <div
+            <Link
               key={mod.id}
-              onClick={mod.onClick}
+              href={mod.href}
               className="group relative rounded-2xl p-6 border bg-zinc-900/80 border-emerald-500/30 hover:border-emerald-500/60 hover:bg-zinc-900 cursor-pointer shadow-[0_0_25px_rgba(16,185,129,0.08)] transition-all duration-200 flex flex-col justify-between"
             >
               <div>
@@ -74,7 +74,7 @@ export function ModuleGrid({ onOpenPlayerInspector, targetCount }: ModuleGridPro
                   <ArrowRight className="w-3.5 h-3.5" />
                 </div>
               </div>
-            </div>
+            </Link>
           );
         })}
       </div>
