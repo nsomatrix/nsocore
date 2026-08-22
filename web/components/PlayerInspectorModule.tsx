@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { PlayerProfile } from '@/lib/store';
-import { Search, Send, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, ShieldAlert } from 'lucide-react';
+import { Search, Send, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Shield } from 'lucide-react';
 
 interface PlayerInspectorModuleProps {
   players: PlayerProfile[];
@@ -17,6 +17,9 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
   const [copied, setCopied] = useState(false);
+  
+  // Custom Modal States
+  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [clearing, setClearing] = useState(false);
 
   const handleDispatch = async (e: React.FormEvent) => {
@@ -47,13 +50,13 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
     }
   };
 
-  const handleClearAll = async () => {
-    if (!confirm('Are you sure you want to clear all stored player profiles?')) return;
+  const handleConfirmClearAll = async () => {
     setClearing(true);
     try {
       const res = await fetch('/api/v1/players', { method: 'DELETE' });
       if (res.ok) {
         onRefresh();
+        setShowClearConfirmModal(false);
       }
     } catch (e) {
       console.error('Failed to clear profiles:', e);
@@ -155,8 +158,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
           {players.length > 0 && (
             <button
-              onClick={handleClearAll}
-              disabled={clearing}
+              onClick={() => setShowClearConfirmModal(true)}
               className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 hover:bg-rose-500/20 transition-colors"
             >
               <Trash2 className="w-3.5 h-3.5" />
@@ -186,7 +188,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                 className="group p-5 rounded-2xl bg-zinc-900/80 border border-zinc-800/80 hover:border-zinc-700 hover:bg-zinc-900 transition-all cursor-pointer space-y-4 flex flex-col justify-between"
               >
                 <div>
-                  {/* Top Name & School Row */}
+                  {/* Top Name & School Header */}
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center space-x-2">
@@ -210,7 +212,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                         <span className="text-rose-400 flex items-center">
                           <Activity className="w-3 h-3 mr-1" /> HP
                         </span>
-                        <span>{p.hp.toLocaleString()} / {p.maxHp.toLocaleString()}</span>
+                        <span>{p.hp} / {p.maxHp}</span>
                       </div>
                       <div className="w-full bg-black rounded-full h-1.5 overflow-hidden border border-zinc-800">
                         <div className="bg-rose-500 h-full rounded-full" style={{ width: `${hpPercent}%` }} />
@@ -222,7 +224,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                         <span className="text-cyan-400 flex items-center">
                           <Zap className="w-3 h-3 mr-1" /> MP
                         </span>
-                        <span>{p.mp.toLocaleString()} / {p.maxMp.toLocaleString()}</span>
+                        <span>{p.mp} / {p.maxMp}</span>
                       </div>
                       <div className="w-full bg-black rounded-full h-1.5 overflow-hidden border border-zinc-800">
                         <div className="bg-cyan-500 h-full rounded-full" style={{ width: `${mpPercent}%` }} />
@@ -230,28 +232,36 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                     </div>
                   </div>
 
-                  {/* Primary Combat Stat Summary Grid */}
-                  <div className="grid grid-cols-2 gap-2 mt-3 p-2.5 rounded-xl bg-black/60 border border-zinc-800/60 font-mono text-[11px]">
-                    <div>
-                      <span className="text-[9px] text-zinc-500 block uppercase font-sans">Attack DMG</span>
-                      <span className="text-white font-bold">{p.attackMin.toLocaleString()} - {p.attackMax.toLocaleString()}</span>
+                  {/* Vertical List Layout for Player Stats */}
+                  <div className="space-y-1.5 mt-3 pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
+                    <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-400 font-sans">Attack DMG</span>
+                      <span className="text-white font-bold">{p.attackMin} - {p.attackMax}</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-zinc-500 block uppercase font-sans">Critical</span>
+
+                    <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-400 font-sans">Critical Strike</span>
                       <span className="text-emerald-400 font-bold">{p.critical}%</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-zinc-500 block uppercase font-sans">Accuracy / Dodge</span>
-                      <span className="text-zinc-300 font-bold">{p.accurate.toLocaleString()} / {p.dodge.toLocaleString()}</span>
+
+                    <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-400 font-sans">Accuracy</span>
+                      <span className="text-zinc-300 font-bold">{p.accurate}</span>
                     </div>
-                    <div>
-                      <span className="text-[9px] text-zinc-500 block uppercase font-sans">Pain Reduce</span>
+
+                    <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-400 font-sans">Dodge</span>
+                      <span className="text-zinc-300 font-bold">{p.dodge}</span>
+                    </div>
+
+                    <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
+                      <span className="text-[10px] text-zinc-400 font-sans">Pain Reduce</span>
                       <span className="text-purple-400 font-bold">-{p.reducePain}%</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-2 flex items-center justify-between text-xs text-zinc-500 group-hover:text-emerald-400 font-medium transition-colors">
+                <div className="pt-3 flex items-center justify-between text-xs text-zinc-500 group-hover:text-emerald-400 font-medium transition-colors border-t border-zinc-800/40">
                   <span>View All 18 Attributes</span>
                   <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
                 </div>
@@ -287,15 +297,15 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
             <div className="grid grid-cols-2 gap-3 font-mono text-xs">
               <div className="p-3 bg-black rounded-xl border border-rose-500/20">
                 <span className="text-[10px] text-rose-400 font-sans block">Hit Points (HP)</span>
-                <span className="text-sm font-bold text-white">{selectedPlayer.hp.toLocaleString()} / {selectedPlayer.maxHp.toLocaleString()}</span>
+                <span className="text-sm font-bold text-white">{selectedPlayer.hp} / {selectedPlayer.maxHp}</span>
               </div>
               <div className="p-3 bg-black rounded-xl border border-cyan-500/20">
                 <span className="text-[10px] text-cyan-400 font-sans block">Mana Points (MP)</span>
-                <span className="text-sm font-bold text-white">{selectedPlayer.mp.toLocaleString()} / {selectedPlayer.maxMp.toLocaleString()}</span>
+                <span className="text-sm font-bold text-white">{selectedPlayer.mp} / {selectedPlayer.maxMp}</span>
               </div>
             </div>
 
-            {/* Complete 18 Bytecode Attribute Display Grid */}
+            {/* Complete 18 Bytecode Attribute Display Grid (No Commas) */}
             <div className="space-y-4 text-xs font-mono">
               <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider font-sans">
                 Offense & Agility Attributes
@@ -303,11 +313,11 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
                 <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
                   <span className="text-[10px] text-zinc-500 block font-sans">Attack Min</span>
-                  <span className="text-white font-bold">{selectedPlayer.attackMin.toLocaleString()}</span>
+                  <span className="text-white font-bold">{selectedPlayer.attackMin}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
                   <span className="text-[10px] text-zinc-500 block font-sans">Attack Max</span>
-                  <span className="text-white font-bold">{selectedPlayer.attackMax.toLocaleString()}</span>
+                  <span className="text-white font-bold">{selectedPlayer.attackMax}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
                   <span className="text-[10px] text-zinc-500 block font-sans">Speed</span>
@@ -319,11 +329,11 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
                   <span className="text-[10px] text-zinc-500 block font-sans">Accurate Point</span>
-                  <span className="text-white font-bold">{selectedPlayer.accurate.toLocaleString()}</span>
+                  <span className="text-white font-bold">{selectedPlayer.accurate}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
                   <span className="text-[10px] text-zinc-500 block font-sans">Dodge Ability</span>
-                  <span className="text-white font-bold">{selectedPlayer.dodge.toLocaleString()}</span>
+                  <span className="text-white font-bold">{selectedPlayer.dodge}</span>
                 </div>
               </div>
 
@@ -333,15 +343,15 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
                 <div className="p-2.5 bg-black rounded-lg border border-amber-500/20">
                   <span className="text-[10px] text-amber-400 block font-sans">Anti Fire</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiFire.toLocaleString()}</span>
+                  <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-cyan-500/20">
                   <span className="text-[10px] text-cyan-400 block font-sans">Anti Ice</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiIce.toLocaleString()}</span>
+                  <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-emerald-500/20">
                   <span className="text-[10px] text-emerald-400 block font-sans">Anti Wind</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiWind.toLocaleString()}</span>
+                  <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
                 </div>
                 <div className="p-2.5 bg-black rounded-lg border border-purple-500/20">
                   <span className="text-[10px] text-purple-400 block font-sans">Pain Reduce</span>
@@ -383,6 +393,53 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                 className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-semibold hover:bg-zinc-700"
               >
                 Close
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Custom Next.js OLED Clear Confirmation Modal */}
+      {showClearConfirmModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-6 shadow-2xl font-sans">
+            <div className="flex items-center space-x-3">
+              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
+              <div>
+                <h3 className="text-base font-display font-bold text-white">Clear Stored Profiles?</h3>
+                <p className="text-xs text-zinc-400 mt-0.5">
+                  This will purge all recorded player profiles from REST memory and disk.
+                </p>
+              </div>
+            </div>
+
+            <div className="p-3.5 rounded-xl bg-black border border-zinc-800/80 text-xs font-mono text-zinc-400 space-y-1">
+              <p className="text-rose-400 font-semibold">⚠️ Action Warning</p>
+              <p className="text-[11px]">All target inspections recorded via REST will be permanently cleared.</p>
+            </div>
+
+            <div className="flex items-center justify-end space-x-3 pt-2">
+              <button
+                onClick={() => setShowClearConfirmModal(false)}
+                disabled={clearing}
+                className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-medium hover:text-white hover:bg-zinc-700 transition-colors"
+              >
+                Cancel
+              </button>
+
+              <button
+                onClick={handleConfirmClearAll}
+                disabled={clearing}
+                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-500 text-white font-semibold text-xs hover:bg-rose-600 transition-colors disabled:opacity-50"
+              >
+                {clearing ? (
+                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Trash2 className="w-3.5 h-3.5" />
+                )}
+                <span>{clearing ? 'Clearing...' : 'Confirm Clear'}</span>
               </button>
             </div>
           </div>
