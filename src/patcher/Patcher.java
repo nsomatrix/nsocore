@@ -17,10 +17,9 @@ public class Patcher {
             pool.insertClassPath("lib/cldcapi11.jar");
             pool.insertClassPath(modBuildPath);
 
+            // 1. Hook Main Menu Creation: Insert MatrixAPI as option 0 inside dg.ah()
+            System.out.println("[NSO Core Patcher] Injecting MatrixAPI as VERY FIRST menu item into dg.ah()...");
             CtClass dgClass = pool.get("dg");
-
-            // 1. Hook Main Menu Creation: Insert Matrix menu entry inside dg.ah()
-            System.out.println("[NSO Core Patcher] Injecting Matrix menu hook into dg.ah()...");
             CtMethod ahMethod = dgClass.getDeclaredMethod("ah");
             ahMethod.instrument(new ExprEditor() {
                 public void edit(MethodCall m) throws CannotCompileException {
@@ -30,14 +29,58 @@ public class Patcher {
                 }
             });
 
-            // 2. Hook Command Handler: Insert Matrix command trigger inside dg.b(int, Object)
-            System.out.println("[NSO Core Patcher] Injecting Matrix command handler into dg.b()...");
-            CtClass[] params = new CtClass[]{ CtClass.intType, pool.get("java.lang.Object") };
-            CtMethod bMethod = dgClass.getDeclaredMethod("b", params);
-            bMethod.insertBefore("{ if (mod.MatrixMod.handleMatrixCommand($1)) return; }");
+            // 2. Hook Command Handler: Insert MatrixAPI command handler into dg.b(int, Object)
+            System.out.println("[NSO Core Patcher] Injecting MatrixAPI command handler into dg.b(int, Object)...");
+            CtClass[] paramsB = new CtClass[]{ CtClass.intType, pool.get("java.lang.Object") };
+            CtMethod bMethod = dgClass.getDeclaredMethod("b", paramsB);
+            bMethod.insertBefore("{"
+                + "  if (mod.MatrixMod.handleMatrixCommand($1, $2)) return;"
+                + "  mod.MatrixLogger.logCommand($1);"
+                + "}");
 
+            // 3. Hook Player Info Screen Render in dg.o(t)
+            System.out.println("[NSO Core Patcher] Injecting Player Info Console Logger into dg.o(t)...");
+            try {
+                CtMethod oMethod = dgClass.getDeclaredMethod("o", new CtClass[]{ pool.get("t") });
+                oMethod.insertBefore("{ if (dg.aV != null) mod.MatrixLogger.logPlayerInfo(dg.aV); }");
+            } catch (Exception ex) {
+                System.out.println("[NSO Core Patcher] Warning: Failed to hook dg.o(t): " + ex.getMessage());
+            }
             dgClass.writeFile(outputPath);
-            System.out.println("[NSO Core Patcher] Patching complete! Patched classes saved to " + outputPath);
+
+            // 4. Hook Inbound Network Packet Listener in an.a(ce)
+            System.out.println("[NSO Core Patcher] Injecting Inbound Network Packet Logger into an.a(ce)...");
+            CtClass anClass = pool.get("an");
+            try {
+                CtMethod recvPacketMethod = anClass.getDeclaredMethod("a", new CtClass[]{ pool.get("ce") });
+                recvPacketMethod.insertBefore("{ if ($1 != null) mod.MatrixLogger.logPacketRecv($1.a); }");
+            } catch (Exception ex) {
+                System.out.println("[NSO Core Patcher] Warning: Failed to hook an.a(ce): " + ex.getMessage());
+            }
+            anClass.writeFile(outputPath);
+
+            // 5. Hook Key Press Events in main.b.keyPressed(int)
+            System.out.println("[NSO Core Patcher] Injecting Deep Logging into main.b.keyPressed()...");
+            CtClass mainBClass = pool.get("main.b");
+            CtMethod keyPressedMethod = mainBClass.getDeclaredMethod("keyPressed");
+            keyPressedMethod.insertBefore("{ mod.MatrixLogger.logKey($1); }");
+            mainBClass.writeFile(outputPath);
+
+            // 6. Hook Outbound Network Packet Logger in dh.a(ce)
+            System.out.println("[NSO Core Patcher] Injecting Outbound Network Packet Logger into dh.a(ce)...");
+            CtClass dhClass = pool.get("dh");
+            CtMethod sendPacketMethod = dhClass.getDeclaredMethod("a", new CtClass[]{ pool.get("ce") });
+            sendPacketMethod.insertBefore("{ if ($1 != null && $1.a() != null) mod.MatrixLogger.logPacketSend($1.a, $1.a().length); }");
+            dhClass.writeFile(outputPath);
+
+            // 7. Hook Notice Dialogs in main.a.a(String)
+            System.out.println("[NSO Core Patcher] Injecting Notice Dialog Logger into main.a.a(String)...");
+            CtClass mainAClass = pool.get("main.a");
+            CtMethod noticeMethod = mainAClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String") });
+            noticeMethod.insertBefore("{ if ($1 != null && $1.length() > 0) mod.MatrixLogger.logDialog($1); }");
+            mainAClass.writeFile(outputPath);
+
+            System.out.println("[NSO Core Patcher] MatrixAPI Instrumentation successfully completed!");
         } catch (Exception e) {
             System.err.println("[NSO Core Patcher] Patching Failed!");
             e.printStackTrace();

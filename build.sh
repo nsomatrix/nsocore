@@ -17,11 +17,11 @@ echo "=================================================="
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/mod_classes" "$BUILD_DIR/patcher_classes" "$BUILD_DIR/patched_classes" "$BASE_DIR/dist"
 
-echo "🔨 [1/4] Compiling MatrixMod (Target: J2ME CLDC 1.1 / MIDP 2.0)..."
+echo "🔨 [1/4] Compiling MatrixMod & MatrixLogger (Target: J2ME CLDC 1.1 / MIDP 2.0)..."
 java -jar "$LIB_DIR/ecj.jar" -1.3 \
   -cp "$LIB_DIR/midpapi20.jar:$LIB_DIR/cldcapi11.jar:$INPUT_JAR" \
   -d "$BUILD_DIR/mod_classes" \
-  "$SRC_DIR/mod/MatrixMod.java"
+  "$SRC_DIR/mod/MatrixMod.java" "$SRC_DIR/mod/MatrixLogger.java"
 
 echo "🔨 [2/4] Compiling Bytecode Patcher..."
 java -jar "$LIB_DIR/ecj.jar" -1.8 \
@@ -29,19 +29,19 @@ java -jar "$LIB_DIR/ecj.jar" -1.8 \
   -d "$BUILD_DIR/patcher_classes" \
   "$SRC_DIR/patcher/Patcher.java"
 
-echo "⚡ [3/4] Instrumenting Game Bytecode..."
+echo "⚡ [3/4] Instrumenting Game Bytecode with Deep Logging Hooks..."
 java -cp "$BUILD_DIR/patcher_classes:$LIB_DIR/javassist.jar:$LIB_DIR/midpapi20.jar:$LIB_DIR/cldcapi11.jar:$INPUT_JAR:$BUILD_DIR/mod_classes" \
   patcher.Patcher "$INPUT_JAR" "$BUILD_DIR/mod_classes" "$BUILD_DIR/patched_classes"
 
 echo "📦 [4/4] Repacking final Runnable J2ME JAR..."
 cp "$INPUT_JAR" "$DIST_JAR"
 cd "$BUILD_DIR/patched_classes"
-zip -u "$DIST_JAR" dg.class > /dev/null
+zip -u -r "$DIST_JAR" . > /dev/null
 cd "$BUILD_DIR/mod_classes"
 zip -u -r "$DIST_JAR" mod/ > /dev/null
 
 echo "=================================================="
-echo " ✅ BUILD SUCCESSFUL!"
+echo " ✅ BUILD SUCCESSFUL WITH DEEP LOGGING!"
 echo " 📁 Output File: $DIST_JAR"
 echo " 📦 File Size:   $(du -h "$DIST_JAR" | cut -f1)"
 echo "=================================================="
