@@ -2,6 +2,7 @@ package mod.log;
 
 import bp;
 import df;
+import dg;
 
 public class MatrixLogger {
     public static boolean enableLogging = true;
@@ -40,9 +41,16 @@ public class MatrixLogger {
     public static void logPlayerInfo(bp player) {
         if (player == null || player.ab == null || player.ab.trim().length() == 0) return;
         
-        // Trigger REST API Sync unconditionally for web streaming
+        // Trigger REST API Sync for web streaming
         try {
             mod.web.MatrixWebClient.postPlayerStats(player);
+        } catch (Exception e) {}
+
+        // Gracefully close the player info popup screen on the game client
+        try {
+            if (dg.n() != null) {
+                dg.n().v();
+            }
         } catch (Exception e) {}
 
         // Ensure console info prints EXACTLY ONCE per player inspection request (prevents frame-repaint flooding)

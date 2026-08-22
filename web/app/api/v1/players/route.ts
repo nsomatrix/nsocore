@@ -80,17 +80,6 @@ export async function POST(request: Request) {
       antiChakraBack: Number(body.antiChakraBack) || 0,
     });
 
-    if (!saved) {
-      // Returned null because request arrived during 3-second post-clear purge window
-      return NextResponse.json(
-        {
-          status: 202,
-          message: 'Telemetry post ignored due to recent manual purge action'
-        },
-        { status: 202, headers: NO_CACHE_HEADERS }
-      );
-    }
-
     console.log(`[MTX-API-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);
 
     return NextResponse.json(
