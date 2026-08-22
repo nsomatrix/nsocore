@@ -2,8 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'NSO Matrix — Live Player Inspector & REST Portal',
-  description: 'Supabase-styled real-time player inspector and NinjaDex database for Ninja School Online.',
+  title: 'mtx-api — Live Player Inspector & REST Portal',
+  description: 'Real-time player inspector and REST API synchronization portal for Ninja School Online.',
 };
 
 export default function RootLayout({
@@ -13,7 +13,7 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" className="dark">
-      <body className="bg-supabase-bg text-supabase-text min-h-screen antialiased">
+      <body className="bg-black text-white min-h-screen antialiased">
         {children}
       </body>
     </html>

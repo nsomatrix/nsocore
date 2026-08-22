@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Shield, PlusCircle, Radio, Menu, X, Activity, Database, ExternalLink } from 'lucide-react';
+import { Shield, PlusCircle, Radio, Menu, X, Activity, Database } from 'lucide-react';
 
 interface NavbarProps {
   onOpenInspectModal?: () => void;
@@ -44,11 +44,11 @@ export function Navbar({
             </div>
             <div>
               <div className="flex items-center space-x-2">
-                <span className="font-display font-extrabold text-base tracking-tight text-white">
-                  NSO MATRIX
+                <span className="font-display font-extrabold text-base tracking-tight text-white uppercase">
+                  mtx-api
                 </span>
                 <span className="px-2 py-0.5 text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">
-                  REST v1.0
+                  v1.0 REST
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400 hidden sm:block font-sans">
