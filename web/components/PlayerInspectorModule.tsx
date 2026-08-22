@@ -2,7 +2,7 @@
 
 import React, { useState } from 'react';
 import { PlayerProfile } from '@/lib/store';
-import { Search, Send, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Shield } from 'lucide-react';
+import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Loader2, Download } from 'lucide-react';
 
 interface PlayerInspectorModuleProps {
   players: PlayerProfile[];
@@ -12,8 +12,8 @@ interface PlayerInspectorModuleProps {
 
 export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerInspectorModuleProps) {
   const [targetName, setTargetName] = useState('');
-  const [dispatching, setDispatching] = useState(false);
-  const [dispatchMsg, setDispatchMsg] = useState('');
+  const [fetching, setFetching] = useState(false);
+  const [fetchMsg, setFetchMsg] = useState('');
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
   const [copied, setCopied] = useState(false);
@@ -22,12 +22,14 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [clearing, setClearing] = useState(false);
 
-  const handleDispatch = async (e: React.FormEvent) => {
+  const handleFetch = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!targetName.trim()) return;
 
-    setDispatching(true);
-    setDispatchMsg('');
+    setFetching(true);
+    setFetchMsg('');
+
+    const startTime = Date.now();
 
     try {
       const res = await fetch('/api/v1/inspect', {
@@ -37,16 +39,23 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
       });
 
       const data = await res.json();
+      
+      // Ensure smooth spinner UX duration of at least 600ms
+      const elapsed = Date.now() - startTime;
+      if (elapsed < 600) {
+        await new Promise((r) => setTimeout(r, 600 - elapsed));
+      }
+
       if (res.ok) {
-        setDispatchMsg(`Target "${targetName.trim()}" queued! J2ME client will poll and send Packet 93.`);
+        setFetchMsg(`Fetch request queued for "${targetName.trim()}"! J2ME client will respond via Packet 93.`);
         setTargetName('');
       } else {
-        alert(data.error || 'Failed to queue target');
+        alert(data.error || 'Failed to queue fetch target');
       }
     } catch (err) {
       alert('Error connecting to REST API');
     } finally {
-      setDispatching(false);
+      setFetching(false);
     }
   };
 
@@ -96,33 +105,45 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
             </span>
           </div>
           <p className="text-xs text-zinc-400 font-sans mt-1">
-            Dispatch Packet 93 remote inspections or view 18-attribute profiles captured via REST streaming.
+            Fetch remote character stats via Packet 93 or view 18-attribute profiles streamed via REST API.
           </p>
         </div>
 
-        {/* Remote Inspect Quick Bar */}
-        <form onSubmit={handleDispatch} className="flex items-center space-x-2">
+        {/* Fetch Target Input Form */}
+        <form onSubmit={handleFetch} className="flex items-center space-x-2">
           <input
             type="text"
             value={targetName}
             onChange={(e) => setTargetName(e.target.value)}
-            placeholder="Target player name..."
-            className="px-3.5 py-2 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
+            placeholder="Enter player name..."
+            className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 min-w-[170px]"
           />
           <button
             type="submit"
-            disabled={dispatching || !targetName.trim()}
-            className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 shrink-0"
+            disabled={fetching || !targetName.trim()}
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)] min-w-[90px]"
           >
-            <Send className="w-3.5 h-3.5" />
-            <span>{dispatching ? 'Queuing...' : 'Dispatch'}</span>
+            {fetching ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin text-black" />
+                <span>Fetching...</span>
+              </>
+            ) : (
+              <>
+                <Download className="w-4 h-4" />
+                <span>Fetch</span>
+              </>
+            )}
           </button>
         </form>
       </div>
 
-      {dispatchMsg && (
-        <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-mono">
-          ✓ {dispatchMsg}
+      {fetchMsg && (
+        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-xs text-emerald-400 font-mono flex items-center justify-between animate-fade-in">
+          <span>✓ {fetchMsg}</span>
+          <button onClick={() => setFetchMsg('')} className="text-emerald-500 hover:text-emerald-300 ml-2">
+            <X className="w-4 h-4" />
+          </button>
         </div>
       )}
 
@@ -172,7 +193,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
       {filteredPlayers.length === 0 ? (
         <div className="py-12 text-center border border-dashed border-zinc-800 rounded-2xl p-6 bg-zinc-950/40 text-xs text-zinc-500 font-mono space-y-2">
           <p>No player profiles recorded yet (or profiles auto-cleared after 30 min).</p>
-          <p className="text-[11px] text-zinc-600">Dispatch a player name above to inspect in-game.</p>
+          <p className="text-[11px] text-zinc-600">Fetch a player name above to inspect in-game.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -232,7 +253,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                     </div>
                   </div>
 
-                  {/* Vertical List Layout for Player Stats */}
+                  {/* Vertical List Layout for Player Card Stats */}
                   <div className="space-y-1.5 mt-3 pt-3 border-t border-zinc-800/60 font-mono text-[11px]">
                     <div className="flex items-center justify-between py-1 px-2.5 rounded-lg bg-black/60 border border-zinc-800/50">
                       <span className="text-[10px] text-zinc-400 font-sans">Attack DMG</span>
@@ -271,10 +292,10 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
         </div>
       )}
 
-      {/* 18-Attribute Modal Detail Dialog */}
+      {/* 18-Attribute Modal Detail Dialog - VERTICAL LIST LAYOUT */}
       {selectedPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-xl max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl font-sans">
             {/* Modal Header */}
             <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
               <div className="flex items-center space-x-3">
@@ -288,101 +309,116 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                   </p>
                 </div>
               </div>
-              <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800">
+              <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Health & Mana Points Header */}
-            <div className="grid grid-cols-2 gap-3 font-mono text-xs">
-              <div className="p-3 bg-black rounded-xl border border-rose-500/20">
-                <span className="text-[10px] text-rose-400 font-sans block">Hit Points (HP)</span>
+            {/* Health & Mana Points - Vertical Stack */}
+            <div className="space-y-2 font-mono text-xs">
+              <div className="flex items-center justify-between p-3 bg-black rounded-xl border border-rose-500/20">
+                <span className="text-rose-400 font-sans flex items-center space-x-1.5">
+                  <Activity className="w-4 h-4" />
+                  <span>Hit Points (HP)</span>
+                </span>
                 <span className="text-sm font-bold text-white">{selectedPlayer.hp} / {selectedPlayer.maxHp}</span>
               </div>
-              <div className="p-3 bg-black rounded-xl border border-cyan-500/20">
-                <span className="text-[10px] text-cyan-400 font-sans block">Mana Points (MP)</span>
+              <div className="flex items-center justify-between p-3 bg-black rounded-xl border border-cyan-500/20">
+                <span className="text-cyan-400 font-sans flex items-center space-x-1.5">
+                  <Zap className="w-4 h-4" />
+                  <span>Mana Points (MP)</span>
+                </span>
                 <span className="text-sm font-bold text-white">{selectedPlayer.mp} / {selectedPlayer.maxMp}</span>
               </div>
             </div>
 
-            {/* Complete 18 Bytecode Attribute Display Grid (No Commas) */}
-            <div className="space-y-4 text-xs font-mono">
-              <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider font-sans">
-                Offense & Agility Attributes
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Attack Min</span>
-                  <span className="text-white font-bold">{selectedPlayer.attackMin}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Attack Max</span>
-                  <span className="text-white font-bold">{selectedPlayer.attackMax}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Speed</span>
-                  <span className="text-white font-bold">{selectedPlayer.speed}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Critical Strike</span>
-                  <span className="text-emerald-400 font-bold">{selectedPlayer.critical}%</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Accurate Point</span>
-                  <span className="text-white font-bold">{selectedPlayer.accurate}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Dodge Ability</span>
-                  <span className="text-white font-bold">{selectedPlayer.dodge}</span>
-                </div>
-              </div>
-
-              <h4 className="text-xs font-semibold text-zinc-400 pt-2 uppercase tracking-wider font-sans">
-                Defense & Elemental Resistances
-              </h4>
-              <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
-                <div className="p-2.5 bg-black rounded-lg border border-amber-500/20">
-                  <span className="text-[10px] text-amber-400 block font-sans">Anti Fire</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-cyan-500/20">
-                  <span className="text-[10px] text-cyan-400 block font-sans">Anti Ice</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-emerald-500/20">
-                  <span className="text-[10px] text-emerald-400 block font-sans">Anti Wind</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-purple-500/20">
-                  <span className="text-[10px] text-purple-400 block font-sans">Pain Reduce</span>
-                  <span className="text-white font-bold">-{selectedPlayer.reducePain}%</span>
+            {/* Complete 18 Bytecode Attribute Display - VERTICAL LIST SECTIONS */}
+            <div className="space-y-5 text-xs font-mono">
+              {/* Offense & Agility */}
+              <div>
+                <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider font-sans mb-2.5">
+                  Offense & Agility Attributes
+                </h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Attack Min</span>
+                    <span className="text-white font-bold">{selectedPlayer.attackMin}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Attack Max</span>
+                    <span className="text-white font-bold">{selectedPlayer.attackMax}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Speed</span>
+                    <span className="text-white font-bold">{selectedPlayer.speed}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Critical Strike</span>
+                    <span className="text-emerald-400 font-bold">{selectedPlayer.critical}%</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Accurate Point</span>
+                    <span className="text-white font-bold">{selectedPlayer.accurate}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Dodge Ability</span>
+                    <span className="text-white font-bold">{selectedPlayer.dodge}</span>
+                  </div>
                 </div>
               </div>
 
-              <h4 className="text-xs font-semibold text-zinc-400 pt-2 uppercase tracking-wider font-sans">
-                Chakra Control & Counter Strike
-              </h4>
-              <div className="grid grid-cols-3 gap-2.5">
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Counter Strike</span>
-                  <span className="text-white font-bold">+{selectedPlayer.counterStrike}</span>
+              {/* Defense & Elemental Resistances */}
+              <div>
+                <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider font-sans mb-2.5">
+                  Defense & Elemental Resistances
+                </h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-amber-500/20">
+                    <span className="text-amber-400 font-sans">Anti Fire</span>
+                    <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-cyan-500/20">
+                    <span className="text-cyan-400 font-sans">Anti Ice</span>
+                    <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-emerald-500/20">
+                    <span className="text-emerald-400 font-sans">Anti Wind</span>
+                    <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-purple-500/20">
+                    <span className="text-purple-400 font-sans">Pain Reduce</span>
+                    <span className="text-white font-bold">-{selectedPlayer.reducePain}%</span>
+                  </div>
                 </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Anti Chakra</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiChakra}</span>
-                </div>
-                <div className="p-2.5 bg-black rounded-lg border border-zinc-800">
-                  <span className="text-[10px] text-zinc-500 block font-sans">Anti Chakra Back</span>
-                  <span className="text-white font-bold">+{selectedPlayer.antiChakraBack}</span>
+              </div>
+
+              {/* Chakra Control & Counter Strike */}
+              <div>
+                <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider font-sans mb-2.5">
+                  Chakra Control & Counter Strike
+                </h4>
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Counter Strike</span>
+                    <span className="text-white font-bold">+{selectedPlayer.counterStrike}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Anti Chakra</span>
+                    <span className="text-white font-bold">+{selectedPlayer.antiChakra}</span>
+                  </div>
+                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                    <span className="text-zinc-400 font-sans">Anti Chakra Back</span>
+                    <span className="text-white font-bold">+{selectedPlayer.antiChakraBack}</span>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Footer Row */}
+            {/* Footer Action Row */}
             <div className="pt-4 border-t border-zinc-800 flex items-center justify-between">
               <button
                 onClick={() => handleCopyJson(selectedPlayer)}
-                className="flex items-center space-x-2 px-3 py-1.5 rounded-lg border border-zinc-800 bg-black text-xs text-zinc-400 hover:text-white font-mono"
+                className="flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-zinc-800 bg-black text-xs text-zinc-400 hover:text-white font-mono transition-colors"
               >
                 {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied JSON!' : 'Copy Raw Payload'}</span>
@@ -390,7 +426,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
               <button
                 onClick={() => setSelectedPlayer(null)}
-                className="px-4 py-2 rounded-lg bg-zinc-800 text-white text-xs font-semibold hover:bg-zinc-700"
+                className="px-4 py-2 rounded-xl bg-zinc-800 text-white text-xs font-semibold hover:bg-zinc-700 transition-colors"
               >
                 Close
               </button>
@@ -435,7 +471,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
                 className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-500 text-white font-semibold text-xs hover:bg-rose-600 transition-colors disabled:opacity-50"
               >
                 {clearing ? (
-                  <RefreshCw className="w-3.5 h-3.5 animate-spin" />
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
                 ) : (
                   <Trash2 className="w-3.5 h-3.5" />
                 )}
