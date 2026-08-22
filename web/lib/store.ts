@@ -26,34 +26,34 @@ export interface PlayerProfile {
   lastUpdated: string;
 }
 
-let inMemoryPlayers: PlayerProfile[] = [];
+const DATA_FILE = path.join(process.cwd(), 'data', 'players.json');
 
-// Determine writable file path: use /tmp/players.json on Vercel / serverless
-const DATA_FILE = process.env.VERCEL ? '/tmp/players.json' : path.join(process.cwd(), 'data', 'players.json');
+const INITIAL_SEED: PlayerProfile[] = [];
+
+function ensureDirectoryExists() {
+  const dir = path.dirname(DATA_FILE);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+}
 
 export function getAllPlayers(): PlayerProfile[] {
-  try {
-    if (fs.existsSync(DATA_FILE)) {
-      const raw = fs.readFileSync(DATA_FILE, 'utf8');
-      return JSON.parse(raw);
-    }
-  } catch (e) {
-    console.warn('[NSO-STORE] Read error, using in-memory store:', e);
+  ensureDirectoryExists();
+  if (!fs.existsSync(DATA_FILE)) {
+    saveAllPlayers(INITIAL_SEED);
+    return INITIAL_SEED;
   }
-  return inMemoryPlayers;
+  try {
+    const raw = fs.readFileSync(DATA_FILE, 'utf8');
+    return JSON.parse(raw);
+  } catch (e) {
+    return INITIAL_SEED;
+  }
 }
 
 export function saveAllPlayers(players: PlayerProfile[]) {
-  inMemoryPlayers = players;
-  try {
-    const dir = path.dirname(DATA_FILE);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2), 'utf8');
-  } catch (e) {
-    console.warn('[NSO-STORE] File write warning (serverless environment):', e);
-  }
+  ensureDirectoryExists();
+  fs.writeFileSync(DATA_FILE, JSON.stringify(players, null, 2), 'utf8');
 }
 
 export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
