@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllPlayers, saveOrUpdatePlayer } from '@/lib/store';
+import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers } from '@/lib/store';
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);
@@ -61,7 +61,7 @@ export async function POST(request: Request) {
       antiChakraBack: Number(body.antiChakraBack) || 0,
     });
 
-    console.log(`[NSO-MATRIX-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);
+    console.log(`[MTX-API-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);
 
     return NextResponse.json({
       status: 201,
@@ -69,10 +69,18 @@ export async function POST(request: Request) {
       player: saved
     }, { status: 201 });
   } catch (error: any) {
-    console.error('[NSO-MATRIX-REST] Error processing POST player stats:', error);
+    console.error('[MTX-API-REST] Error processing POST player stats:', error);
     return NextResponse.json(
       { status: 500, error: 'Internal Server Error', details: error.message },
       { status: 500 }
     );
   }
+}
+
+export async function DELETE() {
+  clearAllPlayers();
+  return NextResponse.json({
+    status: 200,
+    message: 'All player profiles successfully cleared'
+  });
 }

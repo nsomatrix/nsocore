@@ -27,6 +27,8 @@ export interface PlayerProfile {
   lastUpdated: string;
 }
 
+const AUTO_CLEAR_MS = 30 * 60 * 1000; // Auto clear after 30 minutes
+
 // In-memory global store to preserve state across warm Vercel Lambdas
 const globalStore = globalThis as unknown as { _matrixPlayersStore?: PlayerProfile[] };
 if (!globalStore._matrixPlayersStore) {
@@ -34,28 +36,45 @@ if (!globalStore._matrixPlayersStore) {
 }
 
 function getDataFilePath(): string {
-  // On Vercel / serverless environment, process.cwd() is read-only. Use os.tmpdir()
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
     return path.join(os.tmpdir(), 'players.json');
   }
   return path.join(process.cwd(), 'data', 'players.json');
 }
 
+/**
+ * Automatically prunes profiles older than 30 minutes (1,800,000 ms).
+ */
+export function pruneExpiredPlayers(players: PlayerProfile[]): PlayerProfile[] {
+  const now = Date.now();
+  const valid = players.filter((p) => {
+    if (!p.lastUpdated) return false;
+    const time = new Date(p.lastUpdated).getTime();
+    return !isNaN(time) && now - time < AUTO_CLEAR_MS;
+  });
+
+  if (valid.length !== players.length) {
+    saveAllPlayers(valid);
+  }
+  return valid;
+}
+
 export function getAllPlayers(): PlayerProfile[] {
   const filePath = getDataFilePath();
+  let loaded: PlayerProfile[] = globalStore._matrixPlayersStore || [];
   try {
     if (fs.existsSync(filePath)) {
       const raw = fs.readFileSync(filePath, 'utf8');
       const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed) && parsed.length > 0) {
+      if (Array.isArray(parsed)) {
+        loaded = parsed;
         globalStore._matrixPlayersStore = parsed;
-        return parsed;
       }
     }
   } catch (e) {
     console.warn('[STORE] Error reading player file, using in-memory store:', e);
   }
-  return globalStore._matrixPlayersStore || [];
+  return pruneExpiredPlayers(loaded);
 }
 
 export function saveAllPlayers(players: PlayerProfile[]) {
@@ -72,8 +91,12 @@ export function saveAllPlayers(players: PlayerProfile[]) {
   }
 }
 
+export function clearAllPlayers() {
+  saveAllPlayers([]);
+}
+
 export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
-  const players = getAllPlayers();
+  let players = getAllPlayers();
   const index = players.findIndex(p => p.name.toLowerCase() === playerData.name.toLowerCase());
   
   const updatedPlayer: PlayerProfile = {
