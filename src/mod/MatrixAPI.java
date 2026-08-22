@@ -106,5 +106,18 @@ public class MatrixAPI {
         enableWebSync = MatrixWebClient.enableWebSync;
         log("WEB-REST", "Web REST Sync set to: " + (enableWebSync ? "ENABLED" : "DISABLED"));
     }
+
+    public static void setRestEndpoint(String newUrl) {
+        MatrixWebClient.setRestEndpoint(newUrl);
+        restApiEndpoint = MatrixWebClient.restApiEndpoint;
+    }
+
+    public static void promptRestEndpoint() {
+        MatrixUI.promptRestEndpoint();
+    }
+
+    public static void submitRestEndpoint() {
+        MatrixUI.submitRestEndpoint();
+    }
 }
 

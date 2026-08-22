@@ -2,6 +2,7 @@ package mod.web;
 
 import javax.microedition.io.Connector;
 import javax.microedition.io.HttpConnection;
+import javax.microedition.rms.RecordStore;
 import java.io.OutputStream;
 import java.io.InputStream;
 import bp;
@@ -17,7 +18,52 @@ import mod.log.MatrixLogger;
 public class MatrixWebClient {
 
     public static boolean enableWebSync = true;
-    public static String restApiEndpoint = "http://localhost:8080/api/v1/players";
+    public static String restApiEndpoint = loadEndpointFromRMS();
+
+    /**
+     * Dynamically updates and persists the REST API Endpoint URL in J2ME RMS storage.
+     */
+    public static void setRestEndpoint(String newUrl) {
+        if (newUrl != null && newUrl.trim().length() > 0) {
+            restApiEndpoint = newUrl.trim();
+            saveEndpointToRMS(restApiEndpoint);
+            MatrixLogger.log("WEB-REST", "REST API Endpoint updated & saved: " + restApiEndpoint);
+        }
+    }
+
+    private static String loadEndpointFromRMS() {
+        RecordStore rs = null;
+        try {
+            rs = RecordStore.openRecordStore("MatrixWebConfig", true);
+            if (rs.getNumRecords() > 0) {
+                byte[] data = rs.getRecord(1);
+                if (data != null && data.length > 0) {
+                    return new String(data, "UTF-8");
+                }
+            }
+        } catch (Exception e) {
+        } finally {
+            try { if (rs != null) rs.closeRecordStore(); } catch (Exception e) {}
+        }
+        return "http://localhost:3000/api/v1/players"; // Default fallback
+    }
+
+    private static void saveEndpointToRMS(String url) {
+        RecordStore rs = null;
+        try {
+            rs = RecordStore.openRecordStore("MatrixWebConfig", true);
+            byte[] data = url.getBytes("UTF-8");
+            if (rs.getNumRecords() == 0) {
+                rs.addRecord(data, 0, data.length);
+            } else {
+                rs.setRecord(1, data, 0, data.length);
+            }
+        } catch (Exception e) {
+            MatrixLogger.log("WEB-REST", "RMS Save Error: " + e.getMessage());
+        } finally {
+            try { if (rs != null) rs.closeRecordStore(); } catch (Exception e) {}
+        }
+    }
 
     /**
      * Asynchronously posts player profile stats to the configured REST API endpoint.
