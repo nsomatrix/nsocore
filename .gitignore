@@ -1,0 +1,15 @@
+# Build output & generated artifacts
+build_output/
+dist/
+
+# Compiled class files & temporary files
+*.class
+*.log
+*.tmp
+*.bak
+
+# IDE & OS metadata
+.DS_Store
+.idea/
+.vscode/
+*.swp
