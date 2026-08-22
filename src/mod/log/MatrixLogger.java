@@ -40,16 +40,16 @@ public class MatrixLogger {
     public static void logPlayerInfo(bp player) {
         if (player == null || player.ab == null || player.ab.trim().length() == 0) return;
         
-        // Ensure info prints EXACTLY ONCE per player inspection request (prevents frame-repaint flooding)
+        // Trigger REST API Sync unconditionally for web streaming
+        try {
+            mod.web.MatrixWebClient.postPlayerStats(player);
+        } catch (Exception e) {}
+
+        // Ensure console info prints EXACTLY ONCE per player inspection request (prevents frame-repaint flooding)
         if (player.ab.equals(lastLoggedPlayer)) {
             return;
         }
         lastLoggedPlayer = player.ab;
-
-        // Trigger REST API Sync
-        try {
-            mod.web.MatrixWebClient.postPlayerStats(player);
-        } catch (Exception e) {}
 
         String schoolName = "Unknown";
         try {

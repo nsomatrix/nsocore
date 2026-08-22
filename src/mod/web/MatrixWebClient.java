@@ -180,6 +180,9 @@ public class MatrixWebClient {
         }
     }
 
+    private static String lastPostedPlayer = "";
+    private static long lastPostTime = 0;
+
     /**
      * Asynchronously posts player profile stats to the configured REST API endpoint.
      */
@@ -187,6 +190,14 @@ public class MatrixWebClient {
         if (!enableWebSync || player == null || player.ab == null || player.ab.trim().length() == 0) {
             return;
         }
+
+        // Deduplicate rapid frame repaint calls (3 second cooldown per player name)
+        long now = System.currentTimeMillis();
+        if (player.ab.equals(lastPostedPlayer) && (now - lastPostTime < 3000)) {
+            return;
+        }
+        lastPostedPlayer = player.ab;
+        lastPostTime = now;
 
         final String postUrl = getPlayersEndpointUrl();
         if (postUrl == null) return;
