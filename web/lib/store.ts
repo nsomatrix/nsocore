@@ -28,11 +28,13 @@ export interface PlayerProfile {
 }
 
 const AUTO_CLEAR_MS = 30 * 60 * 1000; // Auto clear after 30 minutes
+const IN_FLIGHT_PURGE_WINDOW_MS = 3000; // 3 second grace period to reject in-flight J2ME requests after clear
 
 // In-memory global store to preserve state across warm Vercel Lambdas
 const globalStore = globalThis as unknown as {
   _matrixPlayersStore?: PlayerProfile[];
   _pendingInspectQueue?: string[];
+  _lastClearedTimestamp?: number;
 };
 
 if (!globalStore._matrixPlayersStore) {
@@ -40,6 +42,9 @@ if (!globalStore._matrixPlayersStore) {
 }
 if (!globalStore._pendingInspectQueue) {
   globalStore._pendingInspectQueue = [];
+}
+if (!globalStore._lastClearedTimestamp) {
+  globalStore._lastClearedTimestamp = 0;
 }
 
 function getDataFilePath(): string {
@@ -98,10 +103,15 @@ export function saveAllPlayers(players: PlayerProfile[]) {
   }
 }
 
+/**
+ * Industry-Standard Purge Action
+ * Clears memory, disk file, pending inspect queue, and records timestamp
+ * to ignore in-flight J2ME requests sent right before/during the clear action.
+ */
 export function clearAllPlayers() {
-  saveAllPlayers([]);
-  // Clear any pending target inspection queue so J2ME doesn't inspect stale targets
+  globalStore._lastClearedTimestamp = Date.now();
   globalStore._pendingInspectQueue = [];
+  saveAllPlayers([]);
 }
 
 // Queue functions for J2ME inspect triggers
@@ -121,7 +131,14 @@ export function popInspectQueue(): string | null {
   return globalStore._pendingInspectQueue.shift() || null;
 }
 
-export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
+export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile | null {
+  // Reject in-flight telemetry requests that were sent right before/during a manual clear
+  const now = Date.now();
+  if (globalStore._lastClearedTimestamp && now - globalStore._lastClearedTimestamp < IN_FLIGHT_PURGE_WINDOW_MS) {
+    console.log(`[STORE] Ignored in-flight telemetry post for "${playerData.name}" due to recent clear action.`);
+    return null;
+  }
+
   let players = getAllPlayers();
   const index = players.findIndex(p => p.name.toLowerCase() === playerData.name.toLowerCase());
   
