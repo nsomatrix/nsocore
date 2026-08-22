@@ -17,11 +17,12 @@ echo "=================================================="
 rm -rf "$BUILD_DIR"
 mkdir -p "$BUILD_DIR/mod_classes" "$BUILD_DIR/patcher_classes" "$BUILD_DIR/patched_classes" "$BASE_DIR/dist"
 
-echo "🔨 [1/4] Compiling MatrixMod & MatrixLogger (Target: J2ME CLDC 1.1 / MIDP 2.0)..."
+echo "🔨 [1/4] Compiling MatrixAPI Facade & Modular Subpackages (Target: J2ME CLDC 1.1 / MIDP 2.0)..."
+MOD_FILES=$(find "$SRC_DIR/mod" -name "*.java")
 java -jar "$LIB_DIR/ecj.jar" -1.3 \
   -cp "$LIB_DIR/midpapi20.jar:$LIB_DIR/cldcapi11.jar:$INPUT_JAR" \
   -d "$BUILD_DIR/mod_classes" \
-  "$SRC_DIR/mod/MatrixMod.java" "$SRC_DIR/mod/MatrixLogger.java"
+  $MOD_FILES
 
 echo "🔨 [2/4] Compiling Bytecode Patcher..."
 java -jar "$LIB_DIR/ecj.jar" -1.8 \

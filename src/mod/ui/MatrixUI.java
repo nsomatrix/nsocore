@@ -1,11 +1,11 @@
-package mod;
+package mod.ui;
 
 import main.a;
 import bd;
 import aa;
-import dq;
+import mod.net.MatrixNet;
 
-public class MatrixMod {
+public class MatrixUI {
 
     /**
      * Appends MatrixAPI as the VERY FIRST option (index 0) in the main game menu.
@@ -68,23 +68,9 @@ public class MatrixMod {
 
         // 3. Process inspection request
         if (playerName != null && playerName.trim().length() > 0) {
-            inspectPlayer(playerName.trim());
+            MatrixNet.inspectPlayer(playerName.trim());
         } else {
             a.a("Please enter a valid player name!");
-        }
-    }
-
-    /**
-     * Programmatically requests full player info for any target player by name string.
-     */
-    public static void inspectPlayer(String playerName) {
-        if (playerName != null && playerName.length() > 0) {
-            MatrixLogger.resetLoggedPlayer(); // Reset cache to allow fresh print for new target
-            MatrixLogger.log("API", "Sending programmatic Inspect Request for: \"" + playerName + "\"");
-            // Sends Packet 93 to server with target player name string
-            dq.a().a(playerName, 0);
-        } else {
-            a.a("Invalid Player Name!");
         }
     }
 }

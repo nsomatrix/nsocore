@@ -35,8 +35,13 @@ nsocore/
 │   └── cldcapi11.jar                    # CLDC 1.1 API stubs
 ├── src/
 │   ├── mod/
-│   │   ├── MatrixMod.java               # MatrixAPI feature logic & text input handlers
-│   │   └── MatrixLogger.java            # Network & player profile console logging engine
+│   │   ├── MatrixAPI.java               # Central Facade & entrypoint for bytecode hooks
+│   │   ├── ui/
+│   │   │   └── MatrixUI.java            # Menus, input dialogs & command routing
+│   │   ├── net/
+│   │   │   └── MatrixNet.java           # Network packet inspection & Packet 93 dispatch
+│   │   └── log/
+│   │       └── MatrixLogger.java        # Console formatting, stat parsing & key tracing
 │   └── patcher/
 │       └── Patcher.java                 # Javassist bytecode instrumenter script
 └── dist/
@@ -51,14 +56,14 @@ Ninja School Online J2ME is compiled and heavily obfuscated (short class names l
 
 ### A. Menu Injection (`dg.ah()`)
 * **Original Behavior:** Method `dg.ah()` builds the main game menu list vector.
-* **Our Modification:** Using Javassist `ExprEditor`, we intercept `ds.a(...)` calls inside `dg.ah()` and inject `mod.MatrixMod.addMatrixMenuItem(vector)`.
+* **Our Modification:** Using Javassist `ExprEditor`, we intercept `ds.a(...)` calls inside `dg.ah()` and inject `mod.MatrixAPI.addMatrixMenuItem(vector)`.
 * **Result:** `MatrixAPI` is inserted at **Index 0** (the very top option of the main game menu).
 
 ### B. Command Interception (`dg.b(int id, Object obj)`)
 * **Original Behavior:** `dg.b(int, Object)` acts as the central command router for in-game menu selections.
 * **Our Modification:** We injected a check at the beginning of `dg.b`:
   ```java
-  if (mod.MatrixMod.handleMatrixCommand(commandId, obj)) return;
+  if (mod.MatrixAPI.handleMatrixCommand(commandId, obj)) return;
   ```
 * **Command IDs Used:**
   * `888999`: Main `MatrixAPI` menu trigger.
@@ -68,17 +73,17 @@ Ninja School Online J2ME is compiled and heavily obfuscated (short class names l
 ### C. In-Game Text Input Screen (`main.a.L`)
 * **Original Behavior:** *Add Friend* uses `main.a.L.a(title, bdCommand, type)` to open native input screens.
 * **Our Modification:**
-  1. `MatrixMod.promptPlayerName()` calls `main.a.L.a("Enter Player Name:", new bd("OK", 888903), 0)`.
+  1. `MatrixAPI.promptPlayerName()` calls `main.a.L.a("Enter Player Name:", new bd("OK", 888903), 0)`.
   2. When the user types a character name and clicks **OK**, command `888903` executes.
-  3. `MatrixMod.submitPlayerInspect()` reads the typed text string directly using `main.a.L.d.d()`, closes the input screen with `main.a.j()`, and triggers inspection.
+  3. `MatrixAPI.submitPlayerInspect()` reads the typed text string directly using `main.a.L.d.d()`, closes the input screen with `main.a.j()`, and triggers inspection.
 
 ### D. Programmatic Player Inspection (Packet `93`)
 * **Original Behavior:** Inspecting a player nearby sends Packet `93`.
-* **Our Modification:** `MatrixMod.inspectPlayer(playerName)` invokes `dq.a().a(playerName, 0)`. This sends Packet `93` with any arbitrary player name string directly to the game server.
+* **Our Modification:** `MatrixAPI.inspectPlayer(playerName)` invokes `dq.a().a(playerName, 0)`. This sends Packet `93` with any arbitrary player name string directly to the game server.
 
 ### E. Profile Extraction & Logging (`dg.o(t)`)
 * **Original Behavior:** When player profile data arrives from the server, `dg.aV` stores the target player object (`bp`) and `dg.o(t)` renders the Info window screen.
-* **Our Modification:** Injected `mod.MatrixLogger.logPlayerInfo(dg.aV)` into `dg.o(t)`.
+* **Our Modification:** Injected `mod.MatrixAPI.logPlayerInfo(dg.aV)` into `dg.o(t)`.
 * **Extracted Attributes (All 18 Stats):**
   * `ab`: Character Name
   * `aM`: Aggressive Point
@@ -117,7 +122,7 @@ chmod +x build.sh
 ```
 
 ### The 4 Build Pipeline Steps Executed by `build.sh`:
-1. **Compiling Mod Classes:** Compiles `MatrixMod.java` & `MatrixLogger.java` using `ecj.jar` against J2ME CLDC 1.1 / MIDP 2.0 stubs into `build_output/classes`.
+1. **Compiling Mod Classes:** Compiles `MatrixAPI.java` using `ecj.jar` against J2ME CLDC 1.1 / MIDP 2.0 stubs into `build_output/classes`.
 2. **Compiling Bytecode Patcher:** Compiles `Patcher.java` into `patcher_build`.
 3. **Instrumenting Bytecode:** Runs `Patcher.main()` to load `input/NinjaSchool_217w.jar`, inject Javassist hooks, and output modified `.class` files into `build_output/patched_classes`.
 4. **Repacking Runnable JAR:** Unpacks the clean original JAR, overwrites patched classes and mod classes, and creates `dist/NinjaSchool_217w_MatrixMOD.jar`.
@@ -126,7 +131,7 @@ chmod +x build.sh
 
 ## 🚀 5. How to Add Future MatrixAPI Features
 
-1. Open `src/mod/MatrixMod.java`.
+1. Open `src/mod/MatrixAPI.java`.
 2. Add your new sub-option in `showMatrixMenu()`:
    ```java
    menuList.addElement(new bd("My New Feature", 888902));

@@ -22,8 +22,13 @@ nsocore/
 │   └── cldcapi11.jar                    # J2ME CLDC 1.1 API stubs
 ├── src/
 │   ├── mod/
-│   │   ├── MatrixMod.java               # MatrixAPI feature logic & text input handlers
-│   │   └── MatrixLogger.java            # Network & player profile console logging engine
+│   │   ├── MatrixAPI.java               # Central Facade & entrypoint for bytecode hooks
+│   │   ├── ui/
+│   │   │   └── MatrixUI.java            # Menus, input dialogs & command routing
+│   │   ├── net/
+│   │   │   └── MatrixNet.java           # Network packet inspection & Packet 93 dispatch
+│   │   └── log/
+│   │       └── MatrixLogger.java        # Console formatting, stat parsing & key tracing
 │   └── patcher/
 │       └── Patcher.java                 # Javassist bytecode instrumenter
 └── dist/

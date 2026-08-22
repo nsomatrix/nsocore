@@ -24,7 +24,7 @@ public class Patcher {
             ahMethod.instrument(new ExprEditor() {
                 public void edit(MethodCall m) throws CannotCompileException {
                     if (m.getMethodName().equals("a") && m.getClassName().equals("ds")) {
-                        m.replace("{ mod.MatrixMod.addMatrixMenuItem($1); $_ = $proceed($$); }");
+                        m.replace("{ mod.MatrixAPI.addMatrixMenuItem($1); $_ = $proceed($$); }");
                     }
                 }
             });
@@ -34,15 +34,15 @@ public class Patcher {
             CtClass[] paramsB = new CtClass[]{ CtClass.intType, pool.get("java.lang.Object") };
             CtMethod bMethod = dgClass.getDeclaredMethod("b", paramsB);
             bMethod.insertBefore("{"
-                + "  if (mod.MatrixMod.handleMatrixCommand($1, $2)) return;"
-                + "  mod.MatrixLogger.logCommand($1);"
+                + "  if (mod.MatrixAPI.handleMatrixCommand($1, $2)) return;"
+                + "  mod.MatrixAPI.logCommand($1);"
                 + "}");
 
             // 3. Hook Player Info Screen Render in dg.o(t)
             System.out.println("[NSO Core Patcher] Injecting Player Info Console Logger into dg.o(t)...");
             try {
                 CtMethod oMethod = dgClass.getDeclaredMethod("o", new CtClass[]{ pool.get("t") });
-                oMethod.insertBefore("{ if (dg.aV != null) mod.MatrixLogger.logPlayerInfo(dg.aV); }");
+                oMethod.insertBefore("{ if (dg.aV != null) mod.MatrixAPI.logPlayerInfo(dg.aV); }");
             } catch (Exception ex) {
                 System.out.println("[NSO Core Patcher] Warning: Failed to hook dg.o(t): " + ex.getMessage());
             }
@@ -53,7 +53,7 @@ public class Patcher {
             CtClass anClass = pool.get("an");
             try {
                 CtMethod recvPacketMethod = anClass.getDeclaredMethod("a", new CtClass[]{ pool.get("ce") });
-                recvPacketMethod.insertBefore("{ if ($1 != null) mod.MatrixLogger.logPacketRecv($1.a); }");
+                recvPacketMethod.insertBefore("{ if ($1 != null) mod.MatrixAPI.logPacketRecv($1.a); }");
             } catch (Exception ex) {
                 System.out.println("[NSO Core Patcher] Warning: Failed to hook an.a(ce): " + ex.getMessage());
             }
@@ -63,21 +63,21 @@ public class Patcher {
             System.out.println("[NSO Core Patcher] Injecting Deep Logging into main.b.keyPressed()...");
             CtClass mainBClass = pool.get("main.b");
             CtMethod keyPressedMethod = mainBClass.getDeclaredMethod("keyPressed");
-            keyPressedMethod.insertBefore("{ mod.MatrixLogger.logKey($1); }");
+            keyPressedMethod.insertBefore("{ mod.MatrixAPI.logKey($1); }");
             mainBClass.writeFile(outputPath);
 
             // 6. Hook Outbound Network Packet Logger in dh.a(ce)
             System.out.println("[NSO Core Patcher] Injecting Outbound Network Packet Logger into dh.a(ce)...");
             CtClass dhClass = pool.get("dh");
             CtMethod sendPacketMethod = dhClass.getDeclaredMethod("a", new CtClass[]{ pool.get("ce") });
-            sendPacketMethod.insertBefore("{ if ($1 != null && $1.a() != null) mod.MatrixLogger.logPacketSend($1.a, $1.a().length); }");
+            sendPacketMethod.insertBefore("{ if ($1 != null && $1.a() != null) mod.MatrixAPI.logPacketSend($1.a, $1.a().length); }");
             dhClass.writeFile(outputPath);
 
             // 7. Hook Notice Dialogs in main.a.a(String)
             System.out.println("[NSO Core Patcher] Injecting Notice Dialog Logger into main.a.a(String)...");
             CtClass mainAClass = pool.get("main.a");
             CtMethod noticeMethod = mainAClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String") });
-            noticeMethod.insertBefore("{ if ($1 != null && $1.length() > 0) mod.MatrixLogger.logDialog($1); }");
+            noticeMethod.insertBefore("{ if ($1 != null && $1.length() > 0) mod.MatrixAPI.logDialog($1); }");
             mainAClass.writeFile(outputPath);
 
             System.out.println("[NSO Core Patcher] MatrixAPI Instrumentation successfully completed!");
