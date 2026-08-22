@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { Zap, Radio, Search, PlusCircle, ShieldCheck } from 'lucide-react';
+import { Terminal, Cpu, Radio, Plus } from 'lucide-react';
 
 interface NavbarProps {
   onOpenInspectModal: () => void;
@@ -10,44 +10,60 @@ interface NavbarProps {
 
 export function Navbar({ onOpenInspectModal, playerCount }: NavbarProps) {
   return (
-    <header className="sticky top-0 z-40 w-full border-b border-supabase-border bg-supabase-bg/90 backdrop-blur-md">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
-        {/* Brand Logo & Name */}
+    <header className="border-b border-bios-border bg-bios-dark font-mono sticky top-0 z-30">
+      {/* Top API Status Ticker */}
+      <div className="bg-bios-panel border-b border-bios-border/60 px-4 py-1 text-[11px] flex items-center justify-between overflow-x-auto text-bios-muted">
+        <div className="flex items-center space-x-4 shrink-0">
+          <span className="flex items-center text-bios-green font-bold">
+            <span className="w-2 h-2 rounded-full bg-bios-green animate-ping mr-2"></span>
+            SYS_STATUS: ONLINE [200 OK]
+          </span>
+          <span>|</span>
+          <span className="text-bios-cyan">ENDPOINT: /api/v1/players</span>
+          <span>|</span>
+          <span className="text-bios-amber">POLL_QUEUE: /api/v1/inspect [ACTIVE]</span>
+        </div>
+        <div className="hidden md:flex items-center space-x-3 shrink-0 text-bios-muted">
+          <span>HOST: VERCEl_EDGE</span>
+          <span>SYSTEM_TIME: {new Date().toISOString().substring(11, 19)} UTC</span>
+        </div>
+      </div>
+
+      {/* Main BIOS Header Bar */}
+      <div className="max-w-7xl mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-3">
-          <div className="w-9 h-9 rounded-lg bg-supabase-green/10 border border-supabase-green/30 flex items-center justify-center text-supabase-green shadow-sm">
-            <Zap className="w-5 h-5" />
+          <div className="w-9 h-9 border border-bios-green bg-bios-green/10 flex items-center justify-center text-bios-green font-bold">
+            <Terminal className="w-5 h-5" />
           </div>
           <div>
             <div className="flex items-center space-x-2">
-              <span className="font-bold text-lg tracking-tight text-supabase-text">NSO MATRIX</span>
-              <span className="px-2 py-0.5 text-[10px] font-semibold bg-supabase-green/15 text-supabase-green rounded border border-supabase-green/30">
-                REST v1.0
+              <h1 className="font-vt323 text-2xl text-bios-green tracking-wider bios-glow uppercase">
+                NSO_MATRIX_BIOS v2.17
+              </h1>
+              <span className="px-1.5 py-0.5 text-[10px] bg-bios-green/10 border border-bios-green/40 text-bios-green uppercase">
+                API_GATEWAY
               </span>
             </div>
-            <p className="text-xs text-supabase-muted hidden sm:block">Ninja School Online Remote Player Inspection Portal</p>
+            <p className="text-[11px] text-bios-muted uppercase">
+              J2ME Telemetry & Remote Inspect Controller
+            </p>
           </div>
         </div>
 
-        {/* Live Status Indicator & Inspect Action Button */}
+        {/* Action Controls */}
         <div className="flex items-center space-x-3">
-          {/* Live REST API Status Pill */}
-          <div className="hidden md:flex items-center space-x-2 px-3 py-1.5 rounded-full bg-supabase-card border border-supabase-border text-xs text-supabase-muted">
-            <span className="relative flex h-2 w-2">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-supabase-green opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2 w-2 bg-supabase-green"></span>
-            </span>
-            <span className="font-mono text-supabase-text">REST Listener Active</span>
-            <span className="text-supabase-subtle">|</span>
-            <span className="text-supabase-green font-medium">{playerCount} Inspected</span>
+          <div className="hidden sm:flex items-center space-x-2 px-3 py-1.5 border border-bios-border bg-bios-panel text-xs text-bios-muted">
+            <Cpu className="w-3.5 h-3.5 text-bios-cyan" />
+            <span>DB_RECORDS:</span>
+            <span className="text-bios-green font-bold">{playerCount}</span>
           </div>
 
-          {/* Quick Action Button */}
           <button
             onClick={onOpenInspectModal}
-            className="flex items-center space-x-2 px-3.5 py-2 rounded-lg bg-supabase-green text-black font-semibold text-xs sm:text-sm hover:bg-supabase-greenHover transition-all shadow-md active:scale-95"
+            className="flex items-center space-x-2 px-3.5 py-1.5 bg-bios-green text-black font-bold text-xs hover:bg-bios-amber transition-all uppercase tracking-wide"
           >
-            <PlusCircle className="w-4 h-4" />
-            <span>Inspect Player</span>
+            <Plus className="w-4 h-4" />
+            <span>[ + DISPATCH TARGET ]</span>
           </button>
         </div>
       </div>

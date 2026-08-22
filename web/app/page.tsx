@@ -6,7 +6,7 @@ import { Navbar } from '@/components/Navbar';
 import { PlayerCard } from '@/components/PlayerCard';
 import { PlayerDetailModal } from '@/components/PlayerDetailModal';
 import { RemoteInspectModal } from '@/components/RemoteInspectModal';
-import { Search, Filter, RefreshCw, Users, ShieldAlert, Sparkles, Plus } from 'lucide-react';
+import { Terminal, RefreshCw, Filter, Search, Plus, Cpu, Radio, Shield, Code } from 'lucide-react';
 
 export default function Dashboard() {
   const [players, setPlayers] = React.useState<PlayerProfile[]>([]);
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = React.useState('');
   const [selectedSchool, setSelectedSchool] = React.useState('All');
   const [selectedClass, setSelectedClass] = React.useState('All');
+  const [showApiDocs, setShowApiDocs] = React.useState(false);
   
   const [selectedPlayer, setSelectedPlayer] = React.useState<PlayerProfile | null>(null);
   const [inspectModalOpen, setInspectModalOpen] = React.useState(false);
@@ -34,8 +35,8 @@ export default function Dashboard() {
 
   React.useEffect(() => {
     fetchPlayers();
-    // Poll REST API every 5 seconds for new player profiles
-    const interval = setInterval(fetchPlayers, 5000);
+    // Poll REST API every 4 seconds for fresh J2ME telemetry payloads
+    const interval = setInterval(fetchPlayers, 4000);
     return () => clearInterval(interval);
   }, [fetchPlayers]);
 
@@ -49,111 +50,150 @@ export default function Dashboard() {
     });
   }, [players, searchQuery, selectedSchool, selectedClass]);
 
-  // Derived metrics
   const maxLevel = players.reduce((max, p) => (p.level > max ? p.level : max), 0);
-  const avgAttack = players.length > 0
-    ? Math.round(players.reduce((sum, p) => sum + (p.attackMin + p.attackMax) / 2, 0) / players.length)
-    : 0;
 
   return (
-    <div className="min-h-screen bg-supabase-bg text-supabase-text flex flex-col font-sans selection:bg-supabase-green/30 selection:text-supabase-green">
-      {/* Top Header Navbar */}
+    <div className="min-h-screen bg-bios-bg text-bios-green flex flex-col font-mono selection:bg-bios-green selection:text-black">
+      {/* Top BIOS Navbar */}
       <Navbar
         onOpenInspectModal={() => setInspectModalOpen(true)}
         playerCount={players.length}
       />
 
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Hero & Stat Summary Banner */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-supabase-card via-supabase-card to-supabase-elevated border border-supabase-border p-6 sm:p-8 overflow-hidden shadow-xl">
-          <div className="relative z-10 max-w-2xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-supabase-green/10 border border-supabase-green/30 text-supabase-green text-xs font-semibold mb-4">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>NinjaDex REST API Synchronizer</span>
+      <main className="flex-1 max-w-7xl w-full mx-auto px-4 py-6 space-y-6">
+        
+        {/* BIOS ASCII System Control Banner */}
+        <div className="bios-box p-4 border border-bios-border space-y-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-bios-border/80 pb-3">
+            <div>
+              <div className="flex items-center space-x-2">
+                <span className="text-bios-amber font-bold text-base">&gt;</span>
+                <h2 className="font-vt323 text-3xl text-bios-green bios-glow tracking-wider uppercase">
+                  SYSTEM_STATUS :: REST_API_GATEWAY
+                </h2>
+              </div>
+              <p className="text-xs text-bios-muted mt-1 uppercase">
+                J2ME MIDP 2.0 Telemetry Stream Receiver &amp; Async Queue Controller
+              </p>
             </div>
-            <h1 className="text-2xl sm:text-4xl font-extrabold tracking-tight text-supabase-text">
-              Real-Time Ninja School Online <span className="text-supabase-green">Target Inspector</span>
-            </h1>
-            <p className="mt-2 text-sm sm:text-base text-supabase-muted leading-relaxed">
-              Explore 18-stat character profiles captured directly from the game client via J2ME REST API streaming.
-            </p>
+
+            <div className="flex items-center space-x-3 text-xs">
+              <button
+                onClick={() => setShowApiDocs(!showApiDocs)}
+                className="px-3 py-1.5 border border-bios-cyan text-bios-cyan hover:bg-bios-cyan/10 font-bold uppercase transition-all"
+              >
+                {showApiDocs ? '[ HIDE API SPEC ]' : '[ VIEW API SPEC ]'}
+              </button>
+              <button
+                onClick={() => setInspectModalOpen(true)}
+                className="px-3.5 py-1.5 bg-bios-green text-black font-bold hover:bg-bios-amber transition-all uppercase"
+              >
+                [ + INSPECT TARGET ]
+              </button>
+            </div>
           </div>
 
-          {/* Quick Metrics Cards */}
-          <div className="mt-6 pt-6 border-t border-supabase-border/50 grid grid-cols-2 sm:grid-cols-3 gap-4 font-mono">
-            <div className="p-3 rounded-xl bg-supabase-bg/60 border border-supabase-border/40">
-              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider">Total Targets</span>
-              <span className="text-lg font-bold text-supabase-text">{players.length}</span>
+          {/* Quick Metrics Bar */}
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-xs">
+            <div className="bg-bios-dark p-2.5 border border-bios-border">
+              <span className="text-[10px] text-bios-muted block uppercase">TARGET_RECORDS</span>
+              <span className="text-lg font-vt323 font-bold text-bios-green bios-glow">{players.length} PROFILES</span>
             </div>
-            <div className="p-3 rounded-xl bg-supabase-bg/60 border border-supabase-border/40">
-              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider">Highest Level</span>
-              <span className="text-lg font-bold text-supabase-green">Lvl {maxLevel}</span>
+            <div className="bg-bios-dark p-2.5 border border-bios-border">
+              <span className="text-[10px] text-bios-muted block uppercase">PEAK_LEVEL</span>
+              <span className="text-lg font-vt323 font-bold text-bios-amber bios-glow-amber">LVL {maxLevel}</span>
             </div>
-            <div className="p-3 rounded-xl bg-supabase-bg/60 border border-supabase-border/40 col-span-2 sm:col-span-1">
-              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider">Avg Damage</span>
-              <span className="text-lg font-bold text-amber-400">{avgAttack} DMG</span>
+            <div className="bg-bios-dark p-2.5 border border-bios-border">
+              <span className="text-[10px] text-bios-muted block uppercase">REST_ENDPOINT</span>
+              <span className="text-xs font-mono text-bios-cyan truncate block">/api/v1/players</span>
+            </div>
+            <div className="bg-bios-dark p-2.5 border border-bios-border">
+              <span className="text-[10px] text-bios-muted block uppercase">INSPECT_QUEUE</span>
+              <span className="text-xs font-mono text-bios-green truncate block">/api/v1/inspect</span>
             </div>
           </div>
+
+          {/* Expandable API Specification Drawer */}
+          {showApiDocs && (
+            <div className="mt-4 p-3 bg-bios-dark border border-bios-cyan/60 text-xs space-y-3 font-mono">
+              <div className="flex justify-between items-center text-bios-cyan font-bold border-b border-bios-border pb-1">
+                <span>[ API CENTRIC SPECIFICATION & ENDPOINT DOCUMENTATION ]</span>
+                <span className="text-[10px] text-bios-muted">FORMAT: JSON</span>
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-[11px]">
+                <div className="space-y-1">
+                  <span className="text-bios-amber font-bold">POST /api/v1/players</span>
+                  <p className="text-bios-muted">Ingests 18-attribute J2ME player JSON payload from game mod.</p>
+                  <pre className="p-2 bg-black border border-bios-border text-bios-green text-[10px]">
+                    {`POST /api/v1/players HTTP/1.1\nContent-Type: application/json\n\n{"name":"PlayerName","level":75,...}`}
+                  </pre>
+                </div>
+                <div className="space-y-1">
+                  <span className="text-bios-amber font-bold">GET /api/v1/inspect &amp; POST /api/v1/inspect</span>
+                  <p className="text-bios-muted">Web dispatches target name; J2ME mod polls queue &amp; sends Packet 93.</p>
+                  <pre className="p-2 bg-black border border-bios-border text-bios-cyan text-[10px]">
+                    {`GET /api/v1/inspect -> {"status":200,"target":"manixstar"}\nPOST /api/v1/inspect -> {"name":"manixstar"}`}
+                  </pre>
+                </div>
+              </div>
+            </div>
+          )}
         </div>
 
-        {/* Filter Controls Bar */}
-        <div className="space-y-4">
-          <div className="flex flex-col md:flex-row gap-4 justify-between items-stretch md:items-center">
-            {/* Search Input Bar */}
-            <div className="relative flex-1">
-              <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-supabase-subtle" />
+        {/* BIOS Filter & Terminal Search Bar */}
+        <div className="bios-box p-3 border border-bios-border space-y-3">
+          <div className="flex flex-col md:flex-row gap-3 items-stretch md:items-center justify-between">
+            {/* Search Input */}
+            <div className="flex-1 flex items-center bg-bios-dark border border-bios-border px-3 py-1.5 focus-within:border-bios-green">
+              <Search className="w-4 h-4 text-bios-muted mr-2" />
               <input
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search by character name..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border focus:border-supabase-green focus:outline-none text-supabase-text text-sm font-mono placeholder:text-supabase-subtle"
+                placeholder="SEARCH_BY_NAME > e.g. manixstar..."
+                className="w-full bg-transparent text-bios-green placeholder:text-bios-muted focus:outline-none text-xs font-mono uppercase"
               />
             </div>
 
-            {/* Refresh Button */}
+            {/* Refresh */}
             <button
               onClick={() => fetchPlayers()}
-              className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border hover:border-supabase-borderHover text-xs text-supabase-muted hover:text-supabase-text transition-colors font-medium"
+              className="px-3.5 py-1.5 border border-bios-border bg-bios-dark hover:border-bios-green text-bios-muted hover:text-bios-green text-xs font-mono flex items-center justify-center space-x-2 uppercase"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>Refresh</span>
+              <span>[ REFRESH ]</span>
             </button>
           </div>
 
-          {/* School & Class Filter Pill Badges */}
-          <div className="flex flex-wrap gap-2 items-center text-xs">
-            <span className="text-supabase-subtle font-semibold mr-1 flex items-center">
-              <Filter className="w-3.5 h-3.5 mr-1" /> School:
-            </span>
+          {/* School & Class Filter Tabs */}
+          <div className="flex flex-wrap gap-2 text-xs items-center border-t border-bios-border/60 pt-2">
+            <span className="text-bios-muted uppercase mr-1">&gt; SCHOOL:</span>
             {['All', 'Hirosaki', 'Haruna', 'Ookasa'].map((sch) => (
               <button
                 key={sch}
                 onClick={() => setSelectedSchool(sch)}
-                className={`px-3 py-1 rounded-lg border transition-all ${
+                className={`px-2.5 py-0.5 border text-xs uppercase ${
                   selectedSchool === sch
-                    ? 'bg-supabase-green/15 text-supabase-green border-supabase-green/40 font-semibold'
-                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-supabase-text'
+                    ? 'bg-bios-green text-black font-bold border-bios-green'
+                    : 'bg-bios-dark border-bios-border text-bios-muted hover:text-bios-green'
                 }`}
               >
-                {sch}
+                [{sch}]
               </button>
             ))}
 
-            <span className="text-supabase-subtle font-semibold ml-4 mr-1 flex items-center">
-              Class:
-            </span>
+            <span className="text-bios-muted uppercase ml-4 mr-1">&gt; CLASS:</span>
             {['All', 'Ninja Sword', 'Ninja Fan', 'Ninja Kunai', 'Ninja Dart'].map((cls) => (
               <button
                 key={cls}
                 onClick={() => setSelectedClass(cls)}
-                className={`px-3 py-1 rounded-lg border transition-all ${
+                className={`px-2.5 py-0.5 border text-xs uppercase ${
                   selectedClass === cls
-                    ? 'bg-supabase-green/15 text-supabase-green border-supabase-green/40 font-semibold'
-                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-supabase-text'
+                    ? 'bg-bios-green text-black font-bold border-bios-green'
+                    : 'bg-bios-dark border-bios-border text-bios-muted hover:text-bios-green'
                 }`}
               >
-                {cls}
+                [{cls}]
               </button>
             ))}
           </div>
@@ -161,27 +201,26 @@ export default function Dashboard() {
 
         {/* Players Grid Display */}
         {loading && players.length === 0 ? (
-          <div className="py-16 text-center text-supabase-muted space-y-3">
-            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-supabase-green" />
-            <p className="text-sm">Loading player profiles from REST store...</p>
+          <div className="bios-box p-12 text-center text-bios-muted space-y-3">
+            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-bios-green" />
+            <p className="text-xs uppercase font-mono">&gt; CONNECTING TO REST STORE... READING /api/v1/players...</p>
           </div>
         ) : filteredPlayers.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-supabase-border rounded-2xl space-y-3 p-8">
-            <Users className="w-10 h-10 mx-auto text-supabase-subtle" />
-            <h3 className="text-base font-bold text-supabase-text">No Matching Players Found</h3>
-            <p className="text-xs text-supabase-muted max-w-sm mx-auto">
-              No character profile matched your search query. Use the inspect button to queue a target player.
+          <div className="bios-box p-12 text-center space-y-3 border-dashed border-bios-border">
+            <Terminal className="w-10 h-10 mx-auto text-bios-muted" />
+            <h3 className="font-vt323 text-2xl text-bios-amber uppercase">&gt; NO MATCHING RECORDS FOUND</h3>
+            <p className="text-xs text-bios-muted max-w-sm mx-auto uppercase">
+              No character record matched the current filter. Use the dispatch command to queue an inspection.
             </p>
             <button
               onClick={() => setInspectModalOpen(true)}
-              className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-supabase-green text-black font-semibold text-xs hover:bg-supabase-greenHover transition-all"
+              className="px-4 py-2 bg-bios-green text-black font-bold text-xs uppercase hover:bg-bios-amber transition-colors"
             >
-              <Plus className="w-4 h-4" />
-              <span>Inspect New Target</span>
+              [ + DISPATCH NEW TARGET ]
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredPlayers.map((player) => (
               <PlayerCard
                 key={player.name}
@@ -196,16 +235,16 @@ export default function Dashboard() {
       {/* Floating Action Button for Mobile Devices */}
       <button
         onClick={() => setInspectModalOpen(true)}
-        className="sm:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-supabase-green text-black flex items-center justify-center shadow-2xl hover:bg-supabase-greenHover transition-all active:scale-95"
+        className="sm:hidden fixed bottom-6 right-6 z-40 w-12 h-12 bg-bios-green text-black font-bold flex items-center justify-center shadow-2xl border-2 border-black active:scale-95"
       >
         <Plus className="w-6 h-6" />
       </button>
 
       {/* Footer */}
-      <footer className="border-t border-supabase-border py-6 text-center text-xs text-supabase-subtle mt-auto">
+      <footer className="border-t border-bios-border bg-bios-dark py-4 text-center text-xs text-bios-muted mt-auto font-mono">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span>NSO Core — Ninja School Online REST API Synchronization Portal</span>
-          <span className="font-mono text-supabase-muted">Engineered with Next.js 14 & Supabase Dark Styling</span>
+          <span>NSO MATRIX BIOS v2.17 — TELEMETRY & REST GATEWAY</span>
+          <span className="text-bios-green">VT323 / SHARE TECH MONO CRT TERMINAL ENGINE</span>
         </div>
       </footer>
 

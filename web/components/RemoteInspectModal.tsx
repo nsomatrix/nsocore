@@ -1,7 +1,7 @@
 'use client';
 
 import React from 'react';
-import { X, Send, Radio, CheckCircle2 } from 'lucide-react';
+import { X, Terminal, Send, Check, AlertCircle } from 'lucide-react';
 
 interface RemoteInspectModalProps {
   isOpen: boolean;
@@ -10,8 +10,8 @@ interface RemoteInspectModalProps {
 
 export function RemoteInspectModal({ isOpen, onClose }: RemoteInspectModalProps) {
   const [targetName, setTargetName] = React.useState('');
-  const [loading, setLoading] = React.useState(false);
-  const [successMsg, setSuccessMsg] = React.useState('');
+  const [status, setStatus] = React.useState<'IDLE' | 'LOADING' | 'SUCCESS' | 'ERROR'>('IDLE');
+  const [message, setMessage] = React.useState('');
 
   if (!isOpen) return null;
 
@@ -19,8 +19,8 @@ export function RemoteInspectModal({ isOpen, onClose }: RemoteInspectModalProps)
     e.preventDefault();
     if (!targetName.trim()) return;
 
-    setLoading(true);
-    setSuccessMsg('');
+    setStatus('LOADING');
+    setMessage('Dispatching POST /api/v1/inspect payload to Vercel queue...');
 
     try {
       const res = await fetch('/api/v1/inspect', {
@@ -31,81 +31,109 @@ export function RemoteInspectModal({ isOpen, onClose }: RemoteInspectModalProps)
 
       const data = await res.json();
       if (res.ok) {
-        setSuccessMsg(`Inspection queued for "${targetName.trim()}". J2ME client will dispatch Packet 93.`);
+        setStatus('SUCCESS');
+        setMessage(`HTTP 200 OK: Target "${targetName.trim()}" queued for J2ME MIDP client polling.`);
         setTargetName('');
       } else {
-        alert(data.error || 'Failed to queue inspection target');
+        setStatus('ERROR');
+        setMessage(data.error || 'Failed to dispatch inspect request.');
       }
-    } catch (err: any) {
-      alert('Error connecting to REST API server');
-    } finally {
-      setLoading(false);
+    } catch (e: any) {
+      setStatus('ERROR');
+      setMessage('Network error: ' + e.message);
     }
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
-      <div className="bg-supabase-card border border-supabase-border rounded-2xl w-full max-w-md shadow-2xl overflow-hidden">
-        {/* Modal Header */}
-        <div className="p-5 border-b border-supabase-border flex items-center justify-between">
-          <div className="flex items-center space-x-2.5">
-            <div className="w-8 h-8 rounded-lg bg-supabase-green/10 border border-supabase-green/30 flex items-center justify-center text-supabase-green">
-              <Radio className="w-4 h-4" />
-            </div>
-            <div>
-              <h3 className="text-base font-bold text-supabase-text">Remote Player Inspection</h3>
-              <p className="text-xs text-supabase-muted">Dispatch Packet 93 via REST Bridge</p>
-            </div>
+    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm font-mono text-xs text-bios-green">
+      <div className="bios-box border-2 border-bios-green w-full max-w-lg shadow-2xl overflow-hidden">
+        
+        {/* BIOS Header */}
+        <div className="bg-bios-dark px-4 py-2.5 border-b border-bios-green flex items-center justify-between">
+          <div className="flex items-center space-x-2">
+            <Terminal className="w-4 h-4 text-bios-amber" />
+            <h3 className="font-vt323 text-2xl text-bios-green bios-glow tracking-wider uppercase">
+              [ DISPATCH_REMOTE_INSPECT ]
+            </h3>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 rounded-lg text-supabase-muted hover:text-supabase-text hover:bg-supabase-border/50"
+            className="p-1 border border-bios-border text-bios-muted hover:text-bios-red hover:border-bios-red"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Modal Body */}
-        <form onSubmit={handleSubmit} className="p-5 space-y-4">
-          <div>
-            <label className="block text-xs font-semibold uppercase tracking-wider text-supabase-muted mb-2">
-              Target Character Name
-            </label>
-            <input
-              type="text"
-              value={targetName}
-              onChange={(e) => setTargetName(e.target.value)}
-              placeholder="e.g. ShadowNinja"
-              required
-              className="w-full px-4 py-2.5 rounded-xl bg-supabase-bg border border-supabase-border focus:border-supabase-green focus:outline-none text-supabase-text text-sm font-mono placeholder:text-supabase-subtle"
-            />
+        <form onSubmit={handleSubmit} className="p-4 space-y-4">
+          <div className="text-[11px] text-bios-muted space-y-1">
+            <p>Enter target character name to push into the Vercel REST queue.</p>
+            <p className="text-bios-amber">&gt; J2ME mod will poll GET /api/v1/inspect & dispatch Packet 93.</p>
           </div>
 
-          {successMsg && (
-            <div className="p-3 rounded-lg bg-supabase-green/10 border border-supabase-green/30 flex items-start space-x-2 text-xs text-supabase-green">
-              <CheckCircle2 className="w-4 h-4 shrink-0 mt-0.5" />
-              <span>{successMsg}</span>
+          {/* Terminal Command Input */}
+          <div className="space-y-1">
+            <label className="block text-[10px] text-bios-cyan uppercase font-bold">
+              &gt; INPUT_TARGET_NAME:
+            </label>
+            <div className="flex items-center bg-bios-dark border border-bios-green p-2 focus-within:border-bios-amber">
+              <span className="text-bios-green font-bold mr-2">&gt;</span>
+              <input
+                type="text"
+                value={targetName}
+                onChange={(e) => setTargetName(e.target.value)}
+                placeholder="e.g. manixstar"
+                className="w-full bg-transparent text-bios-green placeholder:text-bios-muted focus:outline-none font-mono text-sm uppercase"
+                autoFocus
+              />
+            </div>
+          </div>
+
+          {/* Curl Command Preview */}
+          <div className="p-2.5 bg-bios-dark border border-bios-border text-[10px] space-y-1">
+            <span className="text-bios-muted block border-b border-bios-border/50 pb-0.5">DISPATCH TELEMETRY PREVIEW:</span>
+            <div className="text-bios-cyan font-mono overflow-x-auto">
+              curl -X POST https://mtx-api.vercel.app/api/v1/inspect -d &#39;&#123;&quot;name&quot;:&quot;{targetName.trim() || 'TARGET'}&quot;&#125;&#39;
+            </div>
+          </div>
+
+          {/* Status Output Console */}
+          {status !== 'IDLE' && (
+            <div className={`p-3 border text-[11px] font-mono ${
+              status === 'SUCCESS'
+                ? 'bg-bios-green/10 border-bios-green text-bios-green'
+                : status === 'ERROR'
+                ? 'bg-bios-red/10 border-bios-red text-bios-red'
+                : 'bg-bios-amber/10 border-bios-amber text-bios-amber'
+            }`}>
+              <div className="flex items-start space-x-2">
+                {status === 'SUCCESS' && <Check className="w-4 h-4 shrink-0 mt-0.5" />}
+                {status === 'ERROR' && <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />}
+                {status === 'LOADING' && <div className="w-3 h-3 border-2 border-bios-amber border-t-transparent rounded-full animate-spin shrink-0 mt-0.5" />}
+                <span>{message}</span>
+              </div>
             </div>
           )}
 
-          <div className="pt-2 flex items-center justify-end space-x-3">
+          {/* Actions */}
+          <div className="flex justify-end space-x-2 pt-2 border-t border-bios-border">
             <button
               type="button"
               onClick={onClose}
-              className="px-4 py-2 rounded-lg border border-supabase-border text-xs text-supabase-muted hover:text-supabase-text font-medium"
+              className="px-4 py-1.5 border border-bios-border text-bios-muted hover:text-bios-green uppercase text-xs"
             >
-              Cancel
+              [ CANCEL ]
             </button>
             <button
               type="submit"
-              disabled={loading || !targetName.trim()}
-              className="flex items-center space-x-2 px-4 py-2 rounded-lg bg-supabase-green text-black font-semibold text-xs hover:bg-supabase-greenHover transition-all disabled:opacity-50"
+              disabled={status === 'LOADING' || !targetName.trim()}
+              className="px-4 py-1.5 bg-bios-green text-black font-bold hover:bg-bios-amber transition-colors uppercase text-xs flex items-center space-x-1.5 disabled:opacity-50"
             >
               <Send className="w-3.5 h-3.5" />
-              <span>{loading ? 'Queuing...' : 'Dispatch Request'}</span>
+              <span>[ DISPATCH REQUEST ]</span>
             </button>
           </div>
         </form>
+
       </div>
     </div>
   );
