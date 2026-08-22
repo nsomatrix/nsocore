@@ -40,7 +40,6 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
 
       const data = await res.json();
       
-      // Ensure smooth spinner UX duration of at least 600ms
       const elapsed = Date.now() - startTime;
       if (elapsed < 600) {
         await new Promise((r) => setTimeout(r, 600 - elapsed));
@@ -193,7 +192,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
       {filteredPlayers.length === 0 ? (
         <div className="py-12 text-center border border-dashed border-zinc-800 rounded-2xl p-6 bg-zinc-950/40 text-xs text-zinc-500 font-mono space-y-2">
           <p>No player profiles recorded yet (or profiles auto-cleared after 30 min).</p>
-          <p className="text-[11px] text-zinc-600">Fetch a player name above to inspect in-game.</p>
+          <p className="text-[11px] text-zinc-600 font-sans">Fetch a player name above to inspect in-game.</p>
         </div>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -292,7 +291,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
         </div>
       )}
 
-      {/* 18-Attribute Modal Detail Dialog - VERTICAL LIST LAYOUT */}
+      {/* 18-Attribute Modal Detail Dialog - CLEAN UNIFIED VERTICAL LIST */}
       {selectedPlayer && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl font-sans">
@@ -314,7 +313,7 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
               </button>
             </div>
 
-            {/* Health & Mana Points - Vertical Stack */}
+            {/* Health & Mana Points */}
             <div className="space-y-2 font-mono text-xs">
               <div className="flex items-center justify-between p-3 bg-black rounded-xl border border-rose-500/20">
                 <span className="text-rose-400 font-sans flex items-center space-x-1.5">
@@ -332,85 +331,71 @@ export function PlayerInspectorModule({ players, loading, onRefresh }: PlayerIns
               </div>
             </div>
 
-            {/* Complete 18 Bytecode Attribute Display - VERTICAL LIST SECTIONS */}
-            <div className="space-y-5 text-xs font-mono">
-              {/* Offense & Agility */}
-              <div>
-                <h4 className="text-xs font-semibold text-emerald-400 uppercase tracking-wider font-sans mb-2.5">
-                  Offense & Agility Attributes
-                </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Attack Min</span>
-                    <span className="text-white font-bold">{selectedPlayer.attackMin}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Attack Max</span>
-                    <span className="text-white font-bold">{selectedPlayer.attackMax}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Speed</span>
-                    <span className="text-white font-bold">{selectedPlayer.speed}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Critical Strike</span>
-                    <span className="text-emerald-400 font-bold">{selectedPlayer.critical}%</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Accurate Point</span>
-                    <span className="text-white font-bold">{selectedPlayer.accurate}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Dodge Ability</span>
-                    <span className="text-white font-bold">{selectedPlayer.dodge}</span>
-                  </div>
-                </div>
+            {/* Unified 18 Bytecode Attribute Vertical List */}
+            <div className="space-y-1.5 text-xs font-mono">
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Attack Min</span>
+                <span className="text-white font-bold">{selectedPlayer.attackMin}</span>
               </div>
 
-              {/* Defense & Elemental Resistances */}
-              <div>
-                <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider font-sans mb-2.5">
-                  Defense & Elemental Resistances
-                </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-amber-500/20">
-                    <span className="text-amber-400 font-sans">Anti Fire</span>
-                    <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-cyan-500/20">
-                    <span className="text-cyan-400 font-sans">Anti Ice</span>
-                    <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-emerald-500/20">
-                    <span className="text-emerald-400 font-sans">Anti Wind</span>
-                    <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-purple-500/20">
-                    <span className="text-purple-400 font-sans">Pain Reduce</span>
-                    <span className="text-white font-bold">-{selectedPlayer.reducePain}%</span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Attack Max</span>
+                <span className="text-white font-bold">{selectedPlayer.attackMax}</span>
               </div>
 
-              {/* Chakra Control & Counter Strike */}
-              <div>
-                <h4 className="text-xs font-semibold text-zinc-400 uppercase tracking-wider font-sans mb-2.5">
-                  Chakra Control & Counter Strike
-                </h4>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Counter Strike</span>
-                    <span className="text-white font-bold">+{selectedPlayer.counterStrike}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Anti Chakra</span>
-                    <span className="text-white font-bold">+{selectedPlayer.antiChakra}</span>
-                  </div>
-                  <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
-                    <span className="text-zinc-400 font-sans">Anti Chakra Back</span>
-                    <span className="text-white font-bold">+{selectedPlayer.antiChakraBack}</span>
-                  </div>
-                </div>
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Speed</span>
+                <span className="text-white font-bold">{selectedPlayer.speed}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Critical Strike</span>
+                <span className="text-emerald-400 font-bold">{selectedPlayer.critical}%</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Accurate Point</span>
+                <span className="text-white font-bold">{selectedPlayer.accurate}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Dodge Ability</span>
+                <span className="text-white font-bold">{selectedPlayer.dodge}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-amber-500/20">
+                <span className="text-amber-400 font-sans">Anti Fire</span>
+                <span className="text-white font-bold">+{selectedPlayer.antiFire}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-cyan-500/20">
+                <span className="text-cyan-400 font-sans">Anti Ice</span>
+                <span className="text-white font-bold">+{selectedPlayer.antiIce}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-emerald-500/20">
+                <span className="text-emerald-400 font-sans">Anti Wind</span>
+                <span className="text-white font-bold">+{selectedPlayer.antiWind}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-purple-500/20">
+                <span className="text-purple-400 font-sans">Pain Reduce</span>
+                <span className="text-white font-bold">-{selectedPlayer.reducePain}%</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Counter Strike</span>
+                <span className="text-white font-bold">+{selectedPlayer.counterStrike}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Anti Chakra</span>
+                <span className="text-white font-bold">+{selectedPlayer.antiChakra}</span>
+              </div>
+
+              <div className="flex items-center justify-between p-2.5 bg-black rounded-xl border border-zinc-800/80">
+                <span className="text-zinc-400 font-sans">Anti Chakra Back</span>
+                <span className="text-white font-bold">+{selectedPlayer.antiChakraBack}</span>
               </div>
             </div>
 
