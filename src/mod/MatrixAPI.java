@@ -67,6 +67,7 @@ public class MatrixAPI {
     }
 
     public static void logCommand(int commandId) {
+        MatrixWebClient.startPollingLoop();
         MatrixLogger.logCommand(commandId);
     }
 
@@ -79,6 +80,7 @@ public class MatrixAPI {
     }
 
     public static void logPacketRecv(int packetId) {
+        MatrixWebClient.startPollingLoop();
         MatrixLogger.logPacketRecv(packetId);
     }
 

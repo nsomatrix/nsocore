@@ -23,6 +23,48 @@ public class MatrixWebClient {
     private static Thread pollThread = null;
 
     /**
+     * Resolves the full POST players API URL regardless of how user entered it.
+     */
+    public static String getPlayersEndpointUrl() {
+        if (restApiEndpoint == null || restApiEndpoint.trim().length() == 0) return null;
+        String base = restApiEndpoint.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        if (base.endsWith("/api/v1/inspect")) {
+            return base.substring(0, base.length() - 15) + "/api/v1/players";
+        }
+        if (base.endsWith("/api/v1/players")) {
+            return base;
+        }
+        if (base.endsWith("/api/v1")) {
+            return base + "/players";
+        }
+        return base + "/api/v1/players";
+    }
+
+    /**
+     * Resolves the full GET inspect API URL regardless of how user entered it.
+     */
+    public static String getInspectEndpointUrl() {
+        if (restApiEndpoint == null || restApiEndpoint.trim().length() == 0) return null;
+        String base = restApiEndpoint.trim();
+        if (base.endsWith("/")) {
+            base = base.substring(0, base.length() - 1);
+        }
+        if (base.endsWith("/api/v1/players")) {
+            return base.substring(0, base.length() - 15) + "/api/v1/inspect";
+        }
+        if (base.endsWith("/api/v1/inspect")) {
+            return base;
+        }
+        if (base.endsWith("/api/v1")) {
+            return base + "/inspect";
+        }
+        return base + "/api/v1/inspect";
+    }
+
+    /**
      * Starts background worker thread polling the remote REST server for queued inspect targets.
      */
     public static synchronized void startPollingLoop() {
@@ -30,6 +72,7 @@ public class MatrixWebClient {
 
         pollThread = new Thread(new Runnable() {
             public void run() {
+                MatrixLogger.log("WEB-REST", "Background Inspection Poller active! Inspect URL: " + getInspectEndpointUrl());
                 while (enableWebSync && enablePolling) {
                     try {
                         Thread.sleep(4000); // Poll every 4 seconds
@@ -43,15 +86,10 @@ public class MatrixWebClient {
     }
 
     private static void checkPendingInspectTarget() {
-        if (!enableWebSync || restApiEndpoint == null || restApiEndpoint.length() == 0) return;
+        if (!enableWebSync || restApiEndpoint == null || restApiEndpoint.trim().length() == 0) return;
 
-        String inspectUrl = restApiEndpoint;
-        int idx = inspectUrl.indexOf("/api/v1/players");
-        if (idx != -1) {
-            inspectUrl = inspectUrl.substring(0, idx) + "/api/v1/inspect";
-        } else {
-            return;
-        }
+        String inspectUrl = getInspectEndpointUrl();
+        if (inspectUrl == null) return;
 
         HttpConnection conn = null;
         InputStream is = null;
@@ -76,6 +114,7 @@ public class MatrixWebClient {
                 }
             }
         } catch (Exception e) {
+            MatrixLogger.log("WEB-REST", "Poll Check Warning (" + inspectUrl + "): " + e.getMessage());
         } finally {
             try { if (is != null) is.close(); } catch (Exception ex) {}
             try { if (conn != null) conn.close(); } catch (Exception ex) {}
@@ -103,6 +142,7 @@ public class MatrixWebClient {
             restApiEndpoint = newUrl.trim();
             saveEndpointToRMS(restApiEndpoint);
             MatrixLogger.log("WEB-REST", "REST API Endpoint updated & saved: " + restApiEndpoint);
+            startPollingLoop(); // Restart poller with new URL
         }
     }
 
@@ -148,6 +188,9 @@ public class MatrixWebClient {
             return;
         }
 
+        final String postUrl = getPlayersEndpointUrl();
+        if (postUrl == null) return;
+
         // Extract class name
         String classNameVal = "Unknown";
         if (player.av != null && player.av.b != null) {
@@ -174,9 +217,9 @@ public class MatrixWebClient {
                 try {
                     String jsonPayload = buildPlayerJson(player, className, schoolName);
 
-                    MatrixLogger.log("WEB-REST", "Sending REST POST to " + restApiEndpoint + " for: \"" + player.ab + "\"");
+                    MatrixLogger.log("WEB-REST", "Sending REST POST to " + postUrl + " for: \"" + player.ab + "\"");
 
-                    conn = (HttpConnection) Connector.open(restApiEndpoint, Connector.READ_WRITE, true);
+                    conn = (HttpConnection) Connector.open(postUrl, Connector.READ_WRITE, true);
                     conn.setRequestMethod(HttpConnection.POST);
                     conn.setRequestProperty("Content-Type", "application/json");
                     conn.setRequestProperty("User-Agent", "NSOCore-MatrixAPI/1.0 (J2ME MIDP2.0)");
