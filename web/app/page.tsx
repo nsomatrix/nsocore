@@ -56,7 +56,7 @@ export default function Dashboard() {
     : 0;
 
   return (
-    <div className="min-h-screen bg-supabase-bg text-supabase-text flex flex-col font-game selection:bg-supabase-green/30 selection:text-supabase-green">
+    <div className="min-h-screen bg-black text-supabase-text flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
       {/* Top Header Navbar */}
       <Navbar
         onOpenInspectModal={() => setInspectModalOpen(true)}
@@ -64,34 +64,34 @@ export default function Dashboard() {
       />
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
-        {/* Hero & Pixel Stat Summary Banner */}
-        <div className="relative rounded-2xl bg-gradient-to-r from-supabase-card via-supabase-card to-supabase-elevated border border-supabase-border p-6 sm:p-8 overflow-hidden shadow-[0_0_40px_rgba(0,0,0,0.6)]">
+        {/* Hero Banner */}
+        <div className="relative rounded-2xl bg-gradient-to-r from-supabase-card via-supabase-card to-supabase-elevated border border-supabase-border p-6 sm:p-8 overflow-hidden shadow-2xl">
           <div className="relative z-10 max-w-3xl">
-            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-supabase-green/15 border border-supabase-green/30 text-supabase-green text-[10px] font-pixel mb-4">
+            <div className="inline-flex items-center space-x-2 px-3 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs font-semibold mb-4">
               <Sparkles className="w-3.5 h-3.5" />
-              <span>NINJADEX REST API SYNCHRONIZER</span>
+              <span>NinjaDex REST API Synchronizer</span>
             </div>
-            <h1 className="text-xl sm:text-3xl font-pixel tracking-wide text-supabase-text leading-tight">
-              REAL-TIME NINJA SCHOOL <span className="text-supabase-green drop-shadow-[0_0_10px_rgba(62,207,142,0.5)]">TARGET INSPECTOR</span>
+            <h1 className="text-2xl sm:text-4xl font-display font-extrabold tracking-tight text-white leading-tight">
+              Real-Time Ninja School <span className="text-emerald-400">Target Inspector</span>
             </h1>
-            <p className="mt-3 text-xs sm:text-sm text-supabase-muted leading-relaxed font-game">
+            <p className="mt-2 text-xs sm:text-sm text-supabase-muted leading-relaxed">
               Explore 18-stat character profiles captured directly from the game client via J2ME REST API streaming.
             </p>
           </div>
 
-          {/* Quick Pixel Metrics Cards */}
-          <div className="mt-6 pt-6 border-t border-supabase-border/50 grid grid-cols-2 sm:grid-cols-3 gap-4">
-            <div className="p-3.5 rounded-xl bg-supabase-bg/80 border border-supabase-border/60">
-              <span className="text-[9px] font-pixel text-supabase-subtle block uppercase tracking-wider">TOTAL TARGETS</span>
-              <span className="text-base sm:text-lg font-pixel text-supabase-text">{players.length}</span>
+          {/* Quick Metrics */}
+          <div className="mt-6 pt-6 border-t border-supabase-border/50 grid grid-cols-2 sm:grid-cols-3 gap-4 font-mono">
+            <div className="p-3.5 rounded-xl bg-black/60 border border-supabase-border/40">
+              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider font-sans">Total Targets</span>
+              <span className="text-lg font-bold text-white">{players.length}</span>
             </div>
-            <div className="p-3.5 rounded-xl bg-supabase-bg/80 border border-supabase-border/60">
-              <span className="text-[9px] font-pixel text-supabase-subtle block uppercase tracking-wider">MAX LEVEL</span>
-              <span className="text-base sm:text-lg font-pixel text-supabase-green">LVL {maxLevel}</span>
+            <div className="p-3.5 rounded-xl bg-black/60 border border-supabase-border/40">
+              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider font-sans">Highest Level</span>
+              <span className="text-lg font-bold text-emerald-400">Lvl {maxLevel}</span>
             </div>
-            <div className="p-3.5 rounded-xl bg-supabase-bg/80 border border-supabase-border/60 col-span-2 sm:col-span-1">
-              <span className="text-[9px] font-pixel text-supabase-subtle block uppercase tracking-wider">AVG DAMAGE</span>
-              <span className="text-base sm:text-lg font-pixel text-amber-400">{avgAttack} DMG</span>
+            <div className="p-3.5 rounded-xl bg-black/60 border border-supabase-border/40 col-span-2 sm:col-span-1">
+              <span className="text-[11px] text-supabase-subtle block uppercase tracking-wider font-sans">Avg Damage</span>
+              <span className="text-lg font-bold text-amber-400">{avgAttack} DMG</span>
             </div>
           </div>
         </div>
@@ -107,50 +107,50 @@ export default function Dashboard() {
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 placeholder="Search character name..."
-                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border focus:border-supabase-green focus:outline-none text-supabase-text text-xs font-pixel placeholder:text-supabase-subtle"
+                className="w-full pl-10 pr-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border focus:border-emerald-500 focus:outline-none text-white text-sm font-mono placeholder:text-supabase-subtle"
               />
             </div>
 
             {/* Refresh Button */}
             <button
               onClick={() => fetchPlayers()}
-              className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border hover:border-supabase-green/50 text-xs font-pixel text-[10px] text-supabase-muted hover:text-supabase-green transition-colors"
+              className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-supabase-card border border-supabase-border hover:border-supabase-borderHover text-xs text-supabase-muted hover:text-white transition-colors font-medium"
             >
               <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin' : ''}`} />
-              <span>REFRESH</span>
+              <span>Refresh</span>
             </button>
           </div>
 
           {/* School & Class Filter Badges */}
           <div className="flex flex-wrap gap-2 items-center text-xs">
-            <span className="text-supabase-subtle font-pixel text-[10px] mr-1 flex items-center">
-              <Filter className="w-3.5 h-3.5 mr-1 text-supabase-green" /> SCHOOL:
+            <span className="text-supabase-subtle font-semibold mr-1 flex items-center">
+              <Filter className="w-3.5 h-3.5 mr-1 text-emerald-400" /> School:
             </span>
             {['All', 'Hirosaki', 'Haruna', 'Ookasa'].map((sch) => (
               <button
                 key={sch}
                 onClick={() => setSelectedSchool(sch)}
-                className={`px-3 py-1 rounded-lg border text-xs font-game transition-all ${
+                className={`px-3 py-1 rounded-lg border transition-all ${
                   selectedSchool === sch
-                    ? 'bg-supabase-green/15 text-supabase-green border-supabase-green/40 font-bold shadow-[0_0_10px_rgba(62,207,142,0.2)]'
-                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-supabase-text'
+                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-semibold'
+                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-white'
                 }`}
               >
                 {sch}
               </button>
             ))}
 
-            <span className="text-supabase-subtle font-pixel text-[10px] ml-4 mr-1 flex items-center">
-              CLASS:
+            <span className="text-supabase-subtle font-semibold ml-4 mr-1 flex items-center">
+              Class:
             </span>
             {['All', 'Ninja Sword', 'Ninja Fan', 'Ninja Kunai', 'Ninja Dart'].map((cls) => (
               <button
                 key={cls}
                 onClick={() => setSelectedClass(cls)}
-                className={`px-3 py-1 rounded-lg border text-xs font-game transition-all ${
+                className={`px-3 py-1 rounded-lg border transition-all ${
                   selectedClass === cls
-                    ? 'bg-supabase-green/15 text-supabase-green border-supabase-green/40 font-bold shadow-[0_0_10px_rgba(62,207,142,0.2)]'
-                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-supabase-text'
+                    ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 font-semibold'
+                    : 'bg-supabase-card border-supabase-border text-supabase-muted hover:text-white'
                 }`}
               >
                 {cls}
@@ -161,23 +161,23 @@ export default function Dashboard() {
 
         {/* Players Grid Display */}
         {loading && players.length === 0 ? (
-          <div className="py-16 text-center text-supabase-muted space-y-3 font-pixel text-xs">
-            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-supabase-green" />
-            <p>LOADING PLAYER PROFILES...</p>
+          <div className="py-16 text-center text-supabase-muted space-y-3 text-sm">
+            <RefreshCw className="w-8 h-8 mx-auto animate-spin text-emerald-400" />
+            <p>Loading player profiles from REST store...</p>
           </div>
         ) : filteredPlayers.length === 0 ? (
-          <div className="py-16 text-center border border-dashed border-supabase-border rounded-2xl space-y-4 p-8 bg-supabase-card/40">
+          <div className="py-16 text-center border border-dashed border-supabase-border rounded-2xl space-y-3 p-8 bg-supabase-card/40">
             <Users className="w-10 h-10 mx-auto text-supabase-subtle" />
-            <h3 className="text-sm font-pixel text-supabase-text">NO MATCHING PLAYERS</h3>
-            <p className="text-xs text-supabase-muted max-w-sm mx-auto font-game">
+            <h3 className="text-base font-bold text-white">No Matching Players Found</h3>
+            <p className="text-xs text-supabase-muted max-w-sm mx-auto">
               No character profile matched your search query. Use the inspect button to queue a target player.
             </p>
             <button
               onClick={() => setInspectModalOpen(true)}
-              className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-supabase-green text-black font-pixel text-[10px] hover:bg-supabase-greenHover transition-all shadow-[0_0_15px_rgba(62,207,142,0.3)]"
+              className="inline-flex items-center space-x-2 px-4 py-2 rounded-lg bg-emerald-500 text-black font-semibold text-xs hover:bg-emerald-400 transition-all shadow-md"
             >
               <Plus className="w-4 h-4" />
-              <span>INSPECT NEW TARGET</span>
+              <span>Inspect New Target</span>
             </button>
           </div>
         ) : (
@@ -196,16 +196,16 @@ export default function Dashboard() {
       {/* Floating Action Button for Mobile Devices */}
       <button
         onClick={() => setInspectModalOpen(true)}
-        className="sm:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-supabase-green text-black flex items-center justify-center shadow-2xl hover:bg-supabase-greenHover transition-all active:scale-95 border border-black/20"
+        className="sm:hidden fixed bottom-6 right-6 z-40 w-14 h-14 rounded-full bg-emerald-500 text-black flex items-center justify-center shadow-2xl hover:bg-emerald-400 transition-all active:scale-95"
       >
         <Plus className="w-6 h-6" />
       </button>
 
       {/* Footer */}
-      <footer className="border-t border-supabase-border py-6 text-center text-xs text-supabase-subtle mt-auto bg-supabase-bg/90">
+      <footer className="border-t border-supabase-border py-6 text-center text-xs text-supabase-subtle mt-auto bg-black">
         <div className="max-w-7xl mx-auto px-4 flex flex-col sm:flex-row items-center justify-between gap-2">
-          <span className="font-game">NSO MATRIX — NINJA SCHOOL ONLINE REST SYNCHRONIZER</span>
-          <span className="font-pixel text-[9px] text-supabase-green">PIXEL GAME THEME ONLINE</span>
+          <span>NSO Matrix — Ninja School Online REST Synchronization Portal</span>
+          <span className="font-mono text-emerald-400">Pure Black Gaming Interface</span>
         </div>
       </footer>
 
