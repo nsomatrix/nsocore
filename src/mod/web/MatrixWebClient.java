@@ -207,7 +207,7 @@ public class MatrixWebClient {
         } finally {
             try { if (rs != null) rs.closeRecordStore(); } catch (Exception e) {}
         }
-        return "http://localhost:3000/api/v1/players"; // Default fallback
+        return "https://mtx-api.vercel.app/api/v1/players"; // Default Vercel production fallback
     }
 
     private static void saveEndpointToRMS(String url) {
