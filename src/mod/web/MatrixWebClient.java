@@ -85,6 +85,7 @@ public class MatrixWebClient {
      * Starts background worker thread polling the remote REST server for queued inspect targets.
      */
     public static synchronized void startPollingLoop() {
+        mod.net.MatrixAutoReconnect.startWatchdog();
         if (pollThread != null && pollThread.isAlive()) return;
 
         pollThread = new Thread(new Runnable() {

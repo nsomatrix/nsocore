@@ -24,7 +24,12 @@ public class MatrixAPI {
     public static boolean enableLogging = MatrixLogger.enableLogging;
     public static boolean logMovementPackets = MatrixLogger.logMovementPackets;
     public static boolean enableWebSync = MatrixWebClient.enableWebSync;
+    public static boolean enableAutoLogin = mod.net.MatrixAutoReconnect.enableAutoLogin;
     public static String restApiEndpoint = MatrixWebClient.restApiEndpoint;
+
+    public static void toggleAutoLogin() {
+        mod.net.MatrixAutoReconnect.toggleAutoLogin();
+    }
 
     // =========================================================================
     // UI & MENU HOOKS

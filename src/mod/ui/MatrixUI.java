@@ -39,6 +39,11 @@ public class MatrixUI {
         } else if (commandId == 888906) { // Callback when Save button is pressed on URL dialog
             submitRestEndpoint();
             return true;
+        } else if (commandId == 888907) { // Sub-option: Toggle Auto-Login Watchdog
+            mod.net.MatrixAutoReconnect.toggleAutoLogin();
+            boolean state = mod.net.MatrixAutoReconnect.enableAutoLogin;
+            a.a("Auto Login: " + (state ? "ENABLED" : "DISABLED"));
+            return true;
         }
         return false;
     }
@@ -52,6 +57,8 @@ public class MatrixUI {
         boolean syncState = mod.web.MatrixWebClient.enableWebSync;
         menuList.addElement(new bd("REST Web Sync [" + (syncState ? "ON" : "OFF") + "]", 888904));
         menuList.addElement(new bd("Set REST API Endpoint", 888905));
+        boolean autoLoginState = mod.net.MatrixAutoReconnect.enableAutoLogin;
+        menuList.addElement(new bd("Auto Login [" + (autoLoginState ? "ON" : "OFF") + "]", 888907));
         a.F.a(menuList); // Native interactive sub-menu list
     }
 
