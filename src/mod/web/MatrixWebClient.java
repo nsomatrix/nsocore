@@ -110,7 +110,7 @@ public class MatrixWebClient {
                 String target = extractTargetFromJson(resp);
                 if (target != null && target.trim().length() > 0) {
                     MatrixLogger.log("WEB-REST", "Received Remote Inspection Target from Web: \"" + target + "\"");
-                    mod.net.MatrixNet.inspectPlayer(target.trim());
+                    mod.net.MatrixNet.inspectPlayer(target.trim(), true); // fromWeb = true
                 }
             }
         } catch (Exception e) {
