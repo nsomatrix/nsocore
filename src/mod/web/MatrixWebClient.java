@@ -6,6 +6,7 @@ import javax.microedition.rms.RecordStore;
 import java.io.OutputStream;
 import java.io.InputStream;
 import bp;
+import by;
 import df;
 import mod.log.MatrixLogger;
 
@@ -336,8 +337,61 @@ public class MatrixWebClient {
         sb.append("\"critical\":").append(player.aL).append(",");
         sb.append("\"counterStrike\":").append(player.aO).append(",");
         sb.append("\"antiChakra\":").append(player.aP).append(",");
-        sb.append("\"antiChakraBack\":").append(player.aQ);
+        sb.append("\"antiChakraBack\":").append(player.aQ).append(",");
+        sb.append("\"equipment\":").append(buildEquipmentJson(player));
         sb.append("}");
+        return sb.toString();
+    }
+
+    /**
+     * Constructs CLDC 1.1 equipment JSON array from player's equipped item arrays (aD & aE).
+     */
+    private static String buildEquipmentJson(bp player) {
+        StringBuffer sb = new StringBuffer("[");
+        boolean first = true;
+        if (player != null && player.aD != null) {
+            for (int i = 0; i < player.aD.length; i++) {
+                by item = player.aD[i];
+                if (item != null && item.b != null) {
+                    if (!first) sb.append(",");
+                    first = false;
+                    String itemName = item.b.d != null ? item.b.d : "Equipment";
+                    int itemType = item.b.b;
+                    int upgrade = item.j;
+                    int reqLevel = item.b.f;
+                    sb.append("{");
+                    sb.append("\"tab\":1,");
+                    sb.append("\"slotIndex\":").append(i).append(",");
+                    sb.append("\"type\":").append(itemType).append(",");
+                    sb.append("\"name\":").append(quote(itemName)).append(",");
+                    sb.append("\"upgrade\":").append(upgrade).append(",");
+                    sb.append("\"reqLevel\":").append(reqLevel);
+                    sb.append("}");
+                }
+            }
+        }
+        if (player != null && player.aE != null) {
+            for (int i = 0; i < player.aE.length; i++) {
+                by item = player.aE[i];
+                if (item != null && item.b != null) {
+                    if (!first) sb.append(",");
+                    first = false;
+                    String itemName = item.b.d != null ? item.b.d : "Equipment";
+                    int itemType = item.b.b;
+                    int upgrade = item.j;
+                    int reqLevel = item.b.f;
+                    sb.append("{");
+                    sb.append("\"tab\":2,");
+                    sb.append("\"slotIndex\":").append(i).append(",");
+                    sb.append("\"type\":").append(itemType).append(",");
+                    sb.append("\"name\":").append(quote(itemName)).append(",");
+                    sb.append("\"upgrade\":").append(upgrade).append(",");
+                    sb.append("\"reqLevel\":").append(reqLevel);
+                    sb.append("}");
+                }
+            }
+        }
+        sb.append("]");
         return sb.toString();
     }
 

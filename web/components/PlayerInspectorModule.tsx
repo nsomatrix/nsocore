@@ -11,11 +11,31 @@ export function PlayerInspectorModule() {
   const [fetchMsg, setFetchMsg] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
+  const [equipmentPlayer, setEquipmentPlayer] = useState<PlayerProfile | null>(null);
+  const [equipmentTab, setEquipmentTab] = useState<1 | 2>(1);
   const [copied, setCopied] = useState(false);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [clearing, setClearing] = useState(false);
   const [isLiveSyncActive, setIsLiveSyncActive] = useState(true);
   const [syncStartTime, setSyncStartTime] = useState<number | null>(null);
+
+  const SLOT_NAMES: { [key: number]: string } = {
+    0: 'Weapon',
+    1: 'Coat / Armor',
+    2: 'Ring',
+    3: 'Necklace',
+    4: 'Headgear',
+    5: 'Gloves',
+    6: 'Pants',
+    7: 'Jade / Amulet',
+    8: 'Shoes',
+    9: 'Charm',
+    29: 'Mount',
+    30: 'Fashion',
+    31: 'Bijuu',
+    32: 'Clan Badge',
+    33: 'Artifact',
+  };
 
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -84,6 +104,17 @@ export function PlayerInspectorModule() {
   }, [sessionPlayers.length, isLiveSyncActive, syncStartTime]);
 
   const MAX_LIVE_CARDS = 4;
+
+  const handleDismissPlayer = async (playerName: string) => {
+    setSessionPlayers((prev) => prev.filter((p) => p.name.toLowerCase() !== playerName.toLowerCase()));
+    if (selectedPlayer?.name.toLowerCase() === playerName.toLowerCase()) setSelectedPlayer(null);
+    if (equipmentPlayer?.name.toLowerCase() === playerName.toLowerCase()) setEquipmentPlayer(null);
+    try {
+      await fetch(`/api/v1/players?name=${encodeURIComponent(playerName)}`, { method: 'DELETE' });
+    } catch (err) {
+      // Ignore network errors
+    }
+  };
 
   const handleFetch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -422,6 +453,17 @@ export function PlayerInspectorModule() {
                         {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>
                       </p>
                     </div>
+
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleDismissPlayer(p.name);
+                      }}
+                      className="p-1 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors -mr-1 -mt-1"
+                      title="Dismiss player profile"
+                    >
+                      <X className="w-4 h-4" />
+                    </button>
                   </div>
 
                   {/* HP / MP Gauges */}
@@ -470,9 +512,24 @@ export function PlayerInspectorModule() {
                   </div>
                 </div>
 
-                <div className="pt-3 flex items-center justify-between text-xs text-zinc-500 group-hover:text-emerald-400 font-medium transition-colors border-t border-zinc-800/40">
-                  <span>View All 18 Attributes</span>
-                  <ChevronRight className="w-4 h-4 transform group-hover:translate-x-1 transition-transform" />
+                <div className="pt-3 flex items-center justify-between text-xs font-medium border-t border-zinc-800/40 gap-2" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={() => setSelectedPlayer(p)}
+                    className="flex-1 py-1.5 px-2.5 rounded-xl bg-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors flex items-center justify-between text-[11px]"
+                  >
+                    <span>View 18 Stats</span>
+                    <ChevronRight className="w-3.5 h-3.5" />
+                  </button>
+
+                  <button
+                    onClick={() => {
+                      setEquipmentPlayer(p);
+                      setEquipmentTab(1);
+                    }}
+                    className="py-1.5 px-3 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] flex items-center space-x-1.5 text-[11px] font-bold shadow-sm"
+                  >
+                    <span>View Equipment</span>
+                  </button>
                 </div>
               </div>
             );
@@ -503,9 +560,20 @@ export function PlayerInspectorModule() {
                   </p>
                 </div>
               </div>
-              <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
-                <X className="w-5 h-5" />
-              </button>
+              <div className="flex items-center space-x-2">
+                <button
+                  onClick={() => {
+                    setEquipmentPlayer(selectedPlayer);
+                    setEquipmentTab(1);
+                  }}
+                  className="px-3 py-1.5 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] text-xs font-bold shadow-sm"
+                >
+                  View Equipment
+                </button>
+                <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                  <X className="w-5 h-5" />
+                </button>
+              </div>
             </div>
 
             {/* Health & Mana Points */}
@@ -658,6 +726,123 @@ export function PlayerInspectorModule() {
                 <span>{clearing ? 'Clearing...' : 'Confirm Purge'}</span>
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Clean Ninja School Equipment Box Modal */}
+      {equipmentPlayer && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-[#24160e] border-2 border-[#593722] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl font-sans text-white">
+            
+            {/* Clean Title Bar */}
+            <div className="flex items-center justify-between border-b border-[#593722] pb-4">
+              <div>
+                <div className="flex items-center space-x-2">
+                  <h3 className="text-lg font-display font-extrabold text-[#facc15]">{equipmentPlayer.name}</h3>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#3b2416] text-[#fef08a] border border-[#6b4229]">
+                    Lvl {equipmentPlayer.level} {equipmentPlayer.class}
+                  </span>
+                </div>
+                <p className="text-xs text-[#debfa6] font-sans mt-0.5">
+                  Equipped Items Overview
+                </p>
+              </div>
+              <button
+                onClick={() => setEquipmentPlayer(null)}
+                className="p-2 rounded-xl bg-[#3b2416] text-[#fef08a] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722]"
+              >
+                <X className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Sticked Tab Switcher: Equipment 1 vs Equipment 2 */}
+            <div className="flex rounded-xl overflow-hidden border border-[#593722] bg-[#1a100a] divide-x divide-[#593722] shadow-inner">
+              <button
+                onClick={() => setEquipmentTab(1)}
+                className={`flex-1 py-2 px-4 text-xs font-bold transition-all text-center ${
+                  equipmentTab === 1
+                    ? 'bg-[#3b2416] text-[#facc15]'
+                    : 'text-[#debfa6] hover:text-white hover:bg-[#281a12]'
+                }`}
+              >
+                Equipment 1
+              </button>
+              <button
+                onClick={() => setEquipmentTab(2)}
+                className={`flex-1 py-2 px-4 text-xs font-bold transition-all text-center ${
+                  equipmentTab === 2
+                    ? 'bg-[#3b2416] text-[#facc15]'
+                    : 'text-[#debfa6] hover:text-white hover:bg-[#281a12]'
+                }`}
+              >
+                Equipment 2
+              </button>
+            </div>
+
+            {/* Sticked Equipment Items List */}
+            {(() => {
+              const currentEquip = (equipmentPlayer.equipment || []).filter((e) => e.tab === equipmentTab);
+              if (currentEquip.length === 0) {
+                return (
+                  <div className="py-10 text-center bg-[#1a100a] border border-[#442c1d] rounded-xl p-6 text-xs text-[#debfa6] space-y-1">
+                    <p className="font-bold text-[#fef08a]">No Items Equipped</p>
+                    <p className="text-[11px] text-[#bda28b]">
+                      No gear items present in Equipment {equipmentTab} tab.
+                    </p>
+                  </div>
+                );
+              }
+
+              return (
+                <div className="rounded-xl border border-[#593722] bg-[#24160e] divide-y divide-[#593722] overflow-hidden shadow-md">
+                  {currentEquip.map((item, idx) => {
+                    const slotName = SLOT_NAMES[item.type] || 'Slot';
+                    return (
+                      <div
+                        key={idx}
+                        className="py-2.5 px-4 bg-[#3b2416]/90 hover:bg-[#4a2e1c] transition-colors flex items-center justify-between"
+                      >
+                        <div className="space-y-0.5">
+                          <span className="text-[10px] font-mono uppercase text-[#debfa6] tracking-wider block">
+                            {slotName}
+                          </span>
+                          <h4 className="text-xs font-bold text-[#facc15] font-sans">
+                            {item.name}
+                          </h4>
+                          {item.reqLevel > 0 && (
+                            <span className="text-[10px] text-[#fef08a]/70 font-mono block">
+                              Req Lvl {item.reqLevel}
+                            </span>
+                          )}
+                        </div>
+
+                        {item.upgrade > 0 ? (
+                          <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-extrabold bg-[#593722] text-[#fef08a] border border-[#855233] shadow-inner shrink-0 ml-2">
+                            +{item.upgrade}
+                          </span>
+                        ) : (
+                          <span className="text-[10px] font-mono text-[#a88d77] shrink-0 ml-2">
+                            +0
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              );
+            })()}
+
+            {/* Modal Footer */}
+            <div className="pt-3 border-t border-[#593722] flex justify-end">
+              <button
+                onClick={() => setEquipmentPlayer(null)}
+                className="px-5 py-2 rounded-xl bg-[#3b2416] text-[#fef08a] font-bold text-xs hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722]"
+              >
+                Close
+              </button>
+            </div>
+
           </div>
         </div>
       )}

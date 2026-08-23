@@ -2,6 +2,15 @@ import fs from 'fs';
 import path from 'path';
 import os from 'os';
 
+export interface EquipmentItem {
+  tab: number; // 1 = Equipment 1, 2 = Equipment 2
+  slotIndex: number;
+  type: number; // 0=Weapon, 1=Coat, 2=Ring, 3=Necklace, 4=Headgear, 5=Gloves, 6=Pants, 7=Jade, 8=Shoes, 9=Charm
+  name: string;
+  upgrade: number; // e.g. 12 (+12)
+  reqLevel: number;
+}
+
 export interface PlayerProfile {
   name: string;
   level: number;
@@ -24,6 +33,7 @@ export interface PlayerProfile {
   counterStrike: number;
   antiChakra: number;
   antiChakraBack: number;
+  equipment?: EquipmentItem[];
   lastUpdated: string;
 }
 
@@ -146,6 +156,7 @@ export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: 
     counterStrike: playerData.counterStrike ?? 0,
     antiChakra: playerData.antiChakra ?? 0,
     antiChakraBack: playerData.antiChakraBack ?? 0,
+    equipment: playerData.equipment || (index >= 0 ? players[index].equipment : []),
     lastUpdated: new Date().toISOString()
   };
 
@@ -157,4 +168,15 @@ export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: 
 
   saveAllPlayers(players);
   return updatedPlayer;
+}
+
+export function deletePlayerByName(name: string): boolean {
+  let players = getAllPlayers();
+  const initialCount = players.length;
+  players = players.filter(p => p.name.toLowerCase() !== name.toLowerCase());
+  if (players.length !== initialCount) {
+    saveAllPlayers(players);
+    return true;
+  }
+  return false;
 }

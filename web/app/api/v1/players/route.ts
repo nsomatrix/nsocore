@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers } from '@/lib/store';
+import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers, deletePlayerByName } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 const NO_CACHE_HEADERS = {
@@ -78,6 +78,7 @@ export async function POST(request: Request) {
       counterStrike: Number(body.counterStrike) || 0,
       antiChakra: Number(body.antiChakra) || 0,
       antiChakraBack: Number(body.antiChakraBack) || 0,
+      equipment: Array.isArray(body.equipment) ? body.equipment : [],
     });
 
     console.log(`[MTX-API-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);
@@ -99,7 +100,22 @@ export async function POST(request: Request) {
   }
 }
 
-export async function DELETE() {
+export async function DELETE(request: Request) {
+  const { searchParams } = new URL(request.url);
+  const name = searchParams.get('name');
+
+  if (name) {
+    const deleted = deletePlayerByName(name);
+    return NextResponse.json(
+      {
+        status: 200,
+        success: deleted,
+        message: deleted ? `Player ${name} successfully dismissed` : `Player ${name} not found`
+      },
+      { status: 200, headers: NO_CACHE_HEADERS }
+    );
+  }
+
   clearAllPlayers();
   return NextResponse.json(
     {
