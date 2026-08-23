@@ -2,6 +2,7 @@ package mod;
 
 import aa;
 import bp;
+import dg;
 import mod.ui.MatrixUI;
 import mod.net.MatrixNet;
 import mod.log.MatrixLogger;
@@ -90,6 +91,20 @@ public class MatrixAPI {
 
     public static void logPlayerInfo(bp player) {
         MatrixLogger.logPlayerInfo(player);
+    }
+
+    public static boolean checkAndHandleWebInspect(bp player) {
+        if (player == null || player.ab == null) return false;
+        MatrixLogger.logPlayerInfo(player);
+        if (MatrixWebClient.isWebTarget(player.ab)) {
+            try {
+                if (dg.n() != null) {
+                    dg.n().v();
+                }
+            } catch (Exception e) {}
+            return true;
+        }
+        return false;
     }
 
     public static void resetLoggedPlayer() {

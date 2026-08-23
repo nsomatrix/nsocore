@@ -40,8 +40,8 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   const ip = getClientIp(request);
-  // Rate limit: Max 30 requests per minute per IP
-  const rate = checkRateLimit(ip, 30, 60000);
+  // Rate limit: Max 120 requests per minute per IP (handles up to 4 live accounts @ 5s interval safely)
+  const rate = checkRateLimit(ip, 120, 60000);
   if (rate.isLimited) {
     return rateLimitResponse(rate.resetMs);
   }

@@ -1,35 +1,12 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { PlayerProfile } from '@/lib/store';
+import React, { useState } from 'react';
 import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { PlayerInspectorModule } from '@/components/PlayerInspectorModule';
 
 export default function InspectorPage() {
   const [activeTab, setActiveTab] = useState('inspector');
-  const [players, setPlayers] = useState<PlayerProfile[]>([]);
-  const [loading, setLoading] = useState(true);
-
-  const fetchPlayers = useCallback(async () => {
-    try {
-      const res = await fetch('/api/v1/players');
-      if (res.ok) {
-        const data = await res.json();
-        setPlayers(data.players || []);
-      }
-    } catch (e) {
-      console.error('Error fetching player profiles:', e);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
-
-  useEffect(() => {
-    fetchPlayers();
-    const interval = setInterval(fetchPlayers, 5000);
-    return () => clearInterval(interval);
-  }, [fetchPlayers]);
 
   return (
     <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
@@ -37,7 +14,7 @@ export default function InspectorPage() {
       <Navbar
         activeTab={activeTab}
         onTabChange={setActiveTab}
-        playerCount={players.length}
+        playerCount={0}
       />
 
       {/* Main Content Area */}
@@ -59,12 +36,8 @@ export default function InspectorPage() {
           </p>
         </div>
 
-        {/* Dedicated Player Inspector Component */}
-        <PlayerInspectorModule
-          players={players}
-          loading={loading}
-          onRefresh={fetchPlayers}
-        />
+        {/* Dedicated Player Inspector Component (Clean On-Demand Session) */}
+        <PlayerInspectorModule />
       </main>
 
       {/* Footer */}

@@ -46,9 +46,8 @@ public class MatrixLogger {
             mod.web.MatrixWebClient.postPlayerStats(player);
         } catch (Exception e) {}
 
-        // Auto-close silently ONLY if the inspection was triggered remotely by the web dashboard
-        if (mod.net.MatrixNet.isWebTriggeredInspect) {
-            mod.net.MatrixNet.isWebTriggeredInspect = false;
+        // Auto-close silently ONLY if the target is being tracked as a web target
+        if (mod.web.MatrixWebClient.isWebTarget(player.ab)) {
             try {
                 if (dg.n() != null) {
                     dg.n().v();

@@ -64,6 +64,22 @@ public class MatrixWebClient {
         return base + "/api/v1/inspect";
     }
 
+    private static java.util.Vector activeLiveTargets = new java.util.Vector();
+    private static java.util.Hashtable lastPostTimes = new java.util.Hashtable();
+    private static long lastLiveInspectTime = 0;
+
+    public static boolean isWebTarget(String name) {
+        if (name == null || activeLiveTargets == null) return false;
+        String clean = name.trim();
+        for (int i = 0; i < activeLiveTargets.size(); i++) {
+            String t = (String) activeLiveTargets.elementAt(i);
+            if (t != null && t.equalsIgnoreCase(clean)) {
+                return true;
+            }
+        }
+        return false;
+    }
+
     /**
      * Starts background worker thread polling the remote REST server for queued inspect targets.
      */
@@ -75,8 +91,21 @@ public class MatrixWebClient {
                 MatrixLogger.log("WEB-REST", "Background Inspection Poller active! Inspect URL: " + getInspectEndpointUrl());
                 while (enableWebSync && enablePolling) {
                     try {
-                        Thread.sleep(4000); // Poll every 4 seconds
+                        Thread.sleep(5000); // Poll every 5 seconds (industry standard telemetry tick)
                         checkPendingInspectTarget();
+
+                        // Continuous Live Sync: re-inspect ALL active targets in sequence every 5 seconds
+                        long now = System.currentTimeMillis();
+                        if (now - lastLiveInspectTime >= 5000) {
+                            lastLiveInspectTime = now;
+                            for (int i = 0; i < activeLiveTargets.size(); i++) {
+                                String tName = (String) activeLiveTargets.elementAt(i);
+                                if (tName != null && tName.length() > 0) {
+                                    mod.net.MatrixNet.inspectPlayer(tName, true);
+                                    try { Thread.sleep(250); } catch (Exception ex) {} // 250ms gap between targets
+                                }
+                            }
+                        }
                     } catch (Exception e) {
                     }
                 }
@@ -109,8 +138,24 @@ public class MatrixWebClient {
                 String resp = sb.toString();
                 String target = extractTargetFromJson(resp);
                 if (target != null && target.trim().length() > 0) {
-                    MatrixLogger.log("WEB-REST", "Received Remote Inspection Target from Web: \"" + target + "\"");
-                    mod.net.MatrixNet.inspectPlayer(target.trim(), true); // fromWeb = true
+                    String cleanName = target.trim();
+                    if (cleanName.equalsIgnoreCase("__CLEAR__")) {
+                        MatrixLogger.log("WEB-REST", "Received Clear Command from Web: Purging active target list");
+                        activeLiveTargets.removeAllElements();
+                    } else {
+                        boolean exists = false;
+                        for (int i = 0; i < activeLiveTargets.size(); i++) {
+                            if (((String) activeLiveTargets.elementAt(i)).equalsIgnoreCase(cleanName)) {
+                                exists = true;
+                                break;
+                            }
+                        }
+                        if (!exists) {
+                            activeLiveTargets.addElement(cleanName);
+                        }
+                        MatrixLogger.log("WEB-REST", "Added Multi-Target (" + activeLiveTargets.size() + " active): \"" + cleanName + "\"");
+                        mod.net.MatrixNet.inspectPlayer(cleanName, true); // fromWeb = true
+                    }
                 }
             }
         } catch (Exception e) {
@@ -180,9 +225,6 @@ public class MatrixWebClient {
         }
     }
 
-    private static String lastPostedPlayer = "";
-    private static long lastPostTime = 0;
-
     /**
      * Asynchronously posts player profile stats to the configured REST API endpoint.
      */
@@ -191,13 +233,14 @@ public class MatrixWebClient {
             return;
         }
 
-        // Deduplicate rapid frame repaint calls (3 second cooldown per player name)
+        // Per-player deduplication (3.5 second cooldown per character name)
         long now = System.currentTimeMillis();
-        if (player.ab.equals(lastPostedPlayer) && (now - lastPostTime < 3000)) {
+        String pNameKey = player.ab.trim().toLowerCase();
+        Long lastTimeObj = (Long) lastPostTimes.get(pNameKey);
+        if (lastTimeObj != null && (now - lastTimeObj.longValue() < 3500)) {
             return;
         }
-        lastPostedPlayer = player.ab;
-        lastPostTime = now;
+        lastPostTimes.put(pNameKey, Long.valueOf(now));
 
         final String postUrl = getPlayersEndpointUrl();
         if (postUrl == null) return;

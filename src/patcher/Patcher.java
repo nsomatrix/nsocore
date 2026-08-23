@@ -42,7 +42,7 @@ public class Patcher {
             System.out.println("[NSO Core Patcher] Injecting Player Info Console Logger into dg.o(t)...");
             try {
                 CtMethod oMethod = dgClass.getDeclaredMethod("o", new CtClass[]{ pool.get("t") });
-                oMethod.insertBefore("{ if (dg.aV != null) mod.MatrixAPI.logPlayerInfo(dg.aV); }");
+                oMethod.insertBefore("{ if (dg.aV != null && mod.MatrixAPI.checkAndHandleWebInspect(dg.aV)) return; }");
             } catch (Exception ex) {
                 System.out.println("[NSO Core Patcher] Warning: Failed to hook dg.o(t): " + ex.getMessage());
             }
