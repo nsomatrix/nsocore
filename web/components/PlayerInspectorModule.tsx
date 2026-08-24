@@ -1,8 +1,35 @@
 'use client';
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { PlayerProfile } from '@/lib/store';
 import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Clock, Shield, Radio, Loader2, Download, Sparkles, AlertTriangle } from 'lucide-react';
+
+function AnimatedNumber({ value, duration = 750, prefix = '', suffix = '' }: { value: number; duration?: number; prefix?: string; suffix?: string }) {
+  const [displayValue, setDisplayValue] = useState(0);
+
+  useEffect(() => {
+    let startTimestamp: number | null = null;
+    const startValue = 0;
+    const endValue = value || 0;
+
+    const step = (timestamp: number) => {
+      if (!startTimestamp) startTimestamp = timestamp;
+      const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+      const easeProgress = 1 - Math.pow(1 - progress, 3);
+      const current = Math.floor(startValue + (endValue - startValue) * easeProgress);
+      setDisplayValue(current);
+
+      if (progress < 1) {
+        window.requestAnimationFrame(step);
+      }
+    };
+
+    const animId = window.requestAnimationFrame(step);
+    return () => window.cancelAnimationFrame(animId);
+  }, [value, duration]);
+
+  return <span>{prefix}{displayValue.toLocaleString()}{suffix}</span>;
+}
 
 export function PlayerInspectorModule() {
   const [sessionPlayers, setSessionPlayers] = useState<PlayerProfile[]>([]);
@@ -503,17 +530,19 @@ export function PlayerInspectorModule() {
                   <div className="space-y-1.5 mt-3 pt-3 border-t border-zinc-800/80 font-mono text-[11px]">
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Attack DMG</span>
-                      <span className="text-emerald-400 font-extrabold">{p.attackMin} - {p.attackMax}</span>
+                      <span className="text-emerald-400 font-extrabold">
+                        <AnimatedNumber value={p.attackMin} /> - <AnimatedNumber value={p.attackMax} />
+                      </span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Critical Strike</span>
-                      <span className="text-emerald-400 font-extrabold">{p.critical}</span>
+                      <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={p.critical} /></span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Reduce Pain</span>
-                      <span className="text-emerald-400 font-extrabold">{p.reducePain}</span>
+                      <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={p.reducePain} /></span>
                     </div>
                   </div>
                 </div>
@@ -589,14 +618,18 @@ export function PlayerInspectorModule() {
                   <Activity className="w-4 h-4" />
                   <span>HP</span>
                 </span>
-                <span className="text-sm font-bold text-white">{selectedPlayer.hp} / {selectedPlayer.maxHp}</span>
+                <span className="text-sm font-bold text-white">
+                  <AnimatedNumber value={selectedPlayer.hp} /> / <AnimatedNumber value={selectedPlayer.maxHp} />
+                </span>
               </div>
               <div className="flex items-center justify-between p-3 bg-black/60 rounded-xl border border-cyan-500/20">
                 <span className="text-cyan-400 font-sans flex items-center space-x-1.5 font-semibold">
                   <Zap className="w-4 h-4" />
                   <span>MP</span>
                 </span>
-                <span className="text-sm font-bold text-white">{selectedPlayer.mp} / {selectedPlayer.maxMp}</span>
+                <span className="text-sm font-bold text-white">
+                  <AnimatedNumber value={selectedPlayer.mp} /> / <AnimatedNumber value={selectedPlayer.maxMp} />
+                </span>
               </div>
             </div>
 
@@ -604,67 +637,67 @@ export function PlayerInspectorModule() {
             <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Min</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.attackMin}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMin} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Max</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.attackMax}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMax} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Speed</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.speed}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.speed} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Critical Strike</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.critical}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.critical} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Accurate Point</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.accurate}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.accurate} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Dodge Ability</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.dodge}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.dodge} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Fire</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiFire}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiFire} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Ice</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiIce}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiIce} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Wind</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiWind}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiWind} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Reduce Pain</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.reducePain}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.reducePain} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Counter Strike</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.counterStrike}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.counterStrike} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Chakra</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiChakra}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakra} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Chakra Back</span>
-                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiChakraBack}</span>
+                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakraBack} /></span>
               </div>
             </div>
 
