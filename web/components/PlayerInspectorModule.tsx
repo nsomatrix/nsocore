@@ -2,7 +2,8 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { PlayerProfile } from '@/lib/store';
-import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Clock, Shield, Radio, Loader2, Download, Sparkles, AlertTriangle } from 'lucide-react';
+import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Clock, Shield, Radio, Loader2, Download, Sparkles, AlertTriangle, Star, Bookmark } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
 
 function AnimatedNumber({ value, duration = 750, prefix = '', suffix = '' }: { value: number; duration?: number; prefix?: string; suffix?: string }) {
   const [displayValue, setDisplayValue] = useState(0);
@@ -32,7 +33,12 @@ function AnimatedNumber({ value, duration = 750, prefix = '', suffix = '' }: { v
 }
 
 export function PlayerInspectorModule() {
+  const { user } = useAuth();
+  const userId = user?.uid || user?.email || 'guest';
+
   const [sessionPlayers, setSessionPlayers] = useState<PlayerProfile[]>([]);
+  const [savedCards, setSavedCards] = useState<PlayerProfile[]>([]);
+  const [viewTab, setViewTab] = useState<'all' | 'saved'>('all');
   const [targetName, setTargetName] = useState('');
   const [fetching, setFetching] = useState(false);
   const [fetchMsg, setFetchMsg] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
@@ -41,6 +47,38 @@ export function PlayerInspectorModule() {
   const [equipmentPlayer, setEquipmentPlayer] = useState<PlayerProfile | null>(null);
   const [equipmentTab, setEquipmentTab] = useState<1 | 2>(1);
   const [copied, setCopied] = useState(false);
+
+  // Load user's saved cards from backend API on mount / userId change
+  useEffect(() => {
+    if (!userId) return;
+    fetch(`/api/v1/user/saved-cards?userId=${encodeURIComponent(userId)}`)
+      .then((res) => res.json())
+      .then((data) => {
+        if (data.savedCards && Array.isArray(data.savedCards)) {
+          setSavedCards(data.savedCards);
+        }
+      })
+      .catch((err) => console.warn('Failed to load saved cards:', err));
+  }, [userId]);
+
+  const handleToggleBookmarkCard = async (player: PlayerProfile) => {
+    try {
+      const res = await fetch('/api/v1/user/saved-cards', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ userId, player }),
+      });
+      const data = await res.json();
+      if (res.ok && data.savedCards) {
+        setSavedCards(data.savedCards);
+      }
+    } catch (err) {
+      console.error('Failed to toggle bookmark:', err);
+    }
+  };
+
+  const isCardSaved = (name: string) =>
+    savedCards.some((p) => p.name.toLowerCase() === name.toLowerCase());
 
   const SLOT_NAMES: { [key: number]: string } = {
     0: 'Weapon',
@@ -330,7 +368,9 @@ export function PlayerInspectorModule() {
     return schoolStr.replace(/^School:\s*/i, '').trim();
   };
 
-  const filteredPlayers = sessionPlayers.filter((p) =>
+  const activeList = viewTab === 'saved' ? savedCards : sessionPlayers;
+
+  const filteredPlayers = activeList.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cleanSchoolName(p.school).toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.class.toLowerCase().includes(searchQuery.toLowerCase())
@@ -414,6 +454,34 @@ export function PlayerInspectorModule() {
 
       {/* Controls & Search Bar */}
       <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
+        {/* Tab Selector: All Session vs Saved Cards */}
+        <div className="flex items-center p-1 bg-zinc-900/90 rounded-xl border border-zinc-800 text-xs font-mono">
+          <button
+            type="button"
+            onClick={() => setViewTab('all')}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 ${
+              viewTab === 'all'
+                ? 'bg-zinc-800 text-emerald-400 font-bold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Radio className="w-3.5 h-3.5" />
+            <span>SESSION ({sessionPlayers.length})</span>
+          </button>
+          <button
+            type="button"
+            onClick={() => setViewTab('saved')}
+            className={`px-3 py-1.5 rounded-lg transition-all flex items-center space-x-1.5 ${
+              viewTab === 'saved'
+                ? 'bg-zinc-800 text-amber-400 font-bold shadow-sm'
+                : 'text-zinc-400 hover:text-white'
+            }`}
+          >
+            <Star className={`w-3.5 h-3.5 ${savedCards.length > 0 ? 'fill-amber-400 text-amber-400' : ''}`} />
+            <span>SAVED CARDS ({savedCards.length})</span>
+          </button>
+        </div>
+
         {/* Search Bar */}
         <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
@@ -489,16 +557,32 @@ export function PlayerInspectorModule() {
                       </p>
                     </div>
 
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        handleDismissPlayer(p.name);
-                      }}
-                      className="p-1 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors -mr-1 -mt-1"
-                      title="Dismiss player profile"
-                    >
-                      <X className="w-4 h-4" />
-                    </button>
+                    <div className="flex items-center space-x-1 -mr-1 -mt-1">
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleToggleBookmarkCard(p);
+                        }}
+                        className={`p-1.5 rounded-lg transition-colors ${
+                          isCardSaved(p.name)
+                            ? 'bg-amber-500/20 text-amber-400 border border-amber-500/30'
+                            : 'text-zinc-500 hover:text-amber-400 hover:bg-zinc-800'
+                        }`}
+                        title={isCardSaved(p.name) ? 'Remove from Saved Cards' : 'Save Card to Account'}
+                      >
+                        <Star className={`w-4 h-4 ${isCardSaved(p.name) ? 'fill-amber-400' : ''}`} />
+                      </button>
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDismissPlayer(p.name);
+                        }}
+                        className="p-1.5 rounded-lg text-zinc-400 hover:text-rose-400 hover:bg-rose-500/10 transition-colors"
+                        title="Dismiss player profile"
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
 
                   {/* HP / MP Gauges */}

@@ -1,11 +1,16 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight } from 'lucide-react';
+import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight, ShieldAlert } from 'lucide-react';
 import { ChatMessage } from '@/lib/store';
+import { useAuth } from '@/context/AuthContext';
 
 export function LiveChatModule() {
+  const { user } = useAuth();
+  const userId = user?.uid || user?.email || 'guest';
+
   const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [userPmMessages, setUserPmMessages] = useState<ChatMessage[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -16,6 +21,20 @@ export function LiveChatModule() {
   const [outboundMessage, setOutboundMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sendStatus, setSendStatus] = useState<string | null>(null);
+
+  // Fetch account PM messages from userStore API
+  const fetchUserPmMessages = useCallback(async () => {
+    if (!userId) return;
+    try {
+      const res = await fetch(`/api/v1/user/pm-chats?userId=${encodeURIComponent(userId)}`);
+      if (res.ok) {
+        const data = await res.json();
+        setUserPmMessages(data.pmMessages || []);
+      }
+    } catch (e) {
+      console.warn('Error loading user PM logs:', e);
+    }
+  }, [userId]);
 
   const fetchChatMessages = useCallback(async () => {
     try {
@@ -28,7 +47,8 @@ export function LiveChatModule() {
     } catch (e) {
       console.error('Error fetching chat messages:', e);
     }
-  }, [selectedChannel]);
+    fetchUserPmMessages();
+  }, [selectedChannel, fetchUserPmMessages]);
 
   useEffect(() => {
     fetchChatMessages();
@@ -41,7 +61,23 @@ export function LiveChatModule() {
   }, [autoRefresh, fetchChatMessages]);
 
   const handleClearHistory = async () => {
-    if (!confirm('Are you sure you want to clear the live chat log history?')) return;
+    if (selectedChannel === 'PRIVATE') {
+      if (!confirm('Are you sure you want to clear your saved 100 PM message history?')) return;
+      setLoading(true);
+      try {
+        const res = await fetch(`/api/v1/user/pm-chats?userId=${encodeURIComponent(userId)}`, { method: 'DELETE' });
+        if (res.ok) {
+          setUserPmMessages([]);
+        }
+      } catch (e) {
+        console.error('Error clearing PM history:', e);
+      } finally {
+        setLoading(false);
+      }
+      return;
+    }
+
+    if (!confirm('Are you sure you want to clear the global live chat feed?')) return;
     setLoading(true);
     try {
       const res = await fetch('/api/v1/chat', { method: 'DELETE' });
@@ -66,17 +102,34 @@ export function LiveChatModule() {
     setSending(true);
     setSendStatus(null);
     try {
+      const cleanMessage = outboundMessage.trim();
+      const cleanRecipient = outboundRecipient.trim();
+
       const res = await fetch('/api/v1/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channel: outboundChannel,
-          recipient: outboundRecipient.trim(),
-          message: outboundMessage.trim(),
+          recipient: cleanRecipient,
+          message: cleanMessage,
         }),
       });
 
       if (res.ok) {
+        // If PM message, save to user account store (FIFO 100 cap)
+        if (outboundChannel === 'PRIVATE') {
+          await fetch('/api/v1/user/pm-chats', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+              userId,
+              sender: 'WEB_CONSOLE',
+              recipient: cleanRecipient,
+              message: cleanMessage,
+            }),
+          });
+        }
+
         setOutboundMessage('');
         setSendStatus('Dispatched to game!');
         fetchChatMessages();
@@ -140,9 +193,12 @@ export function LiveChatModule() {
     { id: 'ALL', label: 'All Channels' },
     { id: 'MAP', label: 'Public' },
     { id: 'WORLD', label: 'Global' },
-    { id: 'PRIVATE', label: 'PM' },
+    { id: 'PRIVATE', label: `PM (${userPmMessages.length}/100)` },
     { id: 'CLAN', label: 'Clan' },
   ];
+
+  // Determine active feed
+  const activeFeed = selectedChannel === 'PRIVATE' ? userPmMessages : messages;
 
   const getChannelPlaceholder = () => {
     switch (outboundChannel) {
@@ -189,7 +245,7 @@ export function LiveChatModule() {
             <button
               onClick={handleClearHistory}
               className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
-              title="Clear Chat Logs"
+              title={selectedChannel === 'PRIVATE' ? 'Clear Account PM Logs (Max 100)' : 'Clear Chat Feed'}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -218,24 +274,30 @@ export function LiveChatModule() {
       <div className="rounded-xl bg-zinc-950 border border-zinc-800/80 overflow-hidden shadow-2xl flex flex-col">
         {/* Terminal Sub-header */}
         <div className="px-3 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between text-xs font-mono">
-          <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">FEED TELEMETRY</span>
-          <span className="text-zinc-500 text-[11px]">{messages.length} LOGS</span>
+          <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">
+            {selectedChannel === 'PRIVATE' ? 'ACCOUNT PM LOGS (MAX 100 RECENT)' : 'FEED TELEMETRY'}
+          </span>
+          <span className="text-zinc-500 text-[11px]">{activeFeed.length} LOGS</span>
         </div>
 
         {/* Message Log Feed */}
         <div className="p-3 sm:p-4 max-h-[420px] overflow-y-auto space-y-2 font-mono text-xs">
-          {messages.length === 0 ? (
+          {activeFeed.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
                 <MessageSquare className="w-5 h-5" />
               </div>
-              <p className="text-zinc-400 text-xs font-sans">No chat messages intercepted yet</p>
+              <p className="text-zinc-400 text-xs font-sans">
+                {selectedChannel === 'PRIVATE' ? 'No saved private PM messages' : 'No chat messages intercepted yet'}
+              </p>
               <p className="text-zinc-600 text-[11px] max-w-xs mx-auto font-mono">
-                Messages from the J2ME mod client stream here in real time.
+                {selectedChannel === 'PRIVATE'
+                  ? 'Your user-initiated PM messages will save here (max 100 recent).'
+                  : 'Messages from the J2ME mod client stream here in real time.'}
               </p>
             </div>
           ) : (
-            messages.map((msg) => (
+            activeFeed.map((msg) => (
               <div
                 key={msg.id}
                 className="p-2.5 sm:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700/80 transition-all flex flex-col gap-1 min-w-0"
@@ -255,7 +317,7 @@ export function LiveChatModule() {
                   <span className="text-zinc-500 text-[10px] shrink-0 font-mono">{formatTime(msg.timestamp)}</span>
                 </div>
 
-                {/* Content Row: Wraps cleanly without overflowing screen */}
+                {/* Content Row */}
                 <p className="text-zinc-200 font-sans text-xs leading-relaxed break-words pl-0.5">
                   {msg.message}
                 </p>
@@ -279,7 +341,7 @@ export function LiveChatModule() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-2">
-            {/* Options bar on mobile: Channel + Recipient */}
+            {/* Options bar: Channel + Recipient */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
               <select
                 value={outboundChannel}
