@@ -167,7 +167,9 @@ public class MatrixUI {
     public static void promptPrivateMessage() {
         if (a.M != null) {
             a.M.a("Recipient:", "Message:");
-            a.M.a("Send PM", new bd("Cancel", a.k, 8882, null), new bd("Send", a.k, 888912, null), 0, 0);
+            if (a.M.d != null) a.M.d.b(50);  // Set max length for recipient text field
+            if (a.M.e != null) a.M.e.b(200); // Set max length for message text field
+            a.M.a("Send PM", new bd("Cancel", 8882), new bd("Send", 888912), 0, 0);
             a.J = a.M;
         }
     }

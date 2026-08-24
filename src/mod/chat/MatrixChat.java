@@ -24,7 +24,7 @@ public class MatrixChat {
         String clean = text.trim();
         MatrixLogger.log("CHAT", "[Map] -> " + clean);
         try {
-            dq.a().j(clean); // Outbound packet -20
+            dq.a().c(clean); // Outbound packet -23 (Public / Map Chat)
             onChatSent("MAP", null, clean);
         } catch (Exception e) {
             MatrixLogger.log("CHAT-ERR", "Failed to send map chat: " + e.getMessage());
