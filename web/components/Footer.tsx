@@ -26,7 +26,7 @@ export function Footer() {
         {/* Live API Status */}
         <div className="flex items-center space-x-2 px-2.5 py-1 rounded-md bg-zinc-900 border border-zinc-800 text-[10px] font-mono">
           <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
-          <span className="text-emerald-400 font-medium">All Systems Operational</span>
+          <span className="text-emerald-400 font-medium">All Systems Functional</span>
         </div>
       </div>
     </footer>
