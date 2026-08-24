@@ -2,7 +2,6 @@ package mod.log;
 
 import bp;
 import df;
-import dg;
 
 public class MatrixLogger {
     public static boolean enableLogging = true;
@@ -45,15 +44,6 @@ public class MatrixLogger {
         try {
             mod.web.MatrixWebClient.postPlayerStats(player);
         } catch (Exception e) {}
-
-        // Auto-close silently ONLY if the target is being tracked as a web target
-        if (mod.web.MatrixWebClient.isWebTarget(player.ab)) {
-            try {
-                if (dg.n() != null) {
-                    dg.n().v();
-                }
-            } catch (Exception e) {}
-        }
 
         // Ensure console info prints EXACTLY ONCE per player inspection request (prevents frame-repaint flooding)
         if (player.ab.equals(lastLoggedPlayer)) {

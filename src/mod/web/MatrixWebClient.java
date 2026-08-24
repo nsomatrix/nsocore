@@ -67,7 +67,6 @@ public class MatrixWebClient {
 
     private static java.util.Vector activeLiveTargets = new java.util.Vector();
     private static java.util.Hashtable lastPostTimes = new java.util.Hashtable();
-    private static long lastLiveInspectTime = 0;
 
     public static boolean isWebTarget(String name) {
         if (name == null || activeLiveTargets == null) return false;
@@ -93,21 +92,8 @@ public class MatrixWebClient {
                 MatrixLogger.log("WEB-REST", "Background Inspection Poller active! Inspect URL: " + getInspectEndpointUrl());
                 while (enableWebSync && enablePolling) {
                     try {
-                        Thread.sleep(5000); // Poll every 5 seconds (industry standard telemetry tick)
+                        Thread.sleep(5000); // Poll every 5 seconds for new web inspect targets
                         checkPendingInspectTarget();
-
-                        // Continuous Live Sync: re-inspect ALL active targets in sequence every 5 seconds
-                        long now = System.currentTimeMillis();
-                        if (now - lastLiveInspectTime >= 5000) {
-                            lastLiveInspectTime = now;
-                            for (int i = 0; i < activeLiveTargets.size(); i++) {
-                                String tName = (String) activeLiveTargets.elementAt(i);
-                                if (tName != null && tName.length() > 0) {
-                                    mod.net.MatrixNet.inspectPlayer(tName, true);
-                                    try { Thread.sleep(250); } catch (Exception ex) {} // 250ms gap between targets
-                                }
-                            }
-                        }
                     } catch (Exception e) {
                     }
                 }
