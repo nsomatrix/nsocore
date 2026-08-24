@@ -10,6 +10,8 @@ import {
   isTargetSaved,
   getRemainingCooldownSeconds,
   setRefreshCooldown,
+  fetchSavedTargetsFromCloud,
+  subscribeToRealtimeCloudTargets,
 } from '@/lib/userStore';
 import {
   Search,
@@ -99,11 +101,34 @@ export function PlayerInspectorModule() {
     33: 'Artifact',
   };
 
-  // Load user-isolated saved targets on mount or when user changes
+  // Real-time multi-device cross-platform cloud synchronization
   useEffect(() => {
-    if (userId) {
-      setSavedPlayers(getSavedTargets(userId));
-    }
+    if (!userId) return;
+
+    // 1. Instant local cache load (0ms UI latency)
+    setSavedPlayers(getSavedTargets(userId));
+
+    // 2. Fetch initial cloud targets from Server API & Firestore
+    fetchSavedTargetsFromCloud(userId).then((cloudTargets) => {
+      if (cloudTargets) setSavedPlayers(cloudTargets);
+    });
+
+    // 3. Real-time Firestore WebSocket listener across devices
+    const unsubscribeSnapshot = subscribeToRealtimeCloudTargets(userId, (cloudTargets) => {
+      if (cloudTargets) setSavedPlayers(cloudTargets);
+    });
+
+    // 4. Server API polling sync fallback for non-websocket environments
+    const syncInterval = setInterval(() => {
+      fetchSavedTargetsFromCloud(userId).then((cloudTargets) => {
+        if (cloudTargets) setSavedPlayers(cloudTargets);
+      });
+    }, 4000);
+
+    return () => {
+      unsubscribeSnapshot();
+      clearInterval(syncInterval);
+    };
   }, [userId]);
 
   // Live timer interval to tick down cooldowns every 1 second

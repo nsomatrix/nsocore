@@ -57,6 +57,7 @@ const globalStore = globalThis as unknown as {
   _pendingInspectQueue?: string[];
   _matrixChatStore?: ChatMessage[];
   _pendingOutboundChatQueue?: ChatMessage[];
+  _userSavedTargetsStore?: Record<string, PlayerProfile[]>;
 };
 
 if (!globalStore._matrixPlayersStore) {
@@ -68,12 +69,22 @@ if (!globalStore._pendingInspectQueue) {
 if (!globalStore._matrixChatStore) {
   globalStore._matrixChatStore = [];
 }
+if (!globalStore._userSavedTargetsStore) {
+  globalStore._userSavedTargetsStore = {};
+}
 
 function getDataFilePath(): string {
   if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
     return path.join(os.tmpdir(), 'players.json');
   }
   return path.join(process.cwd(), 'data', 'players.json');
+}
+
+function getUserTargetsFilePath(): string {
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return path.join(os.tmpdir(), 'user_targets.json');
+  }
+  return path.join(process.cwd(), 'data', 'user_targets.json');
 }
 
 /**
@@ -273,4 +284,69 @@ export function popPendingOutboundChatMessages(): ChatMessage[] {
     return [];
   }
   return globalStore._pendingOutboundChatQueue.splice(0);
+}
+
+// User-Isolated Saved Targets Persistence
+function loadUserTargetsMap(): Record<string, PlayerProfile[]> {
+  const filePath = getUserTargetsFilePath();
+  let map: Record<string, PlayerProfile[]> = globalStore._userSavedTargetsStore || {};
+  try {
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === 'object') {
+        map = parsed;
+        globalStore._userSavedTargetsStore = map;
+      }
+    }
+  } catch (e) {
+    console.warn('[STORE] Error loading user targets file:', e);
+  }
+  return map;
+}
+
+function saveUserTargetsMap(map: Record<string, PlayerProfile[]>) {
+  globalStore._userSavedTargetsStore = map;
+  const filePath = getUserTargetsFilePath();
+  try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    fs.writeFileSync(filePath, JSON.stringify(map, null, 2), 'utf8');
+  } catch (e) {
+    console.warn('[STORE] Warning saving user targets map:', e);
+  }
+}
+
+export function getUserSavedTargets(userId: string): PlayerProfile[] {
+  if (!userId) return [];
+  const map = loadUserTargetsMap();
+  return map[userId] || [];
+}
+
+export function saveUserTargetCard(userId: string, player: PlayerProfile): PlayerProfile[] {
+  if (!userId) return [];
+  const map = loadUserTargetsMap();
+  const current = map[userId] || [];
+  const exists = current.some((p) => p.name.toLowerCase() === player.name.toLowerCase());
+  let updated: PlayerProfile[];
+  if (exists) {
+    updated = current.map((p) => (p.name.toLowerCase() === player.name.toLowerCase() ? player : p));
+  } else {
+    updated = [player, ...current];
+  }
+  map[userId] = updated;
+  saveUserTargetsMap(map);
+  return updated;
+}
+
+export function removeUserTargetCard(userId: string, playerName: string): PlayerProfile[] {
+  if (!userId) return [];
+  const map = loadUserTargetsMap();
+  const current = map[userId] || [];
+  const updated = current.filter((p) => p.name.toLowerCase() !== playerName.toLowerCase());
+  map[userId] = updated;
+  saveUserTargetsMap(map);
+  return updated;
 }
