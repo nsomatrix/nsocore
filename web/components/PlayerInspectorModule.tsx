@@ -28,7 +28,7 @@ function AnimatedNumber({ value, duration = 750, prefix = '', suffix = '' }: { v
     return () => window.cancelAnimationFrame(animId);
   }, [value, duration]);
 
-  return <span>{prefix}{displayValue.toLocaleString()}{suffix}</span>;
+  return <span>{prefix}{displayValue}{suffix}</span>;
 }
 
 export function PlayerInspectorModule() {
