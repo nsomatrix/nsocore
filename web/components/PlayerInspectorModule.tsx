@@ -467,7 +467,7 @@ export function PlayerInspectorModule() {
                     onClick={() => setSelectedPlayer(p)}
                     className="flex-1 py-1.5 px-2.5 rounded-xl bg-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors flex items-center justify-between text-[11px]"
                   >
-                    <span>View 18 Stats</span>
+                    <span>View Stats</span>
                     <ChevronRight className="w-3.5 h-3.5" />
                   </button>
 
