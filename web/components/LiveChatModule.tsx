@@ -213,7 +213,7 @@ export function LiveChatModule() {
         </div>
 
         {/* Message Log Feed */}
-        <div className="p-3 sm:p-4 max-h-[420px] overflow-y-auto space-y-2.5 font-mono text-xs divide-y divide-zinc-900/80">
+        <div className="p-3 sm:p-4 max-h-[420px] overflow-y-auto space-y-2 font-mono text-xs">
           {messages.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
@@ -226,7 +226,10 @@ export function LiveChatModule() {
             </div>
           ) : (
             messages.map((msg) => (
-              <div key={msg.id} className="pt-2.5 first:pt-0 hover:bg-zinc-900/40 p-2 rounded-lg transition-colors flex flex-col gap-1 min-w-0">
+              <div
+                key={msg.id}
+                className="p-2.5 sm:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700/80 transition-all flex flex-col gap-1 min-w-0"
+              >
                 {/* Meta Row: Badge + Time + Sender info */}
                 <div className="flex items-center justify-between gap-2 flex-wrap min-w-0">
                   <div className="flex items-center space-x-2 min-w-0 flex-wrap">
