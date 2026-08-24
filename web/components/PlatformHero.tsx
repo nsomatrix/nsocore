@@ -46,7 +46,7 @@ export function PlatformHero({ activeModuleCount, totalTargetCount }: PlatformHe
               <Layers className="w-4 h-4" />
             </div>
             <div>
-              <span className="text-[10px] text-zinc-500 block font-sans uppercase tracking-wider">Active</span>
+              <span className="text-[10px] text-zinc-500 block font-sans uppercase tracking-wider">Operational</span>
               <span className="text-emerald-400 font-bold">{activeModuleCount} Module</span>
             </div>
           </div>

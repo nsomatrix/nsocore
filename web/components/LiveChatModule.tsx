@@ -1,26 +1,14 @@
 'use client';
 
-import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight, ShieldAlert, ChevronDown, Check, X, AlertTriangle } from 'lucide-react';
+import React, { useState, useEffect, useCallback } from 'react';
+import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight } from 'lucide-react';
 import { ChatMessage } from '@/lib/store';
-import { useAuth } from '@/context/AuthContext';
 
 export function LiveChatModule() {
-  const { user } = useAuth();
-  const userId = user?.uid || user?.email || 'guest';
-
   const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [userPmMessages, setUserPmMessages] = useState<ChatMessage[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
-
-  // Custom Theme Clear Confirmation Modal State
-  const [showClearModal, setShowClearModal] = useState(false);
-
-  // Custom Theme Dropdown State
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Outbound Web Chat Dispatch State
   const [outboundChannel, setOutboundChannel] = useState<'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN'>('MAP');
@@ -29,35 +17,10 @@ export function LiveChatModule() {
   const [sending, setSending] = useState(false);
   const [sendStatus, setSendStatus] = useState<string | null>(null);
 
-  // Close dropdown on click outside
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-        setIsDropdownOpen(false);
-      }
-    };
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
-  // Fetch account PM messages from userStore API
-  const fetchUserPmMessages = useCallback(async () => {
-    if (!userId) return;
-    try {
-      const res = await fetch(`/api/v1/user/pm-chats?userId=${encodeURIComponent(userId)}`);
-      if (res.ok) {
-        const data = await res.json();
-        setUserPmMessages(data.pmMessages || []);
-      }
-    } catch (e) {
-      console.warn('Error loading user PM logs:', e);
-    }
-  }, [userId]);
-
   const fetchChatMessages = useCallback(async () => {
     try {
-      // Always fetch full chat telemetry stream
-      const res = await fetch('/api/v1/chat');
+      const url = selectedChannel === 'ALL' ? '/api/v1/chat' : `/api/v1/chat?channel=${selectedChannel}`;
+      const res = await fetch(url);
       if (res.ok) {
         const data = await res.json();
         setMessages(data.messages || []);
@@ -65,8 +28,7 @@ export function LiveChatModule() {
     } catch (e) {
       console.error('Error fetching chat messages:', e);
     }
-    fetchUserPmMessages();
-  }, [fetchUserPmMessages]);
+  }, [selectedChannel]);
 
   useEffect(() => {
     fetchChatMessages();
@@ -78,24 +40,9 @@ export function LiveChatModule() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchChatMessages]);
 
-  const handleConfirmClearHistory = async () => {
-    setShowClearModal(false);
+  const handleClearHistory = async () => {
+    if (!confirm('Are you sure you want to clear the live chat log history?')) return;
     setLoading(true);
-
-    if (selectedChannel === 'PRIVATE') {
-      try {
-        const res = await fetch(`/api/v1/user/pm-chats?userId=${encodeURIComponent(userId)}`, { method: 'DELETE' });
-        if (res.ok) {
-          setUserPmMessages([]);
-        }
-      } catch (e) {
-        console.error('Error clearing PM history:', e);
-      } finally {
-        setLoading(false);
-      }
-      return;
-    }
-
     try {
       const res = await fetch('/api/v1/chat', { method: 'DELETE' });
       if (res.ok) {
@@ -119,35 +66,17 @@ export function LiveChatModule() {
     setSending(true);
     setSendStatus(null);
     try {
-      const cleanMessage = outboundMessage.trim();
-      const cleanRecipient = outboundRecipient.trim();
-
       const res = await fetch('/api/v1/chat/send', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           channel: outboundChannel,
-          recipient: cleanRecipient,
-          message: cleanMessage,
+          recipient: outboundRecipient.trim(),
+          message: outboundMessage.trim(),
         }),
       });
 
       if (res.ok) {
-        // If PM message, save to user account store (FIFO 100 cap)
-        if (outboundChannel === 'PRIVATE') {
-          const accountSender = user?.displayName || user?.email?.split('@')[0] || 'WEB_CONSOLE';
-          await fetch('/api/v1/user/pm-chats', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              userId,
-              sender: accountSender,
-              recipient: cleanRecipient,
-              message: cleanMessage,
-            }),
-          });
-        }
-
         setOutboundMessage('');
         setSendStatus('Dispatched to game!');
         fetchChatMessages();
@@ -207,63 +136,13 @@ export function LiveChatModule() {
     }
   };
 
-  // Helper to compute merged PM list (Account Saved PMs + Live Game PM Telemetry)
-  const getAllPmMessages = (): ChatMessage[] => {
-    const pmMap = new Map<string, ChatMessage>();
-
-    // 1. Add account saved PMs
-    userPmMessages.forEach((msg) => pmMap.set(msg.id, msg));
-
-    // 2. Add live game PM telemetry messages (channel === 'PRIVATE')
-    messages
-      .filter((m) => m.channel === 'PRIVATE')
-      .forEach((msg) => {
-        const matchKey = Array.from(pmMap.keys()).find((k) => {
-          const item = pmMap.get(k);
-          return (
-            item &&
-            item.message === msg.message &&
-            item.sender === msg.sender &&
-            item.recipient === msg.recipient
-          );
-        });
-        if (!matchKey) {
-          pmMap.set(msg.id, msg);
-        }
-      });
-
-    return Array.from(pmMap.values()).sort(
-      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-    );
-  };
-
-  const allPmList = getAllPmMessages();
-
-  // Calculate active channel feed cleanly
-  const getActiveFeed = (): ChatMessage[] => {
-    if (selectedChannel === 'ALL') return messages;
-    if (selectedChannel === 'PRIVATE') return allPmList;
-    return messages.filter((m) => m.channel === selectedChannel);
-  };
-
-  const activeFeed = getActiveFeed();
-
   const channels = [
     { id: 'ALL', label: 'All Channels' },
     { id: 'MAP', label: 'Public' },
     { id: 'WORLD', label: 'Global' },
-    { id: 'PRIVATE', label: `PM ${allPmList.length}/100` },
+    { id: 'PRIVATE', label: 'PM' },
     { id: 'CLAN', label: 'Clan' },
   ];
-
-  const channelOptions: { id: 'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN'; label: string; icon: any; color: string; border: string }[] = [
-    { id: 'MAP', label: 'PUBLIC CHAT', icon: MessageCircle, color: 'text-emerald-400', border: 'border-emerald-500/30' },
-    { id: 'WORLD', label: 'GLOBAL CHAT', icon: Globe, color: 'text-amber-400', border: 'border-amber-500/30' },
-    { id: 'PRIVATE', label: 'PRIVATE PM', icon: User, color: 'text-purple-400', border: 'border-purple-500/30' },
-    { id: 'CLAN', label: 'CLAN CHAT', icon: Users, color: 'text-cyan-400', border: 'border-cyan-500/30' },
-  ];
-
-  const currentOption = channelOptions.find((opt) => opt.id === outboundChannel) || channelOptions[0];
 
   const getChannelPlaceholder = () => {
     switch (outboundChannel) {
@@ -308,9 +187,9 @@ export function LiveChatModule() {
             </button>
 
             <button
-              onClick={() => setShowClearModal(true)}
+              onClick={handleClearHistory}
               className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
-              title={selectedChannel === 'PRIVATE' ? 'Clear Account PM Logs • Max 100' : 'Clear Chat Feed'}
+              title="Clear Chat Logs"
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -339,30 +218,24 @@ export function LiveChatModule() {
       <div className="rounded-xl bg-zinc-950 border border-zinc-800/80 overflow-hidden shadow-2xl flex flex-col">
         {/* Terminal Sub-header */}
         <div className="px-3 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between text-xs font-mono">
-          <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">
-            {selectedChannel === 'PRIVATE' ? 'ACCOUNT PM LOGS • MAX 100 RECENT' : 'FEED TELEMETRY'}
-          </span>
-          <span className="text-zinc-500 text-[11px]">{activeFeed.length} LOGS</span>
+          <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">FEED TELEMETRY</span>
+          <span className="text-zinc-500 text-[11px]">{messages.length} LOGS</span>
         </div>
 
         {/* Message Log Feed */}
         <div className="p-3 sm:p-4 max-h-[420px] overflow-y-auto space-y-2 font-mono text-xs">
-          {activeFeed.length === 0 ? (
+          {messages.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
                 <MessageSquare className="w-5 h-5" />
               </div>
-              <p className="text-zinc-400 text-xs font-sans">
-                {selectedChannel === 'PRIVATE' ? 'No saved private PM messages' : 'No chat messages intercepted yet'}
-              </p>
+              <p className="text-zinc-400 text-xs font-sans">No chat messages intercepted yet</p>
               <p className="text-zinc-600 text-[11px] max-w-xs mx-auto font-mono">
-                {selectedChannel === 'PRIVATE'
-                  ? 'Your user-initiated PM messages will save here • max 100 recent.'
-                  : 'Messages from the J2ME mod client stream here in real time.'}
+                Messages from the J2ME mod client stream here in real time.
               </p>
             </div>
           ) : (
-            activeFeed.map((msg) => (
+            messages.map((msg) => (
               <div
                 key={msg.id}
                 className="p-2.5 sm:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700/80 transition-all flex flex-col gap-1 min-w-0"
@@ -382,7 +255,7 @@ export function LiveChatModule() {
                   <span className="text-zinc-500 text-[10px] shrink-0 font-mono">{formatTime(msg.timestamp)}</span>
                 </div>
 
-                {/* Content Row */}
+                {/* Content Row: Wraps cleanly without overflowing screen */}
                 <p className="text-zinc-200 font-sans text-xs leading-relaxed break-words pl-0.5">
                   {msg.message}
                 </p>
@@ -406,51 +279,18 @@ export function LiveChatModule() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-2">
-            {/* Options bar: Custom Theme Dropdown + Recipient Input */}
+            {/* Options bar on mobile: Channel + Recipient */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              {/* Custom Cyberpunk Theme Channel Selector */}
-              <div className="relative flex-1 sm:flex-none" ref={dropdownRef}>
-                <button
-                  type="button"
-                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  className={`w-full sm:w-auto flex items-center justify-between space-x-2 px-3 py-2 rounded-xl bg-black border ${currentOption.border} text-xs font-mono font-bold ${currentOption.color} hover:bg-zinc-900 transition-all shrink-0`}
-                >
-                  <div className="flex items-center space-x-1.5">
-                    <currentOption.icon className="w-3.5 h-3.5" />
-                    <span>{currentOption.label}</span>
-                  </div>
-                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
-                </button>
-
-                {/* Custom Styled Dropdown Popover */}
-                {isDropdownOpen && (
-                  <div className="absolute left-0 bottom-full mb-1.5 w-48 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-2xl backdrop-blur-xl z-50 animate-fade-in font-mono text-xs">
-                    {channelOptions.map((opt) => {
-                      const IconComponent = opt.icon;
-                      const isSelected = outboundChannel === opt.id;
-                      return (
-                        <button
-                          key={opt.id}
-                          type="button"
-                          onClick={() => {
-                            setOutboundChannel(opt.id);
-                            setIsDropdownOpen(false);
-                          }}
-                          className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-zinc-800 transition-colors ${
-                            isSelected ? `${opt.color} font-bold bg-zinc-800/60` : 'text-zinc-400 hover:text-white'
-                          }`}
-                        >
-                          <div className="flex items-center space-x-2">
-                            <IconComponent className="w-3.5 h-3.5" />
-                            <span>{opt.label}</span>
-                          </div>
-                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400" />}
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+              <select
+                value={outboundChannel}
+                onChange={(e) => setOutboundChannel(e.target.value as any)}
+                className="flex-1 sm:flex-none px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50 shrink-0"
+              >
+                <option value="MAP">PUBLIC CHAT</option>
+                <option value="WORLD">GLOBAL CHAT</option>
+                <option value="PRIVATE">PRIVATE PM</option>
+                <option value="CLAN">CLAN CHAT</option>
+              </select>
 
               {outboundChannel === 'PRIVATE' && (
                 <input
@@ -458,7 +298,7 @@ export function LiveChatModule() {
                   placeholder="Recipient..."
                   value={outboundRecipient}
                   onChange={(e) => setOutboundRecipient(e.target.value)}
-                  className="w-28 sm:w-36 px-2.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-purple-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 shrink-0"
+                  className="w-28 sm:w-36 px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-purple-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 shrink-0"
                 />
               )}
             </div>
@@ -470,13 +310,13 @@ export function LiveChatModule() {
                 placeholder={getChannelPlaceholder()}
                 value={outboundMessage}
                 onChange={(e) => setOutboundMessage(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"
               />
 
               <button
                 type="submit"
                 disabled={sending || !outboundMessage.trim()}
-                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-mono font-semibold flex items-center justify-center space-x-1.5 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-mono font-semibold flex items-center justify-center space-x-1.5 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className={`w-3.5 h-3.5 ${sending ? 'animate-bounce' : ''}`} />
                 <span className="hidden sm:inline">SEND</span>
@@ -485,55 +325,6 @@ export function LiveChatModule() {
           </div>
         </form>
       </div>
-
-      {/* Custom Cyberpunk Theme Clear Confirmation Modal */}
-      {showClearModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in font-sans">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-5 shadow-2xl text-white relative">
-            <button
-              onClick={() => setShowClearModal(false)}
-              className="absolute top-4 right-4 p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
-            >
-              <X className="w-5 h-5" />
-            </button>
-
-            <div className="flex items-center space-x-3">
-              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-                <ShieldAlert className="w-6 h-6" />
-              </div>
-              <div>
-                <h3 className="text-base font-display font-bold text-white">
-                  {selectedChannel === 'PRIVATE' ? 'Clear Saved PM History?' : 'Clear Live Chat Feed?'}
-                </h3>
-                <span className="text-[11px] font-mono text-zinc-500 uppercase">CONFIRMATION REQUIRED</span>
-              </div>
-            </div>
-
-            <p className="text-xs text-zinc-300 leading-relaxed font-sans bg-black/40 p-3.5 rounded-xl border border-zinc-800/80">
-              {selectedChannel === 'PRIVATE'
-                ? 'Are you sure you want to clear your account\'s saved 100 PM message history? This action cannot be undone.'
-                : 'Are you sure you want to clear the active global live chat stream? This will reset the feed log.'}
-            </p>
-
-            <div className="flex items-center justify-end space-x-2.5 pt-2">
-              <button
-                onClick={() => setShowClearModal(false)}
-                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={handleConfirmClearHistory}
-                disabled={loading}
-                className="px-4 py-2.5 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 text-xs font-mono font-bold flex items-center space-x-1.5 transition-all shadow-sm disabled:opacity-50"
-              >
-                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
-                <span>{loading ? 'Clearing...' : 'Confirm Clear'}</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
