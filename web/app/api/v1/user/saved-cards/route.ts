@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getSavedCards, toggleSaveCard, removeSavedCard } from '@/lib/userStore';
+import { getSavedCards, toggleSaveCard, updateOrSaveCard, removeSavedCard } from '@/lib/userStore';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,10 +18,15 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { userId, player } = body;
+    const { userId, player, action } = body;
 
     if (!userId || !player || !player.name) {
       return NextResponse.json({ status: 400, error: 'Missing userId or player data' }, { status: 400 });
+    }
+
+    if (action === 'update') {
+      const savedCards = updateOrSaveCard(userId, player);
+      return NextResponse.json({ status: 200, savedCards, isSaved: true });
     }
 
     const { savedCards, isSaved } = toggleSaveCard(userId, player);

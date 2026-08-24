@@ -99,6 +99,22 @@ export function toggleSaveCard(userId: string, player: PlayerProfile): { savedCa
   return { savedCards: data.savedCards, isSaved };
 }
 
+export function updateOrSaveCard(userId: string, player: PlayerProfile): PlayerProfile[] {
+  const data = getUserData(userId);
+  const existsIndex = data.savedCards.findIndex((p) => p.name.toLowerCase() === player.name.toLowerCase());
+
+  if (existsIndex >= 0) {
+    // Update existing card in-place with latest live stats
+    data.savedCards[existsIndex] = player;
+  } else {
+    // Save new card
+    data.savedCards.unshift(player);
+  }
+
+  saveUserData(userId, data);
+  return data.savedCards;
+}
+
 export function removeSavedCard(userId: string, playerName: string): PlayerProfile[] {
   const data = getUserData(userId);
   data.savedCards = data.savedCards.filter((p) => p.name.toLowerCase() !== playerName.toLowerCase());

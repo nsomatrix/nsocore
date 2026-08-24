@@ -76,6 +76,80 @@ export function PlayerInspectorModule() {
       console.error('Failed to toggle bookmark:', err);
     }
   };
+  const [cooldownMap, setCooldownMap] = useState<Record<string, number>>({});
+  const [refreshingMap, setRefreshingMap] = useState<Record<string, boolean>>({});
+  const [nowTimestamp, setNowTimestamp] = useState<number>(Date.now());
+
+  // Ticker interval for 1-minute countdown display
+  useEffect(() => {
+    const timer = setInterval(() => setNowTimestamp(Date.now()), 1000);
+    return () => clearInterval(timer);
+  }, []);
+
+  const getCooldownSeconds = (playerName: string): number => {
+    const expire = cooldownMap[playerName.toLowerCase()];
+    if (!expire) return 0;
+    const remainingMs = expire - nowTimestamp;
+    return remainingMs > 0 ? Math.ceil(remainingMs / 1000) : 0;
+  };
+
+  const handleRefreshSavedCard = async (player: PlayerProfile) => {
+    const pName = player.name;
+    const key = pName.toLowerCase();
+    const cd = getCooldownSeconds(pName);
+    if (cd > 0 || refreshingMap[key]) return;
+
+    // Set 60-second cooldown timer & set loading state
+    setCooldownMap((prev) => ({ ...prev, [key]: Date.now() + 60000 }));
+    setRefreshingMap((prev) => ({ ...prev, [key]: true }));
+
+    try {
+      // 1. Post inspection request target
+      await fetch('/api/v1/inspect', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: pName }),
+      });
+
+      // 2. Poll for live response every 1.5s (up to 12s max)
+      let attempts = 0;
+      const pollInterval = setInterval(async () => {
+        attempts++;
+        try {
+          const checkRes = await fetch(`/api/v1/players?q=${encodeURIComponent(pName)}`);
+          if (checkRes.ok) {
+            const data = await checkRes.json();
+            const found = (data.players || []).find((p: PlayerProfile) => p.name.toLowerCase() === key);
+            if (found && found.status !== 'OFFLINE') {
+              clearInterval(pollInterval);
+              setRefreshingMap((prev) => ({ ...prev, [key]: false }));
+
+              // Update saved cards state and persist to user account store
+              const res = await fetch('/api/v1/user/saved-cards', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ userId, player: found, action: 'update' }),
+              });
+              const resData = await res.json();
+              if (res.ok && resData.savedCards) {
+                setSavedCards(resData.savedCards);
+              }
+            }
+          }
+        } catch (err) {
+          console.warn('Saved card refresh error:', err);
+        }
+
+        if (attempts >= 8) {
+          clearInterval(pollInterval);
+          setRefreshingMap((prev) => ({ ...prev, [key]: false }));
+        }
+      }, 1500);
+    } catch (err) {
+      console.error('Refresh request error:', err);
+      setRefreshingMap((prev) => ({ ...prev, [key]: false }));
+    }
+  };
 
   const isCardSaved = (name: string) =>
     savedCards.some((p) => p.name.toLowerCase() === name.toLowerCase());
@@ -557,7 +631,36 @@ export function PlayerInspectorModule() {
                       </p>
                     </div>
 
-                    <div className="flex items-center space-x-1 -mr-1 -mt-1">
+                    <div className="flex items-center space-x-1.5 -mr-1 -mt-1">
+                      {isCardSaved(p.name) && (
+                        <button
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            handleRefreshSavedCard(p);
+                          }}
+                          disabled={getCooldownSeconds(p.name) > 0 || refreshingMap[p.name.toLowerCase()]}
+                          className={`px-2 py-1 rounded-lg flex items-center space-x-1 font-mono text-[10px] transition-all border ${
+                            getCooldownSeconds(p.name) > 0
+                              ? 'bg-zinc-900 text-zinc-500 border-zinc-800 cursor-not-allowed opacity-70'
+                              : refreshingMap[p.name.toLowerCase()]
+                              ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30 animate-pulse'
+                              : 'bg-zinc-800/90 text-zinc-300 hover:text-emerald-400 hover:bg-zinc-800 border-zinc-700/50'
+                          }`}
+                          title={
+                            getCooldownSeconds(p.name) > 0
+                              ? `Cooldown active (${getCooldownSeconds(p.name)}s remaining to prevent spam)`
+                              : 'Refresh live card stats (1 min cooldown)'
+                          }
+                        >
+                          <RefreshCw className={`w-3 h-3 ${refreshingMap[p.name.toLowerCase()] ? 'animate-spin text-emerald-400' : ''}`} />
+                          {getCooldownSeconds(p.name) > 0 ? (
+                            <span>{getCooldownSeconds(p.name)}s</span>
+                          ) : (
+                            <span className="hidden xs:inline">REFRESH</span>
+                          )}
+                        </button>
+                      )}
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
@@ -572,6 +675,7 @@ export function PlayerInspectorModule() {
                       >
                         <Star className={`w-4 h-4 ${isCardSaved(p.name) ? 'fill-amber-400' : ''}`} />
                       </button>
+
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
