@@ -189,38 +189,42 @@ export function LiveChatModule() {
     }
   };
 
-  // Calculate active channel feed cleanly without tab glitch
+  // Helper to compute merged PM list (Account Saved PMs + Live Game PMs)
+  const getAllPmMessages = (): ChatMessage[] => {
+    const pmMap = new Map<string, ChatMessage>();
+
+    // 1. Add account saved PMs
+    userPmMessages.forEach((msg) => pmMap.set(msg.id, msg));
+
+    // 2. Add live game PM messages
+    messages
+      .filter((m) => m.channel === 'PRIVATE')
+      .forEach((msg) => {
+        const matchKey = Array.from(pmMap.keys()).find((k) => {
+          const item = pmMap.get(k);
+          return (
+            item &&
+            item.message === msg.message &&
+            item.sender === msg.sender &&
+            item.recipient === msg.recipient
+          );
+        });
+        if (!matchKey) {
+          pmMap.set(msg.id, msg);
+        }
+      });
+
+    return Array.from(pmMap.values()).sort(
+      (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+    );
+  };
+
+  const allPmList = getAllPmMessages();
+
+  // Calculate active channel feed cleanly
   const getActiveFeed = (): ChatMessage[] => {
     if (selectedChannel === 'ALL') return messages;
-    if (selectedChannel === 'PRIVATE') {
-      // Merge saved user PMs and live intercepted game PMs seamlessly
-      const pmMap = new Map<string, ChatMessage>();
-
-      // 1. Add account saved PMs
-      userPmMessages.forEach((msg) => pmMap.set(msg.id, msg));
-
-      // 2. Add live game PM messages
-      messages
-        .filter((m) => m.channel === 'PRIVATE')
-        .forEach((msg) => {
-          const matchKey = Array.from(pmMap.keys()).find((k) => {
-            const item = pmMap.get(k);
-            return (
-              item &&
-              item.message === msg.message &&
-              item.sender === msg.sender &&
-              item.recipient === msg.recipient
-            );
-          });
-          if (!matchKey) {
-            pmMap.set(msg.id, msg);
-          }
-        });
-
-      return Array.from(pmMap.values()).sort(
-        (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-      );
-    }
+    if (selectedChannel === 'PRIVATE') return allPmList;
     return messages.filter((m) => m.channel === selectedChannel);
   };
 
@@ -230,7 +234,7 @@ export function LiveChatModule() {
     { id: 'ALL', label: 'All Channels' },
     { id: 'MAP', label: 'Public' },
     { id: 'WORLD', label: 'Global' },
-    { id: 'PRIVATE', label: `PM (${activeFeed.length > 0 && selectedChannel === 'PRIVATE' ? activeFeed.length : userPmMessages.length}/100)` },
+    { id: 'PRIVATE', label: `PM (${allPmList.length}/100)` },
     { id: 'CLAN', label: 'Clan' },
   ];
 
