@@ -33,6 +33,95 @@ export function PlayerInspectorModule() {
     33: 'Artifact',
   };
 
+  const getUpgradeStyle = (upgrade: number) => {
+    if (upgrade <= 0) {
+      return {
+        badge: 'bg-sky-500/5 text-sky-400/60 border border-sky-500/20',
+        title: 'text-zinc-300',
+      };
+    } else if (upgrade === 1) {
+      return {
+        badge: 'bg-sky-500/10 text-sky-400 border border-sky-500/30',
+        title: 'text-sky-300',
+      };
+    } else if (upgrade === 2) {
+      return {
+        badge: 'bg-blue-500/15 text-blue-400 border border-blue-500/40',
+        title: 'text-blue-300',
+      };
+    } else if (upgrade === 3) {
+      return {
+        badge: 'bg-blue-500/20 text-blue-400 font-extrabold border border-blue-500/60 shadow-[0_0_8px_rgba(59,130,246,0.2)]',
+        title: 'text-blue-400 font-bold',
+      };
+    } else if (upgrade === 4) {
+      return {
+        badge: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30',
+        title: 'text-emerald-300',
+      };
+    } else if (upgrade === 5) {
+      return {
+        badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40',
+        title: 'text-emerald-300',
+      };
+    } else if (upgrade === 6) {
+      return {
+        badge: 'bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/50',
+        title: 'text-emerald-400',
+      };
+    } else if (upgrade === 7) {
+      return {
+        badge: 'bg-green-500/25 text-green-400 font-extrabold border border-green-500/60 shadow-[0_0_8px_rgba(34,197,94,0.25)]',
+        title: 'text-green-400 font-bold',
+      };
+    } else if (upgrade === 8) {
+      return {
+        badge: 'bg-amber-500/10 text-amber-300 border border-amber-500/30',
+        title: 'text-amber-300',
+      };
+    } else if (upgrade === 9) {
+      return {
+        badge: 'bg-amber-500/15 text-amber-400 border border-amber-500/40',
+        title: 'text-amber-300',
+      };
+    } else if (upgrade === 10) {
+      return {
+        badge: 'bg-amber-600/20 text-amber-400 font-extrabold border border-amber-600/50',
+        title: 'text-amber-400',
+      };
+    } else if (upgrade === 11) {
+      return {
+        badge: 'bg-amber-700/25 text-amber-500 font-extrabold border border-amber-600/60 shadow-[0_0_8px_rgba(217,119,6,0.25)]',
+        title: 'text-amber-400 font-bold',
+      };
+    } else if (upgrade === 12) {
+      return {
+        badge: 'bg-purple-500/10 text-purple-300 border border-purple-500/30',
+        title: 'text-purple-300',
+      };
+    } else if (upgrade === 13) {
+      return {
+        badge: 'bg-purple-500/15 text-purple-400 border border-purple-500/40',
+        title: 'text-purple-300',
+      };
+    } else if (upgrade === 14) {
+      return {
+        badge: 'bg-purple-500/25 text-purple-400 font-extrabold border border-purple-500/60 shadow-[0_0_10px_rgba(168,85,247,0.3)]',
+        title: 'text-purple-300 font-bold',
+      };
+    } else if (upgrade === 15) {
+      return {
+        badge: 'bg-rose-500/20 text-rose-400 font-extrabold border border-rose-500/50 shadow-[0_0_10px_rgba(244,63,94,0.3)]',
+        title: 'text-rose-400 font-bold',
+      };
+    } else { // +16 and above
+      return {
+        badge: 'bg-red-500/30 text-red-400 font-extrabold border border-red-500/70 shadow-[0_0_14px_rgba(239,68,68,0.4)] animate-pulse',
+        title: 'text-red-400 font-extrabold',
+      };
+    }
+  };
+
   const pollIntervalRef = useRef<NodeJS.Timeout | null>(null);
 
   const stopPolling = () => {
@@ -673,6 +762,7 @@ export function PlayerInspectorModule() {
                 <div className="rounded-xl border border-zinc-800 bg-zinc-950 divide-y divide-zinc-800/80 overflow-hidden shadow-2xl">
                   {currentEquip.map((item, idx) => {
                     const slotName = SLOT_NAMES[item.type] || 'Slot';
+                    const style = getUpgradeStyle(item.upgrade || 0);
                     return (
                       <div
                         key={idx}
@@ -682,25 +772,19 @@ export function PlayerInspectorModule() {
                           <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider block">
                             {slotName}
                           </span>
-                          <h4 className="text-xs font-bold text-white font-sans">
+                          <h4 className={`text-xs font-bold font-sans ${style.title}`}>
                             {item.name}
                           </h4>
                           {item.reqLevel > 0 && (
-                            <span className="text-[10px] text-zinc-400 font-mono block">
+                            <span className="text-[10px] text-zinc-500 font-mono block">
                               Req Lvl {item.reqLevel}
                             </span>
                           )}
                         </div>
 
-                        {item.upgrade > 0 ? (
-                          <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 ml-2">
-                            +{item.upgrade}
-                          </span>
-                        ) : (
-                          <span className="text-[10px] font-mono text-zinc-600 shrink-0 ml-2">
-                            +0
-                          </span>
-                        )}
+                        <span className={`px-2.5 py-0.5 rounded-md text-xs font-mono font-bold shrink-0 ml-2 ${style.badge}`}>
+                          +{item.upgrade || 0}
+                        </span>
                       </div>
                     );
                   })}
