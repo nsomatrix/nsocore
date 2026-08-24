@@ -98,14 +98,14 @@ export function LiveChatModule() {
         return (
           <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded flex items-center space-x-1 shrink-0">
             <MessageCircle className="w-3 h-3" />
-            <span>MAP</span>
+            <span>PUBLIC</span>
           </span>
         );
       case 'WORLD':
         return (
           <span className="px-2 py-0.5 text-[10px] font-mono font-bold bg-amber-500/10 text-amber-400 border border-amber-500/20 rounded flex items-center space-x-1 shrink-0">
             <Globe className="w-3 h-3" />
-            <span>WORLD</span>
+            <span>GLOBAL</span>
           </span>
         );
       case 'PRIVATE':
@@ -138,11 +138,21 @@ export function LiveChatModule() {
 
   const channels = [
     { id: 'ALL', label: 'All Channels' },
-    { id: 'MAP', label: 'Map' },
-    { id: 'WORLD', label: 'World' },
-    { id: 'PRIVATE', label: 'Whispers' },
+    { id: 'MAP', label: 'Public' },
+    { id: 'WORLD', label: 'Global' },
+    { id: 'PRIVATE', label: 'PM' },
     { id: 'CLAN', label: 'Clan' },
   ];
+
+  const getChannelPlaceholder = () => {
+    switch (outboundChannel) {
+      case 'MAP': return 'Type public chat message...';
+      case 'WORLD': return 'Type global chat message...';
+      case 'PRIVATE': return 'Type private PM message...';
+      case 'CLAN': return 'Type clan chat message...';
+      default: return 'Type message...';
+    }
+  };
 
   return (
     <div className="space-y-4 max-w-full overflow-hidden">
@@ -276,10 +286,10 @@ export function LiveChatModule() {
                 onChange={(e) => setOutboundChannel(e.target.value as any)}
                 className="flex-1 sm:flex-none px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50 shrink-0"
               >
-                <option value="MAP">MAP (-23)</option>
-                <option value="WORLD">WORLD (-21)</option>
-                <option value="PRIVATE">WHISPER (-22)</option>
-                <option value="CLAN">CLAN (-19)</option>
+                <option value="MAP">PUBLIC CHAT</option>
+                <option value="WORLD">GLOBAL CHAT</option>
+                <option value="PRIVATE">PRIVATE PM</option>
+                <option value="CLAN">CLAN CHAT</option>
               </select>
 
               {outboundChannel === 'PRIVATE' && (
@@ -297,7 +307,7 @@ export function LiveChatModule() {
             <div className="flex items-center gap-2 flex-1 min-w-0">
               <input
                 type="text"
-                placeholder={`Type ${outboundChannel.toLowerCase()} message...`}
+                placeholder={getChannelPlaceholder()}
                 value={outboundMessage}
                 onChange={(e) => setOutboundMessage(e.target.value)}
                 className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"

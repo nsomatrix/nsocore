@@ -26,7 +26,7 @@ export default function ChatPage() {
             Live Chat Telemetry Console
           </h1>
           <p className="text-sm text-zinc-400 max-w-2xl font-sans mt-1">
-            Real-time chat log stream monitoring Map, World, Private Whispers, and Clan communications from active J2ME clients.
+            Real-time chat log stream monitoring Public, Global, Private PM, and Clan communications from active J2ME clients.
           </p>
         </div>
 

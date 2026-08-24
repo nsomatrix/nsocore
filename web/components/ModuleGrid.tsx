@@ -26,7 +26,7 @@ export function ModuleGrid({ targetCount }: ModuleGridProps) {
       version: 'v1.0 ACTIVE',
       href: '/chat',
       icon: MessageSquare,
-      description: 'Monitor real-time Map, World, Whisper, and Clan chat logs streamed from active clients.',
+      description: 'Monitor real-time Public, Global, Private PM, and Clan chat logs streamed from active clients.',
       badgeText: 'Live Messaging Stream',
       actionText: 'Open Chat Console',
     },
