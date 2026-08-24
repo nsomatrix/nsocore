@@ -81,7 +81,7 @@ public class MatrixUI {
     public static void showMatrixMenu() {
         aa menuList = new aa();
         menuList.addElement(new bd("Inspect Player Target", 888901));
-        menuList.addElement(new bd("Chat Console...", 888920));
+        menuList.addElement(new bd("Chat Console", 888920));
         boolean syncState = mod.web.MatrixWebClient.enableWebSync;
         menuList.addElement(new bd("REST Web Sync [" + (syncState ? "ON" : "OFF") + "]", 888904));
         menuList.addElement(new bd("Set REST API Endpoint", 888905));
