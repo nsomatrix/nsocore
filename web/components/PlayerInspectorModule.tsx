@@ -244,12 +244,12 @@ export function PlayerInspectorModule() {
   );
 
   return (
-    <div id="player-inspector-module" className="space-y-6 pt-4">
+    <div id="player-inspector-module" className="space-y-6 pt-2 sm:pt-4">
       {/* Module Header Bar */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80">
-        <div>
-          <div className="flex items-center space-x-2">
-            <h3 className="text-lg font-display font-extrabold text-white">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-4 sm:p-6 rounded-2xl bg-zinc-900/60 border border-zinc-800/80">
+        <div className="space-y-1">
+          <div className="flex flex-wrap items-center gap-2">
+            <h3 className="text-base sm:text-lg font-display font-extrabold text-white">
               Player Inspector Module
             </h3>
             <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
@@ -262,24 +262,24 @@ export function PlayerInspectorModule() {
               </span>
             )}
           </div>
-          <p className="text-xs text-zinc-400 font-sans mt-1">
+          <p className="text-xs text-zinc-400 font-sans">
             Enter any player name to trigger on-demand J2ME Packet 93 remote inspection.
           </p>
         </div>
 
         {/* Fetch Target Input Form */}
-        <form onSubmit={handleFetch} className="flex items-center space-x-2">
+        <form onSubmit={handleFetch} className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 w-full md:w-auto">
           <input
             type="text"
             value={targetName}
             onChange={(e) => setTargetName(e.target.value)}
             placeholder="Enter character name..."
-            className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 min-w-[190px]"
+            className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 w-full sm:w-[220px]"
           />
           <button
             type="submit"
             disabled={fetching || !targetName.trim()}
-            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)] min-w-[95px]"
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)] w-full sm:w-auto"
           >
             {fetching ? (
               <>
@@ -299,7 +299,7 @@ export function PlayerInspectorModule() {
       {/* Dynamic Status Toast Banner */}
       {fetchMsg && (
         <div
-          className={`p-3.5 rounded-xl border text-xs font-mono flex items-center justify-between animate-fade-in ${
+          className={`p-3 sm:p-3.5 rounded-xl border text-xs font-mono flex items-center justify-between animate-fade-in ${
             fetchMsg.type === 'success'
               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
               : fetchMsg.type === 'error'
@@ -307,38 +307,38 @@ export function PlayerInspectorModule() {
               : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
           }`}
         >
-          <div className="flex items-center space-x-2">
+          <div className="flex items-center space-x-2 min-w-0 pr-2">
             {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />}
             {fetchMsg.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0" />}
             {fetchMsg.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />}
-            <span>{fetchMsg.text}</span>
+            <span className="truncate">{fetchMsg.text}</span>
           </div>
-          <button onClick={() => setFetchMsg(null)} className="hover:opacity-75 ml-2">
+          <button onClick={() => setFetchMsg(null)} className="hover:opacity-75 shrink-0">
             <X className="w-4 h-4" />
           </button>
         </div>
       )}
 
       {/* Controls & Search Bar */}
-      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3">
         {/* Search Bar */}
-        <form onSubmit={handleSearchSubmit} className="relative flex-1 max-w-md">
+        <form onSubmit={handleSearchSubmit} className="relative flex-1 w-full sm:max-w-md">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-zinc-500" />
           <input
             type="text"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search active session or press Enter to lookup database..."
-            className="w-full pl-9 pr-4 py-2 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
+            className="w-full pl-9 pr-4 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
           />
         </form>
 
         {/* Action Controls */}
-        <div className="flex items-center space-x-2">
+        <div className="flex items-center gap-2 w-full sm:w-auto">
           {sessionPlayers.length > 0 && (
             <button
               onClick={handleClearSession}
-              className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 hover:text-white transition-colors"
+              className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 hover:text-white transition-colors"
             >
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Clear Session</span>
@@ -347,10 +347,10 @@ export function PlayerInspectorModule() {
 
           <button
             onClick={() => setShowClearConfirmModal(true)}
-            className="flex items-center space-x-1.5 px-3 py-2 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 hover:bg-rose-500/20 transition-colors"
+            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 hover:bg-rose-500/20 transition-colors"
           >
             <Trash2 className="w-3.5 h-3.5" />
-            <span>Purge Server Store</span>
+            <span>Purge Store</span>
           </button>
         </div>
       </div>
@@ -487,40 +487,40 @@ export function PlayerInspectorModule() {
         </div>
       )}
 
-      {/* 18-Attribute Modal Detail Dialog - Sleek Game-Like List with Live Sync */}
+      {/* 18-Attribute Modal Detail Dialog */}
       {selectedPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-6 shadow-2xl font-sans">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-2xl font-sans">
             {/* Modal Header */}
-            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
-              <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
+              <div className="flex items-center space-x-3 min-w-0">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shrink-0">
                   {selectedPlayer.level}
                 </div>
-                <div>
+                <div className="min-w-0">
                   <div className="flex items-center space-x-2">
-                    <h3 className="text-lg font-display font-bold text-white">{selectedPlayer.name}</h3>
-                    <span className="flex items-center space-x-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 animate-pulse">
+                    <h3 className="text-base sm:text-lg font-display font-bold text-white truncate">{selectedPlayer.name}</h3>
+                    <span className="flex items-center space-x-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
                       <Radio className="w-2.5 h-2.5 text-emerald-400" />
                       <span>LIVE</span>
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400 font-mono">
+                  <p className="text-xs text-zinc-400 font-mono truncate">
                     {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
                   </p>
                 </div>
               </div>
-              <div className="flex items-center space-x-2">
+              <div className="flex items-center justify-between sm:justify-end space-x-2 w-full sm:w-auto">
                 <button
                   onClick={() => {
                     setEquipmentPlayer(selectedPlayer);
                     setEquipmentTab(1);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] text-xs font-bold shadow-sm"
+                  className="px-3 py-1.5 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] text-xs font-bold shadow-sm flex-1 sm:flex-initial text-center"
                 >
                   View Equipment
                 </button>
-                <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors">
+                <button onClick={() => setSelectedPlayer(null)} className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors shrink-0">
                   <X className="w-5 h-5" />
                 </button>
               </div>
