@@ -1,5 +1,5 @@
 import { initializeApp, getApps, getApp, FirebaseApp } from 'firebase/app';
-import { getAuth, GoogleAuthProvider, Auth } from 'firebase/auth';
+import { getAuth, Auth } from 'firebase/auth';
 
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
@@ -22,17 +22,14 @@ export function isFirebaseConfigured(): boolean {
 // Singleton pattern for initializing Firebase Client
 let app: FirebaseApp | null = null;
 let auth: Auth | null = null;
-let googleProvider: GoogleAuthProvider | null = null;
 
 if (typeof window !== 'undefined' || isFirebaseConfigured()) {
   try {
     app = getApps().length > 0 ? getApp() : initializeApp(firebaseConfig);
     auth = getAuth(app);
-    googleProvider = new GoogleAuthProvider();
-    googleProvider.setCustomParameters({ prompt: 'select_account' });
   } catch (error) {
     console.warn('[Firebase] SDK initialization deferred or missing keys:', error);
   }
 }
 
-export { app, auth, googleProvider };
+export { app, auth };

@@ -3,22 +3,20 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import {
   User,
-  signInWithPopup,
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   updateProfile,
   signOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { auth, googleProvider, isFirebaseConfigured } from '@/lib/firebase';
+import { auth, isFirebaseConfigured } from '@/lib/firebase';
 
 interface AuthContextType {
   user: User | null;
   loading: boolean;
   isConfigured: boolean;
-  signInWithGoogle: () => Promise<void>;
-  signInWithEmail: (email: string, pass: string) => Promise<void>;
-  signUpWithEmail: (email: string, pass: string, name: string) => Promise<void>;
+  signInWithUsernameOrEmail: (usernameOrEmail: string, pass: string) => Promise<void>;
+  signUpWithUsername: (username: string, pass: string) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -26,11 +24,17 @@ const AuthContext = createContext<AuthContextType>({
   user: null,
   loading: true,
   isConfigured: false,
-  signInWithGoogle: async () => {},
-  signInWithEmail: async () => {},
-  signUpWithEmail: async () => {},
+  signInWithUsernameOrEmail: async () => {},
+  signUpWithUsername: async () => {},
   logout: async () => {},
 });
+
+// Convert plain username (e.g. "ninja123") into Firebase compatible identifier
+const formatToFirebaseEmail = (input: string): string => {
+  const trimmed = input.trim();
+  if (trimmed.includes('@')) return trimmed;
+  return `${trimmed.toLowerCase()}@nsomatrix.net`;
+};
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
@@ -51,27 +55,26 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     return () => unsubscribe();
   }, []);
 
-  const signInWithGoogle = async () => {
-    if (!auth || !googleProvider) {
-      throw new Error('Firebase Authentication is not configured. Please set your Firebase credentials in .env.local.');
+  const signInWithUsernameOrEmail = async (identifier: string, pass: string) => {
+    if (!auth) {
+      throw new Error('Firebase Authentication is not configured.');
     }
-    await signInWithPopup(auth, googleProvider);
+    const formattedEmail = formatToFirebaseEmail(identifier);
+    await signInWithEmailAndPassword(auth, formattedEmail, pass);
   };
 
-  const signInWithEmail = async (email: string, pass: string) => {
+  const signUpWithUsername = async (username: string, pass: string) => {
     if (!auth) {
-      throw new Error('Firebase Authentication is not configured. Please set your Firebase credentials in .env.local.');
+      throw new Error('Firebase Authentication is not configured.');
     }
-    await signInWithEmailAndPassword(auth, email, pass);
-  };
-
-  const signUpWithEmail = async (email: string, pass: string, name: string) => {
-    if (!auth) {
-      throw new Error('Firebase Authentication is not configured. Please set your Firebase credentials in .env.local.');
+    const cleanUsername = username.trim();
+    if (!cleanUsername) {
+      throw new Error('Please enter a username.');
     }
-    const res = await createUserWithEmailAndPassword(auth, email, pass);
-    if (res.user && name.trim()) {
-      await updateProfile(res.user, { displayName: name.trim() });
+    const formattedEmail = formatToFirebaseEmail(cleanUsername);
+    const res = await createUserWithEmailAndPassword(auth, formattedEmail, pass);
+    if (res.user) {
+      await updateProfile(res.user, { displayName: cleanUsername });
     }
   };
 
@@ -86,9 +89,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         loading,
         isConfigured: configured,
-        signInWithGoogle,
-        signInWithEmail,
-        signUpWithEmail,
+        signInWithUsernameOrEmail,
+        signUpWithUsername,
         logout,
       }}
     >
