@@ -38,7 +38,7 @@ export function ModuleGrid({ targetCount }: ModuleGridProps) {
       <div className="flex items-center justify-between">
         <div>
           <h2 className="text-xl font-display font-extrabold text-white tracking-tight">
-            Operational Platform Modules
+            Active Platform Modules
           </h2>
           <p className="text-xs text-zinc-400 font-sans mt-0.5">
             Dedicated module environments available for live execution.
