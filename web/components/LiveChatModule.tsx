@@ -207,40 +207,30 @@ export function LiveChatModule() {
     }
   };
 
-  // Helper to compute merged PM list (Account Saved PMs + Live Game PMs relevant to current account)
+  // Helper to compute merged PM list (Account Saved PMs + Live Game PM Telemetry)
   const getAllPmMessages = (): ChatMessage[] => {
     const pmMap = new Map<string, ChatMessage>();
 
-    // 1. Add account saved PMs (strictly isolated per user ID in userStore)
+    // 1. Add account saved PMs
     userPmMessages.forEach((msg) => pmMap.set(msg.id, msg));
 
-    // 2. Derive current account handle
-    const accountHandle = (user?.displayName || user?.email?.split('@')[0] || '').toLowerCase().trim();
-
-    // 3. Add live game PM messages ONLY if sender or recipient matches current user account
-    if (accountHandle) {
-      messages
-        .filter((m) => {
-          if (m.channel !== 'PRIVATE') return false;
-          const senderLower = m.sender.toLowerCase();
-          const recipientLower = (m.recipient || '').toLowerCase();
-          return senderLower.includes(accountHandle) || recipientLower.includes(accountHandle);
-        })
-        .forEach((msg) => {
-          const matchKey = Array.from(pmMap.keys()).find((k) => {
-            const item = pmMap.get(k);
-            return (
-              item &&
-              item.message === msg.message &&
-              item.sender === msg.sender &&
-              item.recipient === msg.recipient
-            );
-          });
-          if (!matchKey) {
-            pmMap.set(msg.id, msg);
-          }
+    // 2. Add live game PM telemetry messages (channel === 'PRIVATE')
+    messages
+      .filter((m) => m.channel === 'PRIVATE')
+      .forEach((msg) => {
+        const matchKey = Array.from(pmMap.keys()).find((k) => {
+          const item = pmMap.get(k);
+          return (
+            item &&
+            item.message === msg.message &&
+            item.sender === msg.sender &&
+            item.recipient === msg.recipient
+          );
         });
-    }
+        if (!matchKey) {
+          pmMap.set(msg.id, msg);
+        }
+      });
 
     return Array.from(pmMap.values()).sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
@@ -262,7 +252,7 @@ export function LiveChatModule() {
     { id: 'ALL', label: 'All Channels' },
     { id: 'MAP', label: 'Public' },
     { id: 'WORLD', label: 'Global' },
-    { id: 'PRIVATE', label: `PM (${allPmList.length}/100)` },
+    { id: 'PRIVATE', label: `PM ${allPmList.length}/100` },
     { id: 'CLAN', label: 'Clan' },
   ];
 
@@ -320,7 +310,7 @@ export function LiveChatModule() {
             <button
               onClick={() => setShowClearModal(true)}
               className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
-              title={selectedChannel === 'PRIVATE' ? 'Clear Account PM Logs (Max 100)' : 'Clear Chat Feed'}
+              title={selectedChannel === 'PRIVATE' ? 'Clear Account PM Logs • Max 100' : 'Clear Chat Feed'}
             >
               <Trash2 className="w-3.5 h-3.5" />
             </button>
@@ -350,7 +340,7 @@ export function LiveChatModule() {
         {/* Terminal Sub-header */}
         <div className="px-3 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between text-xs font-mono">
           <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">
-            {selectedChannel === 'PRIVATE' ? 'ACCOUNT PM LOGS (MAX 100 RECENT)' : 'FEED TELEMETRY'}
+            {selectedChannel === 'PRIVATE' ? 'ACCOUNT PM LOGS • MAX 100 RECENT' : 'FEED TELEMETRY'}
           </span>
           <span className="text-zinc-500 text-[11px]">{activeFeed.length} LOGS</span>
         </div>
@@ -367,7 +357,7 @@ export function LiveChatModule() {
               </p>
               <p className="text-zinc-600 text-[11px] max-w-xs mx-auto font-mono">
                 {selectedChannel === 'PRIVATE'
-                  ? 'Your user-initiated PM messages will save here (max 100 recent).'
+                  ? 'Your user-initiated PM messages will save here • max 100 recent.'
                   : 'Messages from the J2ME mod client stream here in real time.'}
               </p>
             </div>
