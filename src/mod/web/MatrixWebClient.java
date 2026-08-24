@@ -69,15 +69,7 @@ public class MatrixWebClient {
     private static java.util.Hashtable lastPostTimes = new java.util.Hashtable();
 
     public static boolean isWebTarget(String name) {
-        if (name == null || activeLiveTargets == null) return false;
-        String clean = name.trim();
-        for (int i = 0; i < activeLiveTargets.size(); i++) {
-            String t = (String) activeLiveTargets.elementAt(i);
-            if (t != null && t.equalsIgnoreCase(clean)) {
-                return true;
-            }
-        }
-        return false;
+        return mod.net.MatrixNet.isPendingWebInspect(name);
     }
 
     /**
@@ -410,11 +402,11 @@ public class MatrixWebClient {
                 || clean.indexOf("r\u1eddi kh\u1ecfi") != -1
                 || clean.indexOf("roi khoi") != -1;
 
-        if (isRecentTarget && (isOfflineNotice || isWebTarget(target) || mod.net.MatrixNet.isWebTriggeredInspect)) {
-            MatrixLogger.log("WEB-REST", "Detected Offline / Unavailable Notice for target: \"" + target + "\": " + text);
-            postOfflineStatus(target, text);
-
-            if (isWebTarget(target) || mod.net.MatrixNet.isWebTriggeredInspect) {
+        if (isRecentTarget && isOfflineNotice) {
+            if (mod.net.MatrixNet.isPendingWebInspect(target)) {
+                MatrixLogger.log("WEB-REST", "Detected Offline / Unavailable Notice for remote web target: \"" + target + "\": " + text);
+                postOfflineStatus(target, text);
+                mod.net.MatrixNet.markWebFulfilled(target);
                 return true; // Suppress notice popup/ticker in J2ME client UI for web inspects
             }
         }

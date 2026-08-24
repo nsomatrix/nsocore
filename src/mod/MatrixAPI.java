@@ -103,7 +103,9 @@ public class MatrixAPI {
     public static boolean checkAndHandleWebInspect(bp player) {
         if (player == null || player.ab == null) return false;
         MatrixLogger.logPlayerInfo(player);
-        if (MatrixWebClient.isWebTarget(player.ab)) {
+        if (MatrixNet.isPendingWebInspect(player.ab)) {
+            MatrixLogger.log("API", "Remote Web Inspect fulfilled for target: \"" + player.ab + "\". Suppressing in-game UI.");
+            MatrixNet.markWebFulfilled(player.ab);
             try {
                 if (dg.n() != null) {
                     dg.n().v();
