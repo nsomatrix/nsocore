@@ -2,7 +2,7 @@
 
 import React, { useState, useRef } from 'react';
 import { PlayerProfile } from '@/lib/store';
-import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Loader2, Download, Shield, Sparkles, Radio } from 'lucide-react';
+import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Clock, Shield, Radio, Loader2, Download, Sparkles, AlertTriangle } from 'lucide-react';
 
 export function PlayerInspectorModule() {
   const [sessionPlayers, setSessionPlayers] = useState<PlayerProfile[]>([]);
@@ -14,8 +14,6 @@ export function PlayerInspectorModule() {
   const [equipmentPlayer, setEquipmentPlayer] = useState<PlayerProfile | null>(null);
   const [equipmentTab, setEquipmentTab] = useState<1 | 2>(1);
   const [copied, setCopied] = useState(false);
-  const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
-  const [clearing, setClearing] = useState(false);
 
   const SLOT_NAMES: { [key: number]: string } = {
     0: 'Weapon',
@@ -205,27 +203,6 @@ export function PlayerInspectorModule() {
     setFetchMsg(null);
   };
 
-  const handleConfirmClearAll = async () => {
-    setClearing(true);
-    try {
-      fetch('/api/v1/inspect', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name: '__CLEAR__' }),
-      }).catch(() => {});
-      const res = await fetch('/api/v1/players', { method: 'DELETE' });
-      if (res.ok) {
-        setSessionPlayers([]);
-        setFetchMsg(null);
-        setShowClearConfirmModal(false);
-      }
-    } catch (e) {
-      console.error('Failed to clear profiles:', e);
-    } finally {
-      setClearing(false);
-    }
-  };
-
   const handleCopyJson = (player: PlayerProfile) => {
     navigator.clipboard.writeText(JSON.stringify(player, null, 2));
     setCopied(true);
@@ -334,8 +311,8 @@ export function PlayerInspectorModule() {
         </form>
 
         {/* Action Controls */}
-        <div className="flex items-center gap-2 w-full sm:w-auto">
-          {sessionPlayers.length > 0 && (
+        {sessionPlayers.length > 0 && (
+          <div className="flex items-center gap-2 w-full sm:w-auto">
             <button
               onClick={handleClearSession}
               className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-zinc-900 border border-zinc-800 text-xs text-zinc-400 hover:text-white transition-colors"
@@ -343,16 +320,8 @@ export function PlayerInspectorModule() {
               <RefreshCw className="w-3.5 h-3.5" />
               <span>Clear Session</span>
             </button>
-          )}
-
-          <button
-            onClick={() => setShowClearConfirmModal(true)}
-            className="flex-1 sm:flex-initial flex items-center justify-center space-x-1.5 px-3 py-2.5 rounded-xl bg-rose-500/10 border border-rose-500/20 text-xs text-rose-400 hover:bg-rose-500/20 transition-colors"
-          >
-            <Trash2 className="w-3.5 h-3.5" />
-            <span>Purge Store</span>
-          </button>
-        </div>
+          </div>
+        )}
       </div>
 
       {/* Empty State vs Active Session Cards */}
@@ -625,53 +594,6 @@ export function PlayerInspectorModule() {
                 className="px-4 py-2 rounded-xl bg-zinc-800 text-white text-xs font-semibold hover:bg-zinc-700 transition-colors"
               >
                 Close
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Custom OLED Clear Confirmation Modal */}
-      {showClearConfirmModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-6 shadow-2xl font-sans">
-            <div className="flex items-center space-x-3">
-              <div className="w-10 h-10 rounded-xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
-                <AlertTriangle className="w-5 h-5" />
-              </div>
-              <div>
-                <h3 className="text-base font-display font-bold text-white">Purge Server Database?</h3>
-                <p className="text-xs text-zinc-400 mt-0.5">
-                  This will purge all player profiles from server memory and disk.
-                </p>
-              </div>
-            </div>
-
-            <div className="p-3.5 rounded-xl bg-black border border-zinc-800/80 text-xs font-mono text-zinc-400 space-y-1">
-              <p className="text-rose-400 font-semibold">⚠️ Action Warning</p>
-              <p className="text-[11px]">All stored inspection records will be cleared globally.</p>
-            </div>
-
-            <div className="flex items-center justify-end space-x-3 pt-2">
-              <button
-                onClick={() => setShowClearConfirmModal(false)}
-                disabled={clearing}
-                className="px-4 py-2 rounded-xl bg-zinc-800 text-zinc-300 text-xs font-medium hover:text-white hover:bg-zinc-700 transition-colors"
-              >
-                Cancel
-              </button>
-
-              <button
-                onClick={handleConfirmClearAll}
-                disabled={clearing}
-                className="flex items-center space-x-1.5 px-4 py-2 rounded-xl bg-rose-500 text-white font-semibold text-xs hover:bg-rose-600 transition-colors disabled:opacity-50"
-              >
-                {clearing ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Trash2 className="w-3.5 h-3.5" />
-                )}
-                <span>{clearing ? 'Clearing...' : 'Confirm Purge'}</span>
               </button>
             </div>
           </div>
