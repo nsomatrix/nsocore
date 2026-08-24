@@ -441,34 +441,32 @@ export function PlayerInspectorModule() {
                         <div className="bg-cyan-500 h-full rounded-full transition-all duration-500" style={{ width: `${mpPercent}%` }} />
                       </div>
                     </div>
-                  </div>
-
-                  {/* Preview Key Stats - Rich Brown Pills with Rich Gold Yellow Text */}
-                  <div className="space-y-1.5 mt-3 pt-3 border-t border-[#593722]/60 font-mono text-[11px]">
-                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#3b2416] border border-[#6b4229]/80 shadow-sm">
-                      <span className="text-[11px] text-[#fef08a] font-sans font-medium">Attack DMG</span>
-                      <span className="text-[#facc15] font-extrabold">{p.attackMin} - {p.attackMax}</span>
+                  </div>                  {/* Preview Key Stats - Supabase Modern Dark Pills */}
+                  <div className="space-y-1.5 mt-3 pt-3 border-t border-zinc-800/80 font-mono text-[11px]">
+                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
+                      <span className="text-[11px] text-zinc-400 font-sans font-medium">Attack DMG</span>
+                      <span className="text-emerald-400 font-extrabold">{p.attackMin} - {p.attackMax}</span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#3b2416] border border-[#6b4229]/80 shadow-sm">
-                      <span className="text-[11px] text-[#fef08a] font-sans font-medium">Critical Strike</span>
-                      <span className="text-[#facc15] font-extrabold">{p.critical}</span>
+                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
+                      <span className="text-[11px] text-zinc-400 font-sans font-medium">Critical Strike</span>
+                      <span className="text-emerald-400 font-extrabold">{p.critical}</span>
                     </div>
 
-                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-[#3b2416] border border-[#6b4229]/80 shadow-sm">
-                      <span className="text-[11px] text-[#fef08a] font-sans font-medium">Reduce Pain</span>
-                      <span className="text-[#facc15] font-extrabold">{p.reducePain}</span>
+                    <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
+                      <span className="text-[11px] text-zinc-400 font-sans font-medium">Reduce Pain</span>
+                      <span className="text-emerald-400 font-extrabold">{p.reducePain}</span>
                     </div>
                   </div>
                 </div>
 
-                <div className="pt-3 flex items-center justify-between text-xs font-medium border-t border-zinc-800/40 gap-2" onClick={(e) => e.stopPropagation()}>
+                <div className="pt-3 flex items-center justify-between text-xs font-medium border-t border-zinc-800/60 gap-2" onClick={(e) => e.stopPropagation()}>
                   <button
                     onClick={() => setSelectedPlayer(p)}
-                    className="flex-1 py-1.5 px-2.5 rounded-xl bg-zinc-800/80 text-zinc-300 hover:text-white hover:bg-zinc-700 transition-colors flex items-center justify-between text-[11px]"
+                    className="flex-1 py-2 px-3 rounded-xl bg-zinc-900 border border-zinc-800 text-zinc-300 hover:text-white hover:bg-zinc-800 transition-all flex items-center justify-between text-[11px]"
                   >
                     <span>View Stats</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
+                    <ChevronRight className="w-3.5 h-3.5 text-zinc-400" />
                   </button>
 
                   <button
@@ -476,7 +474,7 @@ export function PlayerInspectorModule() {
                       setEquipmentPlayer(p);
                       setEquipmentTab(1);
                     }}
-                    className="py-1.5 px-3 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] flex items-center space-x-1.5 text-[11px] font-bold shadow-sm"
+                    className="py-2 px-3 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all border border-emerald-500/20 flex items-center space-x-1.5 text-[11px] font-bold"
                   >
                     <span>View Equipment</span>
                   </button>
@@ -516,7 +514,7 @@ export function PlayerInspectorModule() {
                     setEquipmentPlayer(selectedPlayer);
                     setEquipmentTab(1);
                   }}
-                  className="px-3 py-1.5 rounded-xl bg-[#3b2416] text-[#facc15] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722] text-xs font-bold shadow-sm flex-1 sm:flex-initial text-center"
+                  className="px-3 py-1.5 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-colors border border-emerald-500/20 text-xs font-bold shadow-sm flex-1 sm:flex-initial text-center"
                 >
                   View Equipment
                 </button>
@@ -544,71 +542,71 @@ export function PlayerInspectorModule() {
               </div>
             </div>
 
-            {/* Unified Sleek Game-Like Stats Panel (Continuous List with Rich Brown Pills & Rich Gold Yellow Text) */}
-            <div className="bg-[#24160e] rounded-2xl border border-[#593722] overflow-hidden divide-y divide-[#4a2e1c]/80 text-xs font-mono shadow-xl">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Attack Min</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.attackMin}</span>
+            {/* Supabase Dark Stats Panel */}
+            <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Attack Min</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.attackMin}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Attack Max</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.attackMax}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Attack Max</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.attackMax}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Speed</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.speed}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Speed</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.speed}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#422919] hover:bg-[#52331f] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Critical Strike</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.critical}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Critical Strike</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.critical}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Accurate Point</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.accurate}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Accurate Point</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.accurate}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Dodge Ability</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.dodge}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Dodge Ability</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.dodge}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#422919] hover:bg-[#52331f] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Anti Fire</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.antiFire}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Anti Fire</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiFire}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#422919] hover:bg-[#52331f] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Anti Ice</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.antiIce}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Anti Ice</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiIce}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#422919] hover:bg-[#52331f] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Anti Wind</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.antiWind}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Anti Wind</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiWind}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#422919] hover:bg-[#52331f] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Reduce Pain</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.reducePain}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Reduce Pain</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.reducePain}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Counter Strike</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.counterStrike}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Counter Strike</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.counterStrike}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Anti Chakra</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.antiChakra}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Anti Chakra</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiChakra}</span>
               </div>
 
-              <div className="flex items-center justify-between px-4 py-2.5 bg-[#3b2416] hover:bg-[#4a2e1c] transition-colors">
-                <span className="text-[#fef08a] font-sans font-medium">Anti Chakra Back</span>
-                <span className="text-[#facc15] font-extrabold">{selectedPlayer.antiChakraBack}</span>
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Anti Chakra Back</span>
+                <span className="text-emerald-400 font-extrabold">{selectedPlayer.antiChakraBack}</span>
               </div>
             </div>
 
@@ -680,64 +678,69 @@ export function PlayerInspectorModule() {
         </div>
       )}
 
-      {/* Clean Ninja School Equipment Box Modal */}
+      {/* Supabase-Inspired Equipment Box Modal */}
       {equipmentPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in">
-          <div className="bg-[#24160e] border-2 border-[#593722] rounded-2xl w-full max-w-lg max-h-[90vh] overflow-y-auto p-6 space-y-5 shadow-2xl font-sans text-white">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-2xl font-sans text-white">
             
-            {/* Clean Title Bar */}
-            <div className="flex items-center justify-between border-b border-[#593722] pb-4">
-              <div>
-                <div className="flex items-center space-x-2">
-                  <h3 className="text-lg font-display font-extrabold text-[#facc15]">{equipmentPlayer.name}</h3>
-                  <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-[#3b2416] text-[#fef08a] border border-[#6b4229]">
-                    Lvl {equipmentPlayer.level} {equipmentPlayer.class}
-                  </span>
+            {/* Supabase Title Bar */}
+            <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
+              <div className="flex items-center space-x-3">
+                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shrink-0">
+                  {equipmentPlayer.level}
                 </div>
-                <p className="text-xs text-[#debfa6] font-sans mt-0.5">
-                  Equipped Items Overview
-                </p>
+                <div>
+                  <div className="flex items-center space-x-2">
+                    <h3 className="text-lg font-display font-bold text-white">{equipmentPlayer.name}</h3>
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                      {equipmentPlayer.class}
+                    </span>
+                  </div>
+                  <p className="text-xs text-zinc-400 font-sans mt-0.5">
+                    Equipped Items Overview
+                  </p>
+                </div>
               </div>
               <button
                 onClick={() => setEquipmentPlayer(null)}
-                className="p-2 rounded-xl bg-[#3b2416] text-[#fef08a] hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722]"
+                className="p-1.5 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
               >
                 <X className="w-5 h-5" />
               </button>
             </div>
 
-            {/* Sticked Tab Switcher: Equipment 1 vs Equipment 2 */}
-            <div className="flex rounded-xl overflow-hidden border border-[#593722] bg-[#1a100a] divide-x divide-[#593722] shadow-inner">
+            {/* Supabase Tab Switcher: Equipment 1 vs Equipment 2 */}
+            <div className="flex rounded-xl overflow-hidden border border-zinc-800 bg-black divide-x divide-zinc-800">
               <button
                 onClick={() => setEquipmentTab(1)}
-                className={`flex-1 py-2 px-4 text-xs font-bold transition-all text-center ${
+                className={`flex-1 py-2.5 px-4 text-xs font-bold transition-all text-center ${
                   equipmentTab === 1
-                    ? 'bg-[#3b2416] text-[#facc15]'
-                    : 'text-[#debfa6] hover:text-white hover:bg-[#281a12]'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                 }`}
               >
                 Equipment 1
               </button>
               <button
                 onClick={() => setEquipmentTab(2)}
-                className={`flex-1 py-2 px-4 text-xs font-bold transition-all text-center ${
+                className={`flex-1 py-2.5 px-4 text-xs font-bold transition-all text-center ${
                   equipmentTab === 2
-                    ? 'bg-[#3b2416] text-[#facc15]'
-                    : 'text-[#debfa6] hover:text-white hover:bg-[#281a12]'
+                    ? 'bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500'
+                    : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                 }`}
               >
                 Equipment 2
               </button>
             </div>
 
-            {/* Sticked Equipment Items List */}
+            {/* Equipment Items List */}
             {(() => {
               const currentEquip = (equipmentPlayer.equipment || []).filter((e) => e.tab === equipmentTab);
               if (currentEquip.length === 0) {
                 return (
-                  <div className="py-10 text-center bg-[#1a100a] border border-[#442c1d] rounded-xl p-6 text-xs text-[#debfa6] space-y-1">
-                    <p className="font-bold text-[#fef08a]">No Items Equipped</p>
-                    <p className="text-[11px] text-[#bda28b]">
+                  <div className="py-10 text-center bg-black/60 border border-zinc-800 rounded-xl p-6 text-xs text-zinc-400 space-y-1">
+                    <p className="font-bold text-white">No Items Equipped</p>
+                    <p className="text-[11px] text-zinc-500">
                       No gear items present in Equipment {equipmentTab} tab.
                     </p>
                   </div>
@@ -745,34 +748,34 @@ export function PlayerInspectorModule() {
               }
 
               return (
-                <div className="rounded-xl border border-[#593722] bg-[#24160e] divide-y divide-[#593722] overflow-hidden shadow-md">
+                <div className="rounded-xl border border-zinc-800 bg-zinc-950 divide-y divide-zinc-800/80 overflow-hidden shadow-2xl">
                   {currentEquip.map((item, idx) => {
                     const slotName = SLOT_NAMES[item.type] || 'Slot';
                     return (
                       <div
                         key={idx}
-                        className="py-2.5 px-4 bg-[#3b2416]/90 hover:bg-[#4a2e1c] transition-colors flex items-center justify-between"
+                        className="py-2.5 px-4 bg-zinc-900/60 hover:bg-zinc-900 transition-colors flex items-center justify-between"
                       >
                         <div className="space-y-0.5">
-                          <span className="text-[10px] font-mono uppercase text-[#debfa6] tracking-wider block">
+                          <span className="text-[10px] font-mono uppercase text-zinc-500 tracking-wider block">
                             {slotName}
                           </span>
-                          <h4 className="text-xs font-bold text-[#facc15] font-sans">
+                          <h4 className="text-xs font-bold text-white font-sans">
                             {item.name}
                           </h4>
                           {item.reqLevel > 0 && (
-                            <span className="text-[10px] text-[#fef08a]/70 font-mono block">
+                            <span className="text-[10px] text-zinc-400 font-mono block">
                               Req Lvl {item.reqLevel}
                             </span>
                           )}
                         </div>
 
                         {item.upgrade > 0 ? (
-                          <span className="px-2.5 py-1 rounded-lg text-xs font-mono font-extrabold bg-[#593722] text-[#fef08a] border border-[#855233] shadow-inner shrink-0 ml-2">
+                          <span className="px-2.5 py-0.5 rounded-md text-xs font-mono font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 shrink-0 ml-2">
                             +{item.upgrade}
                           </span>
                         ) : (
-                          <span className="text-[10px] font-mono text-[#a88d77] shrink-0 ml-2">
+                          <span className="text-[10px] font-mono text-zinc-600 shrink-0 ml-2">
                             +0
                           </span>
                         )}
@@ -784,10 +787,10 @@ export function PlayerInspectorModule() {
             })()}
 
             {/* Modal Footer */}
-            <div className="pt-3 border-t border-[#593722] flex justify-end">
+            <div className="pt-3 border-t border-zinc-800 flex justify-end">
               <button
                 onClick={() => setEquipmentPlayer(null)}
-                className="px-5 py-2 rounded-xl bg-[#3b2416] text-[#fef08a] font-bold text-xs hover:bg-[#4a2e1c] hover:text-white transition-colors border border-[#593722]"
+                className="px-4 py-2 rounded-xl bg-zinc-800 text-white font-semibold text-xs hover:bg-zinc-700 transition-colors"
               >
                 Close
               </button>
