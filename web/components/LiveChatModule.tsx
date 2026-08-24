@@ -1,7 +1,7 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight, ShieldAlert } from 'lucide-react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
+import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User, ArrowRight, ShieldAlert, ChevronDown, Check, X, AlertTriangle } from 'lucide-react';
 import { ChatMessage } from '@/lib/store';
 import { useAuth } from '@/context/AuthContext';
 
@@ -15,12 +15,30 @@ export function LiveChatModule() {
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
 
+  // Custom Theme Clear Confirmation Modal State
+  const [showClearModal, setShowClearModal] = useState(false);
+
+  // Custom Theme Dropdown State
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
   // Outbound Web Chat Dispatch State
   const [outboundChannel, setOutboundChannel] = useState<'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN'>('MAP');
   const [outboundRecipient, setOutboundRecipient] = useState('');
   const [outboundMessage, setOutboundMessage] = useState('');
   const [sending, setSending] = useState(false);
   const [sendStatus, setSendStatus] = useState<string | null>(null);
+
+  // Close dropdown on click outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setIsDropdownOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Fetch account PM messages from userStore API
   const fetchUserPmMessages = useCallback(async () => {
@@ -60,10 +78,11 @@ export function LiveChatModule() {
     return () => clearInterval(interval);
   }, [autoRefresh, fetchChatMessages]);
 
-  const handleClearHistory = async () => {
+  const handleConfirmClearHistory = async () => {
+    setShowClearModal(false);
+    setLoading(true);
+
     if (selectedChannel === 'PRIVATE') {
-      if (!confirm('Are you sure you want to clear your saved 100 PM message history?')) return;
-      setLoading(true);
       try {
         const res = await fetch(`/api/v1/user/pm-chats?userId=${encodeURIComponent(userId)}`, { method: 'DELETE' });
         if (res.ok) {
@@ -77,8 +96,6 @@ export function LiveChatModule() {
       return;
     }
 
-    if (!confirm('Are you sure you want to clear the global live chat feed?')) return;
-    setLoading(true);
     try {
       const res = await fetch('/api/v1/chat', { method: 'DELETE' });
       if (res.ok) {
@@ -238,6 +255,15 @@ export function LiveChatModule() {
     { id: 'CLAN', label: 'Clan' },
   ];
 
+  const channelOptions: { id: 'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN'; label: string; icon: any; color: string; border: string }[] = [
+    { id: 'MAP', label: 'PUBLIC CHAT', icon: MessageCircle, color: 'text-emerald-400', border: 'border-emerald-500/30' },
+    { id: 'WORLD', label: 'GLOBAL CHAT', icon: Globe, color: 'text-amber-400', border: 'border-amber-500/30' },
+    { id: 'PRIVATE', label: 'PRIVATE PM', icon: User, color: 'text-purple-400', border: 'border-purple-500/30' },
+    { id: 'CLAN', label: 'CLAN CHAT', icon: Users, color: 'text-cyan-400', border: 'border-cyan-500/30' },
+  ];
+
+  const currentOption = channelOptions.find((opt) => opt.id === outboundChannel) || channelOptions[0];
+
   const getChannelPlaceholder = () => {
     switch (outboundChannel) {
       case 'MAP': return 'Type public chat message...';
@@ -281,7 +307,7 @@ export function LiveChatModule() {
             </button>
 
             <button
-              onClick={handleClearHistory}
+              onClick={() => setShowClearModal(true)}
               className="p-1.5 rounded-lg bg-red-500/10 text-red-400 hover:bg-red-500/20 border border-red-500/20 transition-colors"
               title={selectedChannel === 'PRIVATE' ? 'Clear Account PM Logs (Max 100)' : 'Clear Chat Feed'}
             >
@@ -379,18 +405,51 @@ export function LiveChatModule() {
           </div>
 
           <div className="flex flex-col sm:flex-row items-stretch gap-2">
-            {/* Options bar: Channel + Recipient */}
+            {/* Options bar: Custom Theme Dropdown + Recipient Input */}
             <div className="flex items-center gap-2 w-full sm:w-auto">
-              <select
-                value={outboundChannel}
-                onChange={(e) => setOutboundChannel(e.target.value as any)}
-                className="flex-1 sm:flex-none px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50 shrink-0"
-              >
-                <option value="MAP">PUBLIC CHAT</option>
-                <option value="WORLD">GLOBAL CHAT</option>
-                <option value="PRIVATE">PRIVATE PM</option>
-                <option value="CLAN">CLAN CHAT</option>
-              </select>
+              {/* Custom Cyberpunk Theme Channel Selector */}
+              <div className="relative flex-1 sm:flex-none" ref={dropdownRef}>
+                <button
+                  type="button"
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                  className={`w-full sm:w-auto flex items-center justify-between space-x-2 px-3 py-2 rounded-xl bg-black border ${currentOption.border} text-xs font-mono font-bold ${currentOption.color} hover:bg-zinc-900 transition-all shrink-0`}
+                >
+                  <div className="flex items-center space-x-1.5">
+                    <currentOption.icon className="w-3.5 h-3.5" />
+                    <span>{currentOption.label}</span>
+                  </div>
+                  <ChevronDown className={`w-3.5 h-3.5 transition-transform ${isDropdownOpen ? 'rotate-180' : ''}`} />
+                </button>
+
+                {/* Custom Styled Dropdown Popover */}
+                {isDropdownOpen && (
+                  <div className="absolute left-0 bottom-full mb-1.5 w-48 py-1.5 rounded-xl bg-zinc-900 border border-zinc-800 shadow-2xl backdrop-blur-xl z-50 animate-fade-in font-mono text-xs">
+                    {channelOptions.map((opt) => {
+                      const IconComponent = opt.icon;
+                      const isSelected = outboundChannel === opt.id;
+                      return (
+                        <button
+                          key={opt.id}
+                          type="button"
+                          onClick={() => {
+                            setOutboundChannel(opt.id);
+                            setIsDropdownOpen(false);
+                          }}
+                          className={`w-full flex items-center justify-between px-3 py-2 text-left hover:bg-zinc-800 transition-colors ${
+                            isSelected ? `${opt.color} font-bold bg-zinc-800/60` : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          <div className="flex items-center space-x-2">
+                            <IconComponent className="w-3.5 h-3.5" />
+                            <span>{opt.label}</span>
+                          </div>
+                          {isSelected && <Check className="w-3.5 h-3.5 text-emerald-400" />}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
 
               {outboundChannel === 'PRIVATE' && (
                 <input
@@ -398,7 +457,7 @@ export function LiveChatModule() {
                   placeholder="Recipient..."
                   value={outboundRecipient}
                   onChange={(e) => setOutboundRecipient(e.target.value)}
-                  className="w-28 sm:w-36 px-2.5 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-purple-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 shrink-0"
+                  className="w-28 sm:w-36 px-2.5 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-purple-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 shrink-0"
                 />
               )}
             </div>
@@ -410,13 +469,13 @@ export function LiveChatModule() {
                 placeholder={getChannelPlaceholder()}
                 value={outboundMessage}
                 onChange={(e) => setOutboundMessage(e.target.value)}
-                className="flex-1 min-w-0 px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"
+                className="flex-1 min-w-0 px-3 py-2 rounded-xl bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"
               />
 
               <button
                 type="submit"
                 disabled={sending || !outboundMessage.trim()}
-                className="px-3.5 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-mono font-semibold flex items-center justify-center space-x-1.5 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
+                className="px-3.5 py-2 rounded-xl bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-mono font-semibold flex items-center justify-center space-x-1.5 transition-all shrink-0 disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <Send className={`w-3.5 h-3.5 ${sending ? 'animate-bounce' : ''}`} />
                 <span className="hidden sm:inline">SEND</span>
@@ -425,6 +484,55 @@ export function LiveChatModule() {
           </div>
         </form>
       </div>
+
+      {/* Custom Cyberpunk Theme Clear Confirmation Modal */}
+      {showClearModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/85 backdrop-blur-md animate-fade-in font-sans">
+          <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-md p-6 space-y-5 shadow-2xl text-white relative">
+            <button
+              onClick={() => setShowClearModal(false)}
+              className="absolute top-4 right-4 p-1 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-800 transition-colors"
+            >
+              <X className="w-5 h-5" />
+            </button>
+
+            <div className="flex items-center space-x-3">
+              <div className="w-12 h-12 rounded-2xl bg-rose-500/10 border border-rose-500/20 flex items-center justify-center text-rose-400 shrink-0">
+                <ShieldAlert className="w-6 h-6" />
+              </div>
+              <div>
+                <h3 className="text-base font-display font-bold text-white">
+                  {selectedChannel === 'PRIVATE' ? 'Clear Saved PM History?' : 'Clear Live Chat Feed?'}
+                </h3>
+                <span className="text-[11px] font-mono text-zinc-500 uppercase">CONFIRMATION REQUIRED</span>
+              </div>
+            </div>
+
+            <p className="text-xs text-zinc-300 leading-relaxed font-sans bg-black/40 p-3.5 rounded-xl border border-zinc-800/80">
+              {selectedChannel === 'PRIVATE'
+                ? 'Are you sure you want to clear your account\'s saved 100 PM message history? This action cannot be undone.'
+                : 'Are you sure you want to clear the active global live chat stream? This will reset the feed log.'}
+            </p>
+
+            <div className="flex items-center justify-end space-x-2.5 pt-2">
+              <button
+                onClick={() => setShowClearModal(false)}
+                className="px-4 py-2.5 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 text-xs font-semibold transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleConfirmClearHistory}
+                disabled={loading}
+                className="px-4 py-2.5 rounded-xl bg-rose-500/20 text-rose-300 hover:bg-rose-500/30 border border-rose-500/30 text-xs font-mono font-bold flex items-center space-x-1.5 transition-all shadow-sm disabled:opacity-50"
+              >
+                <Trash2 className="w-3.5 h-3.5 text-rose-400" />
+                <span>{loading ? 'Clearing...' : 'Confirm Clear'}</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
