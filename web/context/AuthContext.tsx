@@ -33,7 +33,7 @@ const AuthContext = createContext<AuthContextType>({
 const formatToFirebaseEmail = (input: string): string => {
   const trimmed = input.trim();
   if (trimmed.includes('@')) return trimmed;
-  return `${trimmed.toLowerCase()}@nsomatrix.net`;
+  return `${trimmed.toLowerCase()}@mtx.api`;
 };
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {

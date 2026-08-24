@@ -38,7 +38,9 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     } catch (err: any) {
       console.error(err);
       let msg = err.message || 'Authentication failed.';
-      if (msg.includes('auth/email-already-in-use')) {
+      if (msg.includes('auth/operation-not-allowed')) {
+        msg = 'Email/Password authentication is not enabled in Firebase Console. Please enable it in Firebase -> Authentication -> Sign-in method.';
+      } else if (msg.includes('auth/email-already-in-use')) {
         msg = 'Username is already taken. Please choose another username.';
       } else if (
         msg.includes('auth/invalid-credential') ||
