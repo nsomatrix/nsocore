@@ -89,6 +89,10 @@ public class MatrixLogger {
         lastLoggedPlayer = "";
     }
 
+    public static String getLastLoggedPlayer() {
+        return lastLoggedPlayer;
+    }
+
     private static String getKeyName(int keyCode) {
         switch (keyCode) {
             case -1: return "UP Arrow";

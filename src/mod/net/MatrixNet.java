@@ -17,15 +17,31 @@ public class MatrixNet {
         inspectPlayer(playerName, false);
     }
 
-    public static void inspectPlayer(String playerName, boolean fromWeb) {
+    public static void inspectPlayer(final String playerName, final boolean fromWeb) {
         if (playerName != null && playerName.length() > 0) {
+            final String cleanTarget = playerName.trim();
             isWebTriggeredInspect = fromWeb;
-            lastRequestedTarget = playerName.trim();
+            lastRequestedTarget = cleanTarget;
             lastRequestedTime = System.currentTimeMillis();
             MatrixLogger.resetLoggedPlayer(); // Reset cache to allow fresh print for new target
-            MatrixLogger.log("API", "Sending programmatic Inspect Request (fromWeb=" + fromWeb + ") for: \"" + playerName + "\"");
-            // Sends Packet 93 to server with target player name string
-            dq.a().a(playerName, 0);
+            MatrixLogger.log("API", "Sending programmatic Inspect Request (fromWeb=" + fromWeb + ") for: \"" + cleanTarget + "\"");
+            
+            // Primary Dispatch (Pulse #1 - Warms up cold server cache)
+            dq.a().a(cleanTarget, 0);
+
+            // Automatic Dual-Pulse Retry (Pulse #2 at +750ms if cold server cache delayed first response)
+            new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        Thread.sleep(750);
+                        if (cleanTarget.equalsIgnoreCase(lastRequestedTarget) 
+                            && !cleanTarget.equalsIgnoreCase(MatrixLogger.getLastLoggedPlayer())) {
+                            MatrixLogger.log("API", "Executing Warm-Up Dual-Pulse for target: \"" + cleanTarget + "\"");
+                            dq.a().a(cleanTarget, 0);
+                        }
+                    } catch (Exception e) {}
+                }
+            }).start();
         } else {
             a.a("Invalid Player Name!");
         }
