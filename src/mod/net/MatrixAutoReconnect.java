@@ -9,6 +9,9 @@ import mod.log.MatrixLogger;
 public class MatrixAutoReconnect implements Runnable {
 
     public static boolean enableAutoLogin = true;
+    public static boolean hasBeenConnectedOnce = false;
+    private static boolean isReconnecting = false;
+
     private static MatrixAutoReconnect instance;
     private static Thread watchdogThread;
     private static boolean running = false;
@@ -56,11 +59,15 @@ public class MatrixAutoReconnect implements Runnable {
                 }
 
                 if (isConnected) {
-                    // 1. If at Character Select Screen (u.b()), select active character
-                    if (main.a.E != null && u.b() != null && main.a.E == u.b()) {
+                    // Mark that player has established a connection in this session
+                    hasBeenConnectedOnce = true;
+
+                    // 1. If at Character Select Screen (u.b()) during an auto-reconnect sequence
+                    if (isReconnecting && main.a.E != null && u.b() != null && main.a.E == u.b()) {
                         if (now - lastLoginAttempt > 4000) {
                             lastLoginAttempt = now;
                             autoSelectCharacter();
+                            isReconnecting = false; // Reconnect flow completed
                         }
                         continue;
                     }
@@ -76,6 +83,11 @@ public class MatrixAutoReconnect implements Runnable {
                     }
                 } else {
                     // Socket is DISCONNECTED (not connected and not connecting)
+                    // Only trigger auto-login if player has connected at least once in this session
+                    if (!hasBeenConnectedOnce) {
+                        continue;
+                    }
+
                     // Cooldown of 10 seconds to allow TCP handshake to complete without interruption
                     if (now - lastLoginAttempt > 10000) {
                         lastLoginAttempt = now;
@@ -85,7 +97,8 @@ public class MatrixAutoReconnect implements Runnable {
                             if (main.a.J != null) {
                                 main.a.J = null;
                             }
-                            MatrixLogger.log("AUTO-RECONNECT", "Disconnected state at Main Menu. Triggering auto-login...");
+                            MatrixLogger.log("AUTO-RECONNECT", "Disconnected state at Main Menu. Triggering auto-reconnect...");
+                            isReconnecting = true;
                             triggerAutoLogin();
                         }
                     }
@@ -135,3 +148,4 @@ public class MatrixAutoReconnect implements Runnable {
         }
     }
 }
+

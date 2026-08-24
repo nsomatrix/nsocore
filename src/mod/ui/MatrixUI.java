@@ -29,7 +29,7 @@ public class MatrixUI {
             submitPlayerInspect();
             return true;
         } else if (commandId == 888904) { // Sub-option: Toggle REST Web Sync
-            mod.web.MatrixWebClient.enableWebSync = !mod.web.MatrixWebClient.enableWebSync;
+            mod.MatrixAPI.toggleWebSync();
             boolean state = mod.web.MatrixWebClient.enableWebSync;
             a.a("REST Web Sync: " + (state ? "ENABLED" : "DISABLED"));
             return true;
@@ -40,7 +40,7 @@ public class MatrixUI {
             submitRestEndpoint();
             return true;
         } else if (commandId == 888907) { // Sub-option: Toggle Auto-Login Watchdog
-            mod.net.MatrixAutoReconnect.toggleAutoLogin();
+            mod.MatrixAPI.toggleAutoLogin();
             boolean state = mod.net.MatrixAutoReconnect.enableAutoLogin;
             a.a("Auto Login: " + (state ? "ENABLED" : "DISABLED"));
             return true;

@@ -29,6 +29,7 @@ public class MatrixAPI {
 
     public static void toggleAutoLogin() {
         mod.net.MatrixAutoReconnect.toggleAutoLogin();
+        enableAutoLogin = mod.net.MatrixAutoReconnect.enableAutoLogin;
     }
 
     // =========================================================================
