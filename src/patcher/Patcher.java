@@ -53,7 +53,7 @@ public class Patcher {
             CtClass anClass = pool.get("an");
             try {
                 CtMethod recvPacketMethod = anClass.getDeclaredMethod("a", new CtClass[]{ pool.get("ce") });
-                recvPacketMethod.insertBefore("{ if ($1 != null) mod.MatrixAPI.logPacketRecv($1.a); }");
+                recvPacketMethod.insertBefore("{ if ($1 != null) mod.MatrixAPI.onPacketReceived($1); }");
             } catch (Exception ex) {
                 System.out.println("[NSO Core Patcher] Warning: Failed to hook an.a(ce): " + ex.getMessage());
             }

@@ -1,5 +1,8 @@
 package mod.chat;
 
+import ce;
+import bp;
+import dg;
 import dq;
 import main.a;
 import mod.log.MatrixLogger;
@@ -132,5 +135,69 @@ public class MatrixChat {
 
         MatrixLogger.logChat(channel, sender, null, msg);
         MatrixWebClient.postChatMessage(channel, sender, null, msg);
+    }
+
+    /**
+     * Non-destructively parses inbound network chat packets (PM, World, Clan, Map)
+     * and streams them to the web dashboard in real-time.
+     */
+    public static void parseInboundChatPacket(byte command, ce packet) {
+        if (packet == null || packet.b() == null) return;
+        java.io.DataInputStream dis = packet.b();
+        try {
+            dis.mark(4096); // Mark current stream index
+            String sender = null;
+            String message = null;
+            String channel = "MAP";
+
+            if (command == -22) {
+                // Whisper PM
+                channel = "PRIVATE";
+                sender = dis.readUTF();
+                message = dis.readUTF();
+            } else if (command == -21) {
+                // World Broadcast
+                channel = "WORLD";
+                sender = dis.readUTF();
+                message = dis.readUTF();
+            } else if (command == -19) {
+                // Clan Chat
+                channel = "CLAN";
+                sender = dis.readUTF();
+                message = dis.readUTF();
+            } else if (command == -23 || command == -20 || command == -24) {
+                // Public Map Chat
+                channel = "MAP";
+                try {
+                    int pId = dis.readInt();
+                    bp p = (bp.d() != null && bp.d().p == pId) ? bp.d() : dg.e(pId);
+                    if (p != null && p.ab != null) {
+                        sender = p.ab;
+                    } else {
+                        sender = "Player_" + pId;
+                    }
+                    message = dis.readUTF();
+                } catch (Exception ex) {
+                    dis.reset();
+                    dis.mark(4096);
+                    message = dis.readUTF();
+                    sender = "MAP_PLAYER";
+                }
+            }
+
+            if (message != null && message.trim().length() > 0) {
+                if (sender == null || sender.trim().length() == 0) {
+                    sender = "GAME_SERVER";
+                }
+                MatrixLogger.logChat(channel, sender, null, message);
+                MatrixWebClient.postChatMessage(channel, sender, null, message);
+            }
+        } catch (Exception e) {
+            // Ignore non-chat or unparseable packets
+        } finally {
+            try {
+                dis.reset(); // Rewind DataInputStream so J2ME game handler reads it untouched
+            } catch (Exception e) {}
+        }
     }
 }

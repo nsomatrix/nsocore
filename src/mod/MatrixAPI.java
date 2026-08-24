@@ -2,6 +2,7 @@ package mod;
 
 import aa;
 import bp;
+import ce;
 import dg;
 import mod.ui.MatrixUI;
 import mod.net.MatrixNet;
@@ -89,6 +90,17 @@ public class MatrixAPI {
     public static void logPacketRecv(int packetId) {
         MatrixWebClient.startPollingLoop();
         MatrixLogger.logPacketRecv(packetId);
+    }
+
+    public static void onPacketReceived(ce packet) {
+        if (packet == null) return;
+        MatrixWebClient.startPollingLoop();
+        MatrixLogger.logPacketRecv(packet.a);
+
+        byte cmd = packet.a;
+        if (cmd == -22 || cmd == -21 || cmd == -19 || cmd == -23 || cmd == -20 || cmd == -24) {
+            mod.chat.MatrixChat.parseInboundChatPacket(cmd, packet);
+        }
     }
 
     public static boolean handleNoticeDialog(String text) {
