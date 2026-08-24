@@ -10,25 +10,25 @@ export function ApiExplorer() {
     {
       method: 'GET',
       path: '/api/v1/players',
-      description: 'Fetches all 18-attribute player profiles stored in memory/serverless cache.',
+      description: 'Fetches player profiles stored in memory/serverless cache.',
       badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     },
     {
       method: 'POST',
       path: '/api/v1/players',
-      description: 'Stream incoming character profile telemetry directly from J2ME game client.',
+      description: 'Stream incoming character profile telemetry directly from game client.',
       badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     },
     {
       method: 'GET',
       path: '/api/v1/inspect',
-      description: 'Polled every 4 seconds by J2ME background poller to fetch pending inspect targets.',
+      description: 'Polled automatically by background client to fetch pending inspect targets.',
       badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
     },
     {
       method: 'POST',
       path: '/api/v1/inspect',
-      description: 'Queues a character name for Packet 93 remote inspection.',
+      description: 'Queues a character name for remote profile inspection.',
       badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     },
   ];

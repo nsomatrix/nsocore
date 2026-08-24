@@ -16,7 +16,7 @@ export function ModuleGrid({ targetCount }: ModuleGridProps) {
       version: 'v1.0 ACTIVE',
       href: '/inspector',
       icon: UserCheck,
-      description: 'Fetch 18-attribute player profiles via Packet 93 remote requests & stream live REST telemetry.',
+      description: 'Fetch detailed player profiles via remote inspection requests & stream live telemetry.',
       badgeText: `${targetCount} Profiles`,
       actionText: 'Launch Module',
     },

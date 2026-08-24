@@ -26,13 +26,13 @@ export default function InspectorPage() {
               MODULE 01
             </span>
             <span className="text-zinc-500 text-xs font-mono">•</span>
-            <span className="text-zinc-400 text-xs font-mono">REST Telemetry & Packet 93</span>
+            <span className="text-zinc-400 text-xs font-mono">REST Telemetry & Live Sync</span>
           </div>
           <h1 className="text-3xl font-display font-extrabold text-white tracking-tight mt-2">
             Player Inspector Engine
           </h1>
           <p className="text-sm text-zinc-400 max-w-2xl font-sans mt-1">
-            Dedicated operational environment for requesting remote character inspections and viewing 18-attribute bytecode stats in real time.
+            Dedicated operational environment for requesting remote character inspections and viewing profile stats in real time.
           </p>
         </div>
 
