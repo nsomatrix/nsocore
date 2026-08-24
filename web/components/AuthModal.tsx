@@ -10,7 +10,7 @@ interface AuthModalProps {
 }
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
-  const { signInWithUsernameOrEmail, signUpWithUsername, isConfigured } = useAuth();
+  const { signInWithUsernameOrEmail, signUpWithUsername } = useAuth();
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -39,7 +39,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       console.error(err);
       let msg = err.message || 'Authentication failed.';
       if (msg.includes('auth/operation-not-allowed')) {
-        msg = 'Email/Password authentication is not enabled in Firebase Console. Please enable it in Firebase -> Authentication -> Sign-in method.';
+        msg = 'Email/Password authentication is not enabled in Firebase Console.';
       } else if (msg.includes('auth/email-already-in-use')) {
         msg = 'Username is already taken. Please choose another username.';
       } else if (
@@ -73,12 +73,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               <h3 className="text-lg font-bold text-white font-display tracking-tight">
                 {tab === 'signin' ? 'Portal Access Login' : 'Register Operator'}
               </h3>
-              <p className="text-xs text-zinc-400">Instant Username Authentication</p>
+              <p className="text-xs text-zinc-400">CORE ACCESS</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors"
+            className="p-2 rounded-lg text-zinc-400 hover:text-white hover:bg-zinc-900 transition-colors border-0 outline-none focus:outline-none"
           >
             <X className="w-5 h-5" />
           </button>
@@ -86,13 +86,14 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
 
         {/* Tab Selector */}
         <div className="px-6 pt-5">
-          <div className="grid grid-cols-2 p-1 bg-zinc-900/80 rounded-xl border border-zinc-800 text-xs font-medium">
+          <div className="grid grid-cols-2 p-1 bg-zinc-900/80 rounded-xl border border-zinc-800/80 text-xs font-medium">
             <button
+              type="button"
               onClick={() => {
                 setTab('signin');
                 setError(null);
               }}
-              className={`py-2 rounded-lg transition-all ${
+              className={`py-2.5 rounded-lg transition-all font-mono uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                 tab === 'signin'
                   ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-sm'
                   : 'text-zinc-400 hover:text-white'
@@ -101,11 +102,12 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
               Sign In
             </button>
             <button
+              type="button"
               onClick={() => {
                 setTab('signup');
                 setError(null);
               }}
-              className={`py-2 rounded-lg transition-all ${
+              className={`py-2.5 rounded-lg transition-all font-mono uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                 tab === 'signup'
                   ? 'bg-zinc-800 text-emerald-400 font-semibold shadow-sm'
                   : 'text-zinc-400 hover:text-white'
@@ -129,7 +131,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           <form onSubmit={handleSubmit} className="space-y-3">
             <div>
               <label className="block text-[11px] font-mono text-zinc-400 mb-1">
-                {tab === 'signin' ? 'Username or Email' : 'Username'}
+                {tab === 'signin' ? 'Username' : 'Choose Username'}
               </label>
               <div className="relative">
                 <UserIcon className="absolute left-3.5 top-3 w-4 h-4 text-zinc-500" />
@@ -138,7 +140,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                   required
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  placeholder={tab === 'signin' ? 'e.g. shinobimaster' : 'Choose a username'}
+                  placeholder={tab === 'signin' ? 'Enter username' : 'Choose a username'}
                   className="w-full pl-10 pr-4 py-2.5 bg-zinc-900/60 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
                 />
               </div>
@@ -159,7 +161,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <button
                   type="button"
                   onClick={() => setShowPassword(!showPassword)}
-                  className="absolute right-3.5 top-3 text-zinc-500 hover:text-zinc-300"
+                  className="absolute right-3.5 top-3 text-zinc-500 hover:text-zinc-300 transition-colors border-0 outline-none focus:outline-none"
                 >
                   {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                 </button>
@@ -169,19 +171,19 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold font-mono tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] disabled:opacity-50 mt-2"
+              className="w-full flex items-center justify-center space-x-2 py-3 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold font-mono tracking-wide transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.3)] disabled:opacity-50 mt-2 border-0 outline-none focus:outline-none"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
               ) : tab === 'signin' ? (
                 <>
                   <LogIn className="w-4 h-4" />
-                  <span>LOGIN</span>
+                  <span>AUTHENTICATE</span>
                 </>
               ) : (
                 <>
                   <UserPlus className="w-4 h-4" />
-                  <span>SIGN UP NOW</span>
+                  <span>GENERATE ACCOUNT</span>
                 </>
               )}
             </button>

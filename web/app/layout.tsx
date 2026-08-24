@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { AuthGuard } from '@/components/AuthGuard';
 
 export const metadata: Metadata = {
   title: 'mtx-api — Live Player Inspector & REST Portal',
@@ -21,7 +22,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="dark">
       <body className="bg-black text-white min-h-screen antialiased">
-        <AuthProvider>{children}</AuthProvider>
+        <AuthProvider>
+          <AuthGuard>{children}</AuthGuard>
+        </AuthProvider>
       </body>
     </html>
   );
