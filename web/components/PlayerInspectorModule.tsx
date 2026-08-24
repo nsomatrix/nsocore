@@ -67,14 +67,14 @@ export function PlayerInspectorModule() {
     if (!existsAlready && sessionPlayers.length >= MAX_LIVE_CARDS) {
       setFetchMsg({
         type: 'error',
-        text: `Live cap reached (${MAX_LIVE_CARDS} max). Clear session to inspect additional targets.`
+        text: `Session limit reached (${MAX_LIVE_CARDS} max). Clear session to inspect additional targets.`
       });
       return;
     }
 
     stopPolling();
     setFetching(true);
-    setFetchMsg({ type: 'info', text: `Queueing Packet 93 inspection for "${cleanName}"...` });
+    setFetchMsg({ type: 'info', text: `Requesting player info for "${cleanName}"...` });
 
     try {
       // 1. Post inspection request target
@@ -86,12 +86,12 @@ export function PlayerInspectorModule() {
 
       const data = await res.json();
       if (!res.ok) {
-        setFetchMsg({ type: 'error', text: data.error || 'Failed to queue fetch target' });
+        setFetchMsg({ type: 'error', text: data.error || 'Failed to send inspection request' });
         setFetching(false);
         return;
       }
 
-      setFetchMsg({ type: 'info', text: `Waiting for J2ME client to respond to Packet 93 for "${cleanName}"...` });
+      setFetchMsg({ type: 'info', text: `Waiting for game client to inspect "${cleanName}"...` });
 
       // 2. Poll targeted player REST endpoint every 1.5s for up to 15 seconds
       const startTime = Date.now();
@@ -133,7 +133,7 @@ export function PlayerInspectorModule() {
                   text: `Player "${found.name}" is OFFLINE: ${found.error || 'They are not online at this moment.'}`
                 });
               } else {
-                setFetchMsg({ type: 'success', text: `Successfully retrieved 18-attribute profile for "${found.name}"!` });
+                setFetchMsg({ type: 'success', text: `Successfully retrieved profile for "${found.name}"!` });
               }
               setFetching(false);
               setTargetName('');
@@ -149,7 +149,7 @@ export function PlayerInspectorModule() {
           stopPolling();
           setFetchMsg({
             type: 'info',
-            text: `Inspection queued for "${cleanName}". J2ME client will stream stats when online.`
+            text: `Inspection queued for "${cleanName}". Profile will update when the player is online.`
           });
           setFetching(false);
           return true;
@@ -163,7 +163,7 @@ export function PlayerInspectorModule() {
         pollIntervalRef.current = setInterval(pollTarget, 1500);
       }
     } catch (err) {
-      setFetchMsg({ type: 'error', text: 'Error connecting to REST API' });
+      setFetchMsg({ type: 'error', text: 'Unable to connect to service. Please try again.' });
       setFetching(false);
     }
   };
@@ -263,7 +263,7 @@ export function PlayerInspectorModule() {
             )}
           </div>
           <p className="text-xs text-zinc-400 font-sans">
-            Enter any player name to trigger on-demand J2ME Packet 93 remote inspection.
+            Enter any player name to trigger on-demand character inspection.
           </p>
         </div>
 
@@ -299,7 +299,7 @@ export function PlayerInspectorModule() {
       {/* Dynamic Status Toast Banner */}
       {fetchMsg && (
         <div
-          className={`p-3 sm:p-3.5 rounded-xl border text-xs font-mono flex items-center justify-between animate-fade-in ${
+          className={`p-3.5 rounded-xl border text-xs font-mono flex items-start sm:items-center justify-between gap-2.5 animate-fade-in ${
             fetchMsg.type === 'success'
               ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
               : fetchMsg.type === 'error'
@@ -307,13 +307,13 @@ export function PlayerInspectorModule() {
               : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
           }`}
         >
-          <div className="flex items-center space-x-2 min-w-0 pr-2">
-            {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-emerald-400 shrink-0" />}
-            {fetchMsg.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0" />}
-            {fetchMsg.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0" />}
-            <span className="truncate">{fetchMsg.text}</span>
+          <div className="flex items-start sm:items-center space-x-2.5 min-w-0 flex-1">
+            {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />}
+            {fetchMsg.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
+            {fetchMsg.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 sm:mt-0" />}
+            <span className="break-words leading-relaxed whitespace-normal">{fetchMsg.text}</span>
           </div>
-          <button onClick={() => setFetchMsg(null)} className="hover:opacity-75 shrink-0">
+          <button onClick={() => setFetchMsg(null)} className="hover:opacity-75 shrink-0 p-0.5 rounded-lg">
             <X className="w-4 h-4" />
           </button>
         </div>
@@ -364,7 +364,7 @@ export function PlayerInspectorModule() {
           <div className="space-y-1">
             <p className="text-sm font-semibold text-zinc-300 font-sans">No Active Inspection Targets</p>
             <p className="text-zinc-500 max-w-sm mx-auto font-sans">
-              Enter a Ninja character name above and click <span className="text-emerald-400 font-medium">Fetch</span> to request a live Packet 93 inspection.
+              Enter a Ninja character name above and click <span className="text-emerald-400 font-medium">Fetch</span> to inspect player profile.
             </p>
           </div>
         </div>
