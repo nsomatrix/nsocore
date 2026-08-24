@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { popInspectQueue, pushInspectQueue } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, max-age=0, must-revalidate',
   'Pragma': 'no-cache',

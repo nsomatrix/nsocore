@@ -7,6 +7,8 @@ import mod.log.MatrixLogger;
 public class MatrixNet {
 
     public static boolean isWebTriggeredInspect = false;
+    public static String lastRequestedTarget = null;
+    public static long lastRequestedTime = 0;
 
     /**
      * Programmatically requests full player info for any target player by name string via Packet 93.
@@ -18,6 +20,8 @@ public class MatrixNet {
     public static void inspectPlayer(String playerName, boolean fromWeb) {
         if (playerName != null && playerName.length() > 0) {
             isWebTriggeredInspect = fromWeb;
+            lastRequestedTarget = playerName.trim();
+            lastRequestedTime = System.currentTimeMillis();
             MatrixLogger.resetLoggedPlayer(); // Reset cache to allow fresh print for new target
             MatrixLogger.log("API", "Sending programmatic Inspect Request (fromWeb=" + fromWeb + ") for: \"" + playerName + "\"");
             // Sends Packet 93 to server with target player name string

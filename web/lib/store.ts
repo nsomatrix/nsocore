@@ -35,6 +35,9 @@ export interface PlayerProfile {
   antiChakraBack: number;
   equipment?: EquipmentItem[];
   lastUpdated: string;
+  status?: string;
+  online?: boolean;
+  error?: string;
 }
 
 const AUTO_CLEAR_MS = 30 * 60 * 1000; // Auto clear after 30 minutes
@@ -133,31 +136,37 @@ export function popInspectQueue(): string | null {
 export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: string }): PlayerProfile {
   let players = getAllPlayers();
   const index = players.findIndex(p => p.name.toLowerCase() === playerData.name.toLowerCase());
-  
+  const existing = index >= 0 ? players[index] : null;
+
+  const isOffline = playerData.status === 'OFFLINE' || playerData.online === false || !!playerData.error;
+
   const updatedPlayer: PlayerProfile = {
     name: playerData.name,
-    level: playerData.level ?? 1,
-    class: playerData.class || 'Unknown',
-    school: playerData.school || 'Unknown',
-    hp: playerData.hp ?? 100,
-    maxHp: playerData.maxHp ?? 100,
-    mp: playerData.mp ?? 50,
-    maxMp: playerData.maxMp ?? 50,
-    speed: playerData.speed ?? 5,
-    attackMin: playerData.attackMin ?? 10,
-    attackMax: playerData.attackMax ?? 20,
-    antiFire: playerData.antiFire ?? 0,
-    antiIce: playerData.antiIce ?? 0,
-    antiWind: playerData.antiWind ?? 0,
-    reducePain: playerData.reducePain ?? 0,
-    accurate: playerData.accurate ?? 0,
-    dodge: playerData.dodge ?? 0,
-    critical: playerData.critical ?? 0,
-    counterStrike: playerData.counterStrike ?? 0,
-    antiChakra: playerData.antiChakra ?? 0,
-    antiChakraBack: playerData.antiChakraBack ?? 0,
-    equipment: playerData.equipment || (index >= 0 ? players[index].equipment : []),
-    lastUpdated: new Date().toISOString()
+    level: playerData.level !== undefined ? playerData.level : (existing ? existing.level : 0),
+    class: playerData.class || (existing ? existing.class : 'Unknown'),
+    school: playerData.school || (existing ? existing.school : 'Unknown'),
+    hp: playerData.hp !== undefined ? playerData.hp : (existing ? existing.hp : 0),
+    maxHp: playerData.maxHp !== undefined ? playerData.maxHp : (existing ? existing.maxHp : 0),
+    mp: playerData.mp !== undefined ? playerData.mp : (existing ? existing.mp : 0),
+    maxMp: playerData.maxMp !== undefined ? playerData.maxMp : (existing ? existing.maxMp : 0),
+    speed: playerData.speed !== undefined ? playerData.speed : (existing ? existing.speed : 0),
+    attackMin: playerData.attackMin !== undefined ? playerData.attackMin : (existing ? existing.attackMin : 0),
+    attackMax: playerData.attackMax !== undefined ? playerData.attackMax : (existing ? existing.attackMax : 0),
+    antiFire: playerData.antiFire !== undefined ? playerData.antiFire : (existing ? existing.antiFire : 0),
+    antiIce: playerData.antiIce !== undefined ? playerData.antiIce : (existing ? existing.antiIce : 0),
+    antiWind: playerData.antiWind !== undefined ? playerData.antiWind : (existing ? existing.antiWind : 0),
+    reducePain: playerData.reducePain !== undefined ? playerData.reducePain : (existing ? existing.reducePain : 0),
+    accurate: playerData.accurate !== undefined ? playerData.accurate : (existing ? existing.accurate : 0),
+    dodge: playerData.dodge !== undefined ? playerData.dodge : (existing ? existing.dodge : 0),
+    critical: playerData.critical !== undefined ? playerData.critical : (existing ? existing.critical : 0),
+    counterStrike: playerData.counterStrike !== undefined ? playerData.counterStrike : (existing ? existing.counterStrike : 0),
+    antiChakra: playerData.antiChakra !== undefined ? playerData.antiChakra : (existing ? existing.antiChakra : 0),
+    antiChakraBack: playerData.antiChakraBack !== undefined ? playerData.antiChakraBack : (existing ? existing.antiChakraBack : 0),
+    equipment: playerData.equipment || (existing ? existing.equipment : []),
+    lastUpdated: new Date().toISOString(),
+    status: isOffline ? 'OFFLINE' : (playerData.status || 'ONLINE'),
+    online: isOffline ? false : (playerData.online ?? true),
+    error: playerData.error
   };
 
   if (index >= 0) {

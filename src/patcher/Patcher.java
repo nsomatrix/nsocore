@@ -73,12 +73,27 @@ public class Patcher {
             sendPacketMethod.insertBefore("{ if ($1 != null && $1.a() != null) mod.MatrixAPI.logPacketSend($1.a, $1.a().length); }");
             dhClass.writeFile(outputPath);
 
-            // 7. Hook Notice Dialogs in main.a.a(String)
+            // 7. Hook Notice Dialogs in main.a.a(String) and br.a(String, bd, bd, bd)
             System.out.println("[NSO Core Patcher] Injecting Notice Dialog Logger into main.a.a(String)...");
             CtClass mainAClass = pool.get("main.a");
             CtMethod noticeMethod = mainAClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String") });
-            noticeMethod.insertBefore("{ if ($1 != null && $1.length() > 0) mod.MatrixAPI.logDialog($1); }");
+            noticeMethod.insertBefore("{ if ($1 != null && $1.length() > 0 && mod.MatrixAPI.handleNoticeDialog($1)) return; }");
             mainAClass.writeFile(outputPath);
+
+            System.out.println("[NSO Core Patcher] Injecting Notice Dialog Logger into br.a(String, bd, bd, bd)...");
+            CtClass brClass = pool.get("br");
+            CtMethod brMethod = brClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String"), pool.get("bd"), pool.get("bd"), pool.get("bd") });
+            brMethod.insertBefore("{ if ($1 != null && $1.length() > 0 && mod.MatrixAPI.handleNoticeDialog($1)) return; }");
+            brClass.writeFile(outputPath);
+
+            System.out.println("[NSO Core Patcher] Injecting Ticker Notice Logger into ae.a(String) & ae.a(String, int, dd)...");
+            CtClass aeClass = pool.get("ae");
+            CtMethod aeMethod1 = aeClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String") });
+            aeMethod1.insertBefore("{ if ($1 != null && $1.length() > 0 && mod.MatrixAPI.handleNoticeDialog($1)) return; }");
+
+            CtMethod aeMethod2 = aeClass.getDeclaredMethod("a", new CtClass[]{ pool.get("java.lang.String"), CtClass.intType, pool.get("dd") });
+            aeMethod2.insertBefore("{ if ($1 != null && $1.length() > 0 && mod.MatrixAPI.handleNoticeDialog($1)) return; }");
+            aeClass.writeFile(outputPath);
 
             System.out.println("[NSO Core Patcher] MatrixAPI Instrumentation successfully completed!");
         } catch (Exception e) {

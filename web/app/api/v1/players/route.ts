@@ -2,6 +2,8 @@ import { NextResponse } from 'next/server';
 import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers, deletePlayerByName } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
+export const dynamic = 'force-dynamic';
+
 const NO_CACHE_HEADERS = {
   'Cache-Control': 'no-store, max-age=0, must-revalidate',
   'Pragma': 'no-cache',
@@ -79,6 +81,9 @@ export async function POST(request: Request) {
       antiChakra: Number(body.antiChakra) || 0,
       antiChakraBack: Number(body.antiChakraBack) || 0,
       equipment: Array.isArray(body.equipment) ? body.equipment : [],
+      status: body.status,
+      online: body.online,
+      error: body.error,
     });
 
     console.log(`[MTX-API-REST] Live inspection payload received for player: ${saved.name} (Lvl ${saved.level})`);

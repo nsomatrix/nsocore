@@ -382,6 +382,93 @@ public class MatrixWebClient {
         return sb.toString();
     }
 
+    /**
+     * Intercepts game notice dialogs to detect offline player responses and post status to REST API.
+     */
+    public static boolean handleNoticeDialog(String text) {
+        if (text == null || text.trim().length() == 0) return false;
+        String target = mod.net.MatrixNet.lastRequestedTarget;
+        long reqTime = mod.net.MatrixNet.lastRequestedTime;
+        long now = System.currentTimeMillis();
+
+        boolean isRecentTarget = target != null && (now - reqTime < 15000);
+        if (isRecentTarget) {
+            MatrixLogger.log("WEB-REST", "Inspecting Notice Text received within 15s for \"" + target + "\": [" + text + "]");
+        }
+
+        String clean = text.toLowerCase();
+        boolean isOfflineNotice = clean.indexOf("not online") != -1
+                || clean.indexOf("kh\u00f4ng online") != -1
+                || clean.indexOf("khong online") != -1
+                || clean.indexOf("offline") != -1
+                || clean.indexOf("kh\u00f4ng t\u1ed3n t\u1ea1i") != -1
+                || clean.indexOf("khong ton tai") != -1
+                || clean.indexOf("not exist") != -1
+                || clean.indexOf("not found") != -1
+                || clean.indexOf("khong tim thay") != -1
+                || clean.indexOf("kh\u00f4ng t\u00ecm th\u1ea5y") != -1
+                || clean.indexOf("r\u1eddi kh\u1ecfi") != -1
+                || clean.indexOf("roi khoi") != -1;
+
+        if (isRecentTarget && (isOfflineNotice || isWebTarget(target) || mod.net.MatrixNet.isWebTriggeredInspect)) {
+            MatrixLogger.log("WEB-REST", "Detected Offline / Unavailable Notice for target: \"" + target + "\": " + text);
+            postOfflineStatus(target, text);
+
+            if (isWebTarget(target) || mod.net.MatrixNet.isWebTriggeredInspect) {
+                return true; // Suppress notice popup/ticker in J2ME client UI for web inspects
+            }
+        }
+        return false;
+    }
+
+    public static void postOfflineStatus(final String playerName, final String noticeText) {
+        if (!enableWebSync || playerName == null || playerName.trim().length() == 0) return;
+        final String postUrl = getPlayersEndpointUrl();
+        if (postUrl == null) return;
+
+        Thread webThread = new Thread(new Runnable() {
+            public void run() {
+                HttpConnection conn = null;
+                OutputStream os = null;
+                InputStream is = null;
+                try {
+                    StringBuffer sb = new StringBuffer();
+                    sb.append("{");
+                    sb.append("\"name\":").append(quote(playerName)).append(",");
+                    sb.append("\"status\":").append(quote("OFFLINE")).append(",");
+                    sb.append("\"online\":false,");
+                    sb.append("\"error\":").append(quote(noticeText));
+                    sb.append("}");
+                    String jsonPayload = sb.toString();
+
+                    MatrixLogger.log("WEB-REST", "Posting Offline Status to REST API for: \"" + playerName + "\"");
+
+                    conn = (HttpConnection) Connector.open(postUrl, Connector.READ_WRITE, true);
+                    conn.setRequestMethod(HttpConnection.POST);
+                    conn.setRequestProperty("Content-Type", "application/json");
+                    conn.setRequestProperty("User-Agent", "NSOCore-MatrixAPI/1.0 (J2ME MIDP2.0)");
+
+                    byte[] data = jsonPayload.getBytes("UTF-8");
+                    conn.setRequestProperty("Content-Length", Integer.toString(data.length));
+
+                    os = conn.openOutputStream();
+                    os.write(data);
+                    os.flush();
+
+                    int responseCode = conn.getResponseCode();
+                    MatrixLogger.log("WEB-REST", "Offline Status POST Response: " + responseCode);
+                } catch (Exception e) {
+                    MatrixLogger.log("WEB-REST", "Offline Status POST Warning: " + e.getMessage());
+                } finally {
+                    try { if (os != null) os.close(); } catch (Exception ex) {}
+                    try { if (is != null) is.close(); } catch (Exception ex) {}
+                    try { if (conn != null) conn.close(); } catch (Exception ex) {}
+                }
+            }
+        });
+        webThread.start();
+    }
+
     private static String quote(String input) {
         if (input == null) return "\"\"";
         StringBuffer out = new StringBuffer("\"");

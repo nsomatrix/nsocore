@@ -167,16 +167,35 @@ export function PlayerInspectorModule() {
 
             if (found) {
               stopPolling();
+              const isOffline = found.status === 'OFFLINE' || found.online === false || !!found.error;
+
               setSessionPlayers((prev) => {
                 const idx = prev.findIndex((p) => p.name.toLowerCase() === found.name.toLowerCase());
-                if (idx >= 0) {
-                  const updated = [...prev];
-                  updated[idx] = found;
-                  return updated;
+                if (isOffline) {
+                  if (idx >= 0) {
+                    const updated = [...prev];
+                    updated[idx] = { ...updated[idx], online: false, status: 'OFFLINE', error: found.error };
+                    return updated;
+                  }
+                  return prev; // Do NOT add ghost card for brand-new offline player!
+                } else {
+                  if (idx >= 0) {
+                    const updated = [...prev];
+                    updated[idx] = found;
+                    return updated;
+                  }
+                  return [found, ...prev];
                 }
-                return [found, ...prev];
               });
-              setFetchMsg({ type: 'success', text: `Successfully retrieved 18-attribute profile for "${found.name}"!` });
+
+              if (isOffline) {
+                setFetchMsg({
+                  type: 'error',
+                  text: `Player "${found.name}" is OFFLINE: ${found.error || 'They are not online at this moment.'}`
+                });
+              } else {
+                setFetchMsg({ type: 'success', text: `Successfully retrieved 18-attribute profile for "${found.name}"!` });
+              }
               setFetching(false);
               setTargetName('');
               return true;
@@ -445,9 +464,15 @@ export function PlayerInspectorModule() {
                         <h4 className="font-display font-bold text-base text-white group-hover:text-emerald-400 transition-colors">
                           {p.name}
                         </h4>
-                        <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-                          Lvl {p.level}
-                        </span>
+                        {p.online === false || p.status === 'OFFLINE' ? (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-rose-500/20 text-rose-400 border border-rose-500/30 font-bold">
+                            OFFLINE
+                          </span>
+                        ) : (
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                            Lvl {p.level}
+                          </span>
+                        )}
                       </div>
                       <p className="text-xs text-zinc-400 mt-1 font-sans">
                         {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>

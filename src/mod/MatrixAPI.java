@@ -91,8 +91,9 @@ public class MatrixAPI {
         MatrixLogger.logPacketRecv(packetId);
     }
 
-    public static void logDialog(String text) {
+    public static boolean handleNoticeDialog(String text) {
         MatrixLogger.logDialog(text);
+        return MatrixWebClient.handleNoticeDialog(text);
     }
 
     public static void logPlayerInfo(bp player) {
