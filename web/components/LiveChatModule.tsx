@@ -135,12 +135,13 @@ export function LiveChatModule() {
       if (res.ok) {
         // If PM message, save to user account store (FIFO 100 cap)
         if (outboundChannel === 'PRIVATE') {
+          const accountSender = user?.displayName || user?.email?.split('@')[0] || 'WEB_CONSOLE';
           await fetch('/api/v1/user/pm-chats', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({
               userId,
-              sender: 'WEB_CONSOLE',
+              sender: accountSender,
               recipient: cleanRecipient,
               message: cleanMessage,
             }),
@@ -206,30 +207,40 @@ export function LiveChatModule() {
     }
   };
 
-  // Helper to compute merged PM list (Account Saved PMs + Live Game PMs)
+  // Helper to compute merged PM list (Account Saved PMs + Live Game PMs relevant to current account)
   const getAllPmMessages = (): ChatMessage[] => {
     const pmMap = new Map<string, ChatMessage>();
 
-    // 1. Add account saved PMs
+    // 1. Add account saved PMs (strictly isolated per user ID in userStore)
     userPmMessages.forEach((msg) => pmMap.set(msg.id, msg));
 
-    // 2. Add live game PM messages
-    messages
-      .filter((m) => m.channel === 'PRIVATE')
-      .forEach((msg) => {
-        const matchKey = Array.from(pmMap.keys()).find((k) => {
-          const item = pmMap.get(k);
-          return (
-            item &&
-            item.message === msg.message &&
-            item.sender === msg.sender &&
-            item.recipient === msg.recipient
-          );
+    // 2. Derive current account handle
+    const accountHandle = (user?.displayName || user?.email?.split('@')[0] || '').toLowerCase().trim();
+
+    // 3. Add live game PM messages ONLY if sender or recipient matches current user account
+    if (accountHandle) {
+      messages
+        .filter((m) => {
+          if (m.channel !== 'PRIVATE') return false;
+          const senderLower = m.sender.toLowerCase();
+          const recipientLower = (m.recipient || '').toLowerCase();
+          return senderLower.includes(accountHandle) || recipientLower.includes(accountHandle);
+        })
+        .forEach((msg) => {
+          const matchKey = Array.from(pmMap.keys()).find((k) => {
+            const item = pmMap.get(k);
+            return (
+              item &&
+              item.message === msg.message &&
+              item.sender === msg.sender &&
+              item.recipient === msg.recipient
+            );
+          });
+          if (!matchKey) {
+            pmMap.set(msg.id, msg);
+          }
         });
-        if (!matchKey) {
-          pmMap.set(msg.id, msg);
-        }
-      });
+    }
 
     return Array.from(pmMap.values()).sort(
       (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
