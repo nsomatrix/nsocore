@@ -1,8 +1,8 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { PlayerProfile } from '@/lib/store';
-import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Loader2, Download, Shield, Sparkles, Radio, Play } from 'lucide-react';
+import { Search, RefreshCw, X, Activity, Zap, Copy, Check, ChevronRight, Trash2, Clock, AlertTriangle, Loader2, Download, Shield, Sparkles, Radio } from 'lucide-react';
 
 export function PlayerInspectorModule() {
   const [sessionPlayers, setSessionPlayers] = useState<PlayerProfile[]>([]);
@@ -16,8 +16,6 @@ export function PlayerInspectorModule() {
   const [copied, setCopied] = useState(false);
   const [showClearConfirmModal, setShowClearConfirmModal] = useState(false);
   const [clearing, setClearing] = useState(false);
-  const [isLiveSyncActive, setIsLiveSyncActive] = useState(true);
-  const [syncStartTime, setSyncStartTime] = useState<number | null>(null);
 
   const SLOT_NAMES: { [key: number]: string } = {
     0: 'Weapon',
@@ -45,63 +43,6 @@ export function PlayerInspectorModule() {
       pollIntervalRef.current = null;
     }
   };
-
-  // 5-Second Live Telemetry Sync for Active Session Cards (Auto-stops after 1 minute)
-  useEffect(() => {
-    if (sessionPlayers.length === 0) {
-      setSyncStartTime(null);
-      setIsLiveSyncActive(true);
-      return;
-    }
-
-    // Initialize timer start when first active session starts
-    if (!syncStartTime) {
-      setSyncStartTime(Date.now());
-    }
-
-    if (!isLiveSyncActive) return;
-
-    const liveSyncInterval = setInterval(async () => {
-      // Check 1-minute (60,000ms) timeout limit
-      if (syncStartTime && Date.now() - syncStartTime >= 60000) {
-        setIsLiveSyncActive(false);
-        clearInterval(liveSyncInterval);
-        return;
-      }
-
-      try {
-        // Read latest streamed player profiles from REST API (GET /api/v1/players)
-        const res = await fetch('/api/v1/players');
-        if (res.ok) {
-          const data = await res.json();
-          const allStored: PlayerProfile[] = data.players || [];
-          
-          setSessionPlayers((prevSession) => {
-            let updatedAny = false;
-            const nextSession = prevSession.map((p) => {
-              const fresh = allStored.find((s) => s.name.toLowerCase() === p.name.toLowerCase());
-              if (fresh && JSON.stringify(fresh) !== JSON.stringify(p)) {
-                updatedAny = true;
-                return fresh;
-              }
-              return p;
-            });
-            return updatedAny ? nextSession : prevSession;
-          });
-
-          setSelectedPlayer((prevSelected) => {
-            if (!prevSelected) return null;
-            const freshSelected = allStored.find((s) => s.name.toLowerCase() === prevSelected.name.toLowerCase());
-            return freshSelected || prevSelected;
-          });
-        }
-      } catch (err) {
-        console.warn('Live telemetry sync warning:', err);
-      }
-    }, 5000);
-
-    return () => clearInterval(liveSyncInterval);
-  }, [sessionPlayers.length, isLiveSyncActive, syncStartTime]);
 
   const MAX_LIVE_CARDS = 4;
 
@@ -132,8 +73,6 @@ export function PlayerInspectorModule() {
     }
 
     stopPolling();
-    setSyncStartTime(Date.now());
-    setIsLiveSyncActive(true);
     setFetching(true);
     setFetchMsg({ type: 'info', text: `Queueing Packet 93 inspection for "${cleanName}"...` });
 
@@ -317,24 +256,10 @@ export function PlayerInspectorModule() {
               COMMUNITY REST API
             </span>
             {sessionPlayers.length > 0 && (
-              isLiveSyncActive ? (
-                <span className="flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 animate-pulse">
-                  <Radio className="w-3 h-3 text-emerald-400" />
-                  <span>LIVE 5s TELEMETRY ({sessionPlayers.length}/{MAX_LIVE_CARDS})</span>
-                </span>
-              ) : (
-                <button
-                  type="button"
-                  onClick={() => {
-                    setSyncStartTime(Date.now());
-                    setIsLiveSyncActive(true);
-                  }}
-                  className="flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono bg-amber-500/20 text-amber-300 border border-amber-500/40 hover:bg-amber-500/30 transition-colors shadow-sm cursor-pointer"
-                >
-                  <Play className="w-3 h-3 text-amber-400 fill-amber-400" />
-                  <span>PAUSED (1m Timeout) • Resume Sync</span>
-                </button>
-              )
+              <span className="flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
+                <Radio className="w-3 h-3 text-emerald-400" />
+                <span>ACTIVE SESSION ({sessionPlayers.length}/{MAX_LIVE_CARDS})</span>
+              </span>
             )}
           </div>
           <p className="text-xs text-zinc-400 font-sans mt-1">
