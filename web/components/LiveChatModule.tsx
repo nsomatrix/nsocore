@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useCallback } from 'react';
-import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, ShieldAlert, Globe, Users, User } from 'lucide-react';
+import { MessageSquare, RefreshCw, Trash2, Send, MessageCircle, Globe, Users, User } from 'lucide-react';
 import { ChatMessage } from '@/lib/store';
 
 export function LiveChatModule() {
@@ -9,6 +9,13 @@ export function LiveChatModule() {
   const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
+
+  // Outbound Web Chat Dispatch State
+  const [outboundChannel, setOutboundChannel] = useState<'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN'>('MAP');
+  const [outboundRecipient, setOutboundRecipient] = useState('');
+  const [outboundMessage, setOutboundMessage] = useState('');
+  const [sending, setSending] = useState(false);
+  const [sendStatus, setSendStatus] = useState<string | null>(null);
 
   const fetchChatMessages = useCallback(async () => {
     try {
@@ -45,6 +52,43 @@ export function LiveChatModule() {
       console.error('Error clearing chat history:', e);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSendOutboundMessage = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!outboundMessage.trim()) return;
+    if (outboundChannel === 'PRIVATE' && !outboundRecipient.trim()) {
+      alert('Please enter a recipient name for Private Messages.');
+      return;
+    }
+
+    setSending(true);
+    setSendStatus(null);
+    try {
+      const res = await fetch('/api/v1/chat/send', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          channel: outboundChannel,
+          recipient: outboundRecipient.trim(),
+          message: outboundMessage.trim(),
+        }),
+      });
+
+      if (res.ok) {
+        setOutboundMessage('');
+        setSendStatus('Queued for game dispatch!');
+        fetchChatMessages();
+        setTimeout(() => setSendStatus(null), 4000);
+      } else {
+        const data = await res.json();
+        alert(`Failed to send chat: ${data.error || 'Server error'}`);
+      }
+    } catch (err: any) {
+      alert(`Network error: ${err.message}`);
+    } finally {
+      setSending(false);
     }
   };
 
@@ -165,7 +209,7 @@ export function LiveChatModule() {
         </div>
 
         {/* Message Log Feed */}
-        <div className="p-4 max-h-[550px] overflow-y-auto space-y-3 font-mono text-xs divide-y divide-zinc-900">
+        <div className="p-4 max-h-[480px] overflow-y-auto space-y-3 font-mono text-xs divide-y divide-zinc-900">
           {messages.length === 0 ? (
             <div className="py-16 text-center space-y-3">
               <div className="w-12 h-12 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
@@ -198,6 +242,65 @@ export function LiveChatModule() {
             ))
           )}
         </div>
+
+        {/* Outbound Web Chat Command Bar */}
+        <form onSubmit={handleSendOutboundMessage} className="p-4 bg-zinc-900/90 border-t border-zinc-800/80 space-y-3">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Send className="w-3.5 h-3.5 text-emerald-400" />
+              <span className="font-mono text-xs font-semibold text-zinc-300">DISPATCH GAME CHAT MESSAGE</span>
+            </div>
+            {sendStatus && (
+              <span className="font-mono text-xs text-emerald-400 bg-emerald-500/10 px-2 py-0.5 rounded border border-emerald-500/20 animate-pulse">
+                ✓ {sendStatus}
+              </span>
+            )}
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-stretch gap-3">
+            {/* Channel Dropdown */}
+            <select
+              value={outboundChannel}
+              onChange={(e) => setOutboundChannel(e.target.value as any)}
+              className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-emerald-400 focus:outline-none focus:border-emerald-500/50"
+            >
+              <option value="MAP">MAP CHAT (-23)</option>
+              <option value="WORLD">WORLD CHAT (-21)</option>
+              <option value="PRIVATE">WHISPER PM (-22)</option>
+              <option value="CLAN">CLAN CHAT (-19)</option>
+            </select>
+
+            {/* Target Recipient Input (if PRIVATE) */}
+            {outboundChannel === 'PRIVATE' && (
+              <input
+                type="text"
+                placeholder="Recipient name..."
+                value={outboundRecipient}
+                onChange={(e) => setOutboundRecipient(e.target.value)}
+                className="px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-purple-300 placeholder-zinc-600 focus:outline-none focus:border-purple-500/50 w-full sm:w-44"
+              />
+            )}
+
+            {/* Message Input */}
+            <input
+              type="text"
+              placeholder={`Type ${outboundChannel.toLowerCase()} message to send via game client...`}
+              value={outboundMessage}
+              onChange={(e) => setOutboundMessage(e.target.value)}
+              className="flex-1 px-3 py-2 rounded-lg bg-zinc-950 border border-zinc-800 text-xs font-mono text-zinc-200 placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50"
+            />
+
+            {/* Send Button */}
+            <button
+              type="submit"
+              disabled={sending || !outboundMessage.trim()}
+              className="px-4 py-2 rounded-lg bg-emerald-500/20 text-emerald-300 hover:bg-emerald-500/30 border border-emerald-500/30 text-xs font-mono font-semibold flex items-center justify-center space-x-1.5 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+            >
+              <Send className={`w-3.5 h-3.5 ${sending ? 'animate-bounce' : ''}`} />
+              <span>SEND TO GAME</span>
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

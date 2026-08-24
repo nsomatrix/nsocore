@@ -98,4 +98,39 @@ public class MatrixChat {
         MatrixLogger.logChat(channel, "SELF", recipient, text);
         MatrixWebClient.postChatMessage(channel, "SELF", recipient, text);
     }
+
+    /**
+     * Intercepts and parses incoming game notice dialogs & chat alerts to stream to web dashboard.
+     */
+    public static void onChatReceived(String text) {
+        if (text == null || text.trim().length() == 0) return;
+        String clean = text.trim();
+
+        String channel = "MAP";
+        String sender = "GAME_NOTIFY";
+        String msg = clean;
+
+        if (clean.indexOf(":") != -1) {
+            int colonIdx = clean.indexOf(":");
+            String prefix = clean.substring(0, colonIdx).trim();
+            msg = clean.substring(colonIdx + 1).trim();
+
+            if (prefix.toLowerCase().indexOf("whisper") != -1 || prefix.toLowerCase().indexOf("pm") != -1) {
+                channel = "PRIVATE";
+                sender = prefix;
+            } else if (prefix.toLowerCase().indexOf("clan") != -1) {
+                channel = "CLAN";
+                sender = prefix;
+            } else if (prefix.toLowerCase().indexOf("world") != -1) {
+                channel = "WORLD";
+                sender = prefix;
+            } else {
+                channel = "MAP";
+                sender = prefix;
+            }
+        }
+
+        MatrixLogger.logChat(channel, sender, null, msg);
+        MatrixWebClient.postChatMessage(channel, sender, null, msg);
+    }
 }

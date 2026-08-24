@@ -56,6 +56,7 @@ const globalStore = globalThis as unknown as {
   _matrixPlayersStore?: PlayerProfile[];
   _pendingInspectQueue?: string[];
   _matrixChatStore?: ChatMessage[];
+  _pendingOutboundChatQueue?: ChatMessage[];
 };
 
 if (!globalStore._matrixPlayersStore) {
@@ -243,4 +244,33 @@ export function saveChatMessage(data: {
 
 export function clearAllChatMessages() {
   globalStore._matrixChatStore = [];
+}
+
+export function queueOutboundChatMessage(data: {
+  channel: string;
+  recipient?: string;
+  message: string;
+}): ChatMessage {
+  if (!globalStore._pendingOutboundChatQueue) {
+    globalStore._pendingOutboundChatQueue = [];
+  }
+
+  // First save to historical chat stream as WEB_CONSOLE
+  const msg = saveChatMessage({
+    channel: data.channel,
+    sender: 'WEB_CONSOLE',
+    recipient: data.recipient,
+    message: data.message,
+  });
+
+  globalStore._pendingOutboundChatQueue.push(msg);
+  return msg;
+}
+
+export function popPendingOutboundChatMessages(): ChatMessage[] {
+  if (!globalStore._pendingOutboundChatQueue) {
+    globalStore._pendingOutboundChatQueue = [];
+    return [];
+  }
+  return globalStore._pendingOutboundChatQueue.splice(0);
 }

@@ -93,6 +93,7 @@ public class MatrixAPI {
 
     public static boolean handleNoticeDialog(String text) {
         MatrixLogger.logDialog(text);
+        mod.chat.MatrixChat.onChatReceived(text);
         return MatrixWebClient.handleNoticeDialog(text);
     }
 

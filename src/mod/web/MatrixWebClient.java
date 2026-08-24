@@ -86,6 +86,18 @@ public class MatrixWebClient {
         return base + "/api/v1/chat";
     }
 
+    /**
+     * Resolves full POST/GET outbound chat URL regardless of how user entered it.
+     */
+    public static String getChatSendEndpointUrl() {
+        String chatUrl = getChatEndpointUrl();
+        if (chatUrl == null) return null;
+        if (chatUrl.endsWith("/")) {
+            chatUrl = chatUrl.substring(0, chatUrl.length() - 1);
+        }
+        return chatUrl + "/send";
+    }
+
     private static java.util.Vector activeLiveTargets = new java.util.Vector();
     private static java.util.Hashtable lastPostTimes = new java.util.Hashtable();
 
@@ -94,7 +106,7 @@ public class MatrixWebClient {
     }
 
     /**
-     * Starts background worker thread polling the remote REST server for queued inspect targets.
+     * Starts background worker thread polling the remote REST server for queued inspect targets and outbound chat messages.
      */
     public static synchronized void startPollingLoop() {
         mod.net.MatrixAutoReconnect.startWatchdog();
@@ -102,11 +114,12 @@ public class MatrixWebClient {
 
         pollThread = new Thread(new Runnable() {
             public void run() {
-                MatrixLogger.log("WEB-REST", "Background Inspection Poller active! Inspect URL: " + getInspectEndpointUrl());
+                MatrixLogger.log("WEB-REST", "Background Telemetry Poller active!");
                 while (enableWebSync && enablePolling) {
                     try {
-                        Thread.sleep(5000); // Poll every 5 seconds for new web inspect targets
+                        Thread.sleep(2500); // Poll every 2.5 seconds for new web inspect targets & outbound chat commands
                         checkPendingInspectTarget();
+                        checkPendingOutboundChat();
                     } catch (Exception e) {
                     }
                 }
@@ -165,6 +178,91 @@ public class MatrixWebClient {
             try { if (is != null) is.close(); } catch (Exception ex) {}
             try { if (conn != null) conn.close(); } catch (Exception ex) {}
         }
+    }
+
+    private static void checkPendingOutboundChat() {
+        if (!enableWebSync || restApiEndpoint == null || restApiEndpoint.trim().length() == 0) return;
+        String sendUrl = getChatSendEndpointUrl();
+        if (sendUrl == null) return;
+
+        HttpConnection conn = null;
+        InputStream is = null;
+        try {
+            conn = (HttpConnection) Connector.open(sendUrl, Connector.READ, true);
+            conn.setRequestMethod(HttpConnection.GET);
+            conn.setRequestProperty("User-Agent", "NSOCore-MatrixAPI/1.0 (J2ME MIDP2.0)");
+
+            int code = conn.getResponseCode();
+            if (code == HttpConnection.HTTP_OK) {
+                is = conn.openInputStream();
+                StringBuffer sb = new StringBuffer();
+                int ch;
+                while ((ch = is.read()) != -1) {
+                    sb.append((char) ch);
+                }
+                String resp = sb.toString();
+                parseAndDispatchOutboundChat(resp);
+            }
+        } catch (Exception e) {
+            // Silently ignore connection glitches during background polling
+        } finally {
+            try { if (is != null) is.close(); } catch (Exception ex) {}
+            try { if (conn != null) conn.close(); } catch (Exception ex) {}
+        }
+    }
+
+    private static void parseAndDispatchOutboundChat(String json) {
+        if (json == null || json.indexOf("\"pending\":[") == -1) return;
+        int arrayStart = json.indexOf("\"pending\":[");
+        int arrayEnd = json.indexOf("]", arrayStart);
+        if (arrayStart == -1 || arrayEnd == -1 || arrayEnd <= arrayStart) return;
+
+        String pendingArrayStr = json.substring(arrayStart, arrayEnd);
+        int pos = 0;
+        while ((pos = pendingArrayStr.indexOf("{\"id\":", pos)) != -1) {
+            int itemEnd = pendingArrayStr.indexOf("}", pos);
+            if (itemEnd == -1) break;
+            String itemStr = pendingArrayStr.substring(pos, itemEnd + 1);
+
+            String channel = extractJsonProp(itemStr, "channel");
+            String recipient = extractJsonProp(itemStr, "recipient");
+            String message = extractJsonProp(itemStr, "message");
+
+            if (channel != null && message != null && message.length() > 0) {
+                MatrixLogger.log("WEB-CHAT", "Dispatching Web Outbound Chat [" + channel + "] -> " + message);
+                if ("PRIVATE".equalsIgnoreCase(channel) && recipient != null) {
+                    mod.chat.MatrixChat.sendPrivateMessage(recipient, message);
+                } else if ("WORLD".equalsIgnoreCase(channel)) {
+                    mod.chat.MatrixChat.sendWorldChat(message);
+                } else if ("CLAN".equalsIgnoreCase(channel)) {
+                    mod.chat.MatrixChat.sendClanChat(message);
+                } else {
+                    mod.chat.MatrixChat.sendMapChat(message);
+                }
+            }
+            pos = itemEnd + 1;
+        }
+    }
+
+    private static String extractJsonProp(String item, String prop) {
+        int keyIndex = item.indexOf("\"" + prop + "\"");
+        if (keyIndex == -1) return null;
+        int colonIndex = item.indexOf(":", keyIndex + prop.length() + 2);
+        if (colonIndex == -1) return null;
+
+        int valStart = colonIndex + 1;
+        while (valStart < item.length() && (item.charAt(valStart) == ' ' || item.charAt(valStart) == '\t')) {
+            valStart++;
+        }
+        if (valStart >= item.length()) return null;
+
+        if (item.charAt(valStart) == '"') {
+            int valEnd = item.indexOf('"', valStart + 1);
+            if (valEnd != -1) {
+                return item.substring(valStart + 1, valEnd);
+            }
+        }
+        return null;
     }
 
     private static String extractTargetFromJson(String json) {
