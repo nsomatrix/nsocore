@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Menu, X, Activity } from 'lucide-react';
+import { Shield, Menu, X, Activity, Search, MessageSquare } from 'lucide-react';
 
 interface NavbarProps {
   playerCount?: number;
@@ -19,6 +19,8 @@ export function Navbar({
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', href: '/', icon: Activity },
+    { id: 'inspector', label: 'Inspector', href: '/inspector', icon: Search },
+    { id: 'chat', label: 'Live Chat', href: '/chat', icon: MessageSquare },
   ];
 
   return (

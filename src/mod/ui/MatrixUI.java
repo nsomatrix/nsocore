@@ -44,22 +44,62 @@ public class MatrixUI {
             boolean state = mod.net.MatrixAutoReconnect.enableAutoLogin;
             a.a("Auto Login: " + (state ? "ENABLED" : "DISABLED"));
             return true;
+        } else if (commandId == 888920) { // Sub-option: Open Chat Console Sub-Menu
+            showChatConsoleMenu();
+            return true;
+        } else if (commandId == 888910) { // Sub-option: Send Private Message (PM)
+            promptPrivateMessage();
+            return true;
+        } else if (commandId == 888911) { // Sub-option: Send Map Chat
+            promptMapChat();
+            return true;
+        } else if (commandId == 888914) { // Sub-option: Send World Chat
+            promptWorldChat();
+            return true;
+        } else if (commandId == 888915) { // Sub-option: Send Clan Chat
+            promptClanChat();
+            return true;
+        } else if (commandId == 888912) { // Submit PM
+            submitPrivateMessage();
+            return true;
+        } else if (commandId == 888913) { // Submit Map Chat
+            submitMapChat();
+            return true;
+        } else if (commandId == 888916) { // Submit World Chat
+            submitWorldChat();
+            return true;
+        } else if (commandId == 888917) { // Submit Clan Chat
+            submitClanChat();
+            return true;
         }
         return false;
     }
 
     /**
-     * Displays MatrixAPI sub-menu list (cleanly expandable for future features).
+     * Displays main MatrixAPI menu list.
      */
     public static void showMatrixMenu() {
         aa menuList = new aa();
         menuList.addElement(new bd("Inspect Player Target", 888901));
+        menuList.addElement(new bd("Chat Console...", 888920));
         boolean syncState = mod.web.MatrixWebClient.enableWebSync;
         menuList.addElement(new bd("REST Web Sync [" + (syncState ? "ON" : "OFF") + "]", 888904));
         menuList.addElement(new bd("Set REST API Endpoint", 888905));
         boolean autoLoginState = mod.net.MatrixAutoReconnect.enableAutoLogin;
         menuList.addElement(new bd("Auto Login [" + (autoLoginState ? "ON" : "OFF") + "]", 888907));
-        a.F.a(menuList); // Native interactive sub-menu list
+        a.F.a(menuList); // Native interactive menu list
+    }
+
+    /**
+     * Displays dedicated Chat Console sub-menu.
+     */
+    public static void showChatConsoleMenu() {
+        aa menuList = new aa();
+        menuList.addElement(new bd("Send Private Message", 888910));
+        menuList.addElement(new bd("Send Map Chat", 888911));
+        menuList.addElement(new bd("Send World Chat", 888914));
+        menuList.addElement(new bd("Send Clan Chat", 888915));
+        a.F.a(menuList);
     }
 
     /**
@@ -118,6 +158,107 @@ public class MatrixUI {
             MatrixNet.inspectPlayer(playerName.trim());
         } else {
             a.a("Please enter a valid player name!");
+        }
+    }
+
+    /**
+     * Opens dual-input field box (main.a.M) for typing target player and private message text.
+     */
+    public static void promptPrivateMessage() {
+        if (a.M != null) {
+            a.M.a("Recipient:", "Message:");
+            a.M.a("Send PM", new bd("Cancel", a.k, 8882, null), new bd("Send", a.k, 888912, null), 0, 0);
+            a.J = a.M;
+        }
+    }
+
+    /**
+     * Reads typed recipient and message text, then dispatches private message.
+     */
+    public static void submitPrivateMessage() {
+        String recipient = null;
+        String message = null;
+        if (a.M != null && a.M.d != null && a.M.e != null) {
+            recipient = a.M.d.d();
+            message = a.M.e.d();
+        }
+        a.j();
+        if (recipient != null && message != null && recipient.trim().length() > 0 && message.trim().length() > 0) {
+            mod.chat.MatrixChat.sendPrivateMessage(recipient.trim(), message.trim());
+        } else {
+            a.a("Invalid recipient or message!");
+        }
+    }
+
+    /**
+     * Opens single-input field box (main.a.L) for typing map chat text.
+     */
+    public static void promptMapChat() {
+        bd sendCmd = new bd("Send", 888913);
+        a.L.a("Enter Map Message:", sendCmd, 0);
+    }
+
+    /**
+     * Reads typed text and dispatches map chat message.
+     */
+    public static void submitMapChat() {
+        String message = null;
+        if (a.L != null && a.L.d != null) {
+            message = a.L.d.d();
+        }
+        a.j();
+        if (message != null && message.trim().length() > 0) {
+            mod.chat.MatrixChat.sendMapChat(message.trim());
+        } else {
+            a.a("Please enter a valid message!");
+        }
+    }
+
+    /**
+     * Opens single-input field box (main.a.L) for typing world chat text.
+     */
+    public static void promptWorldChat() {
+        bd sendCmd = new bd("Send", 888916);
+        a.L.a("Enter World Message:", sendCmd, 0);
+    }
+
+    /**
+     * Reads typed text and dispatches world chat message.
+     */
+    public static void submitWorldChat() {
+        String message = null;
+        if (a.L != null && a.L.d != null) {
+            message = a.L.d.d();
+        }
+        a.j();
+        if (message != null && message.trim().length() > 0) {
+            mod.chat.MatrixChat.sendWorldChat(message.trim());
+        } else {
+            a.a("Please enter a valid message!");
+        }
+    }
+
+    /**
+     * Opens single-input field box (main.a.L) for typing clan chat text.
+     */
+    public static void promptClanChat() {
+        bd sendCmd = new bd("Send", 888917);
+        a.L.a("Enter Clan Message:", sendCmd, 0);
+    }
+
+    /**
+     * Reads typed text and dispatches clan chat message.
+     */
+    public static void submitClanChat() {
+        String message = null;
+        if (a.L != null && a.L.d != null) {
+            message = a.L.d.d();
+        }
+        a.j();
+        if (message != null && message.trim().length() > 0) {
+            mod.chat.MatrixChat.sendClanChat(message.trim());
+        } else {
+            a.a("Please enter a valid message!");
         }
     }
 }

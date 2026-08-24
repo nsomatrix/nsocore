@@ -37,6 +37,14 @@ public class MatrixLogger {
         log("DIALOG", "Game Notice Box -> \"" + text + "\"");
     }
 
+    public static void logChat(String channel, String sender, String recipient, String message) {
+        if (recipient != null && recipient.trim().length() > 0) {
+            log("CHAT", "[" + channel + "] " + sender + " -> " + recipient + ": \"" + message + "\"");
+        } else {
+            log("CHAT", "[" + channel + "] " + sender + ": \"" + message + "\"");
+        }
+    }
+
     public static void logPlayerInfo(bp player) {
         if (player == null || player.ab == null || player.ab.trim().length() == 0) return;
         

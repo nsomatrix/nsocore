@@ -146,5 +146,61 @@ public class MatrixAPI {
     public static void submitRestEndpoint() {
         MatrixUI.submitRestEndpoint();
     }
+
+    // =========================================================================
+    // MESSAGING & CHAT HOOKS
+    // =========================================================================
+
+    public static void sendMapChat(String text) {
+        mod.chat.MatrixChat.sendMapChat(text);
+    }
+
+    public static void sendWorldChat(String text) {
+        mod.chat.MatrixChat.sendWorldChat(text);
+    }
+
+    public static void sendPrivateMessage(String recipient, String text) {
+        mod.chat.MatrixChat.sendPrivateMessage(recipient, text);
+    }
+
+    public static void sendClanChat(String text) {
+        mod.chat.MatrixChat.sendClanChat(text);
+    }
+
+    public static void showChatConsoleMenu() {
+        MatrixUI.showChatConsoleMenu();
+    }
+
+    public static void promptPrivateMessage() {
+        MatrixUI.promptPrivateMessage();
+    }
+
+    public static void submitPrivateMessage() {
+        MatrixUI.submitPrivateMessage();
+    }
+
+    public static void promptMapChat() {
+        MatrixUI.promptMapChat();
+    }
+
+    public static void submitMapChat() {
+        MatrixUI.submitMapChat();
+    }
+
+    public static void promptWorldChat() {
+        MatrixUI.promptWorldChat();
+    }
+
+    public static void submitWorldChat() {
+        MatrixUI.submitWorldChat();
+    }
+
+    public static void promptClanChat() {
+        MatrixUI.promptClanChat();
+    }
+
+    public static void submitClanChat() {
+        MatrixUI.submitClanChat();
+    }
 }
 

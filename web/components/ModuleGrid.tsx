@@ -2,7 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
-import { UserCheck, ArrowRight } from 'lucide-react';
+import { UserCheck, MessageSquare, ArrowRight } from 'lucide-react';
 
 interface ModuleGridProps {
   targetCount: number;
@@ -19,6 +19,16 @@ export function ModuleGrid({ targetCount }: ModuleGridProps) {
       description: 'Fetch detailed player profiles via remote inspection requests & stream live telemetry.',
       badgeText: `${targetCount} Profiles`,
       actionText: 'Launch Module',
+    },
+    {
+      id: 'live-chat',
+      title: 'Live Chat Telemetry Stream',
+      version: 'v1.0 ACTIVE',
+      href: '/chat',
+      icon: MessageSquare,
+      description: 'Monitor real-time Map, World, Whisper, and Clan chat logs streamed from active clients.',
+      badgeText: 'Live Messaging Stream',
+      actionText: 'Open Chat Console',
     },
   ];
 

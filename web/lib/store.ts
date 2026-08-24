@@ -40,12 +40,22 @@ export interface PlayerProfile {
   error?: string;
 }
 
+export interface ChatMessage {
+  id: string;
+  channel: 'MAP' | 'WORLD' | 'PRIVATE' | 'CLAN';
+  sender: string;
+  recipient?: string;
+  message: string;
+  timestamp: string;
+}
+
 const AUTO_CLEAR_MS = 30 * 60 * 1000; // Auto clear after 30 minutes
 
 // In-memory global store to preserve state across warm Vercel Lambdas
 const globalStore = globalThis as unknown as {
   _matrixPlayersStore?: PlayerProfile[];
   _pendingInspectQueue?: string[];
+  _matrixChatStore?: ChatMessage[];
 };
 
 if (!globalStore._matrixPlayersStore) {
@@ -53,6 +63,9 @@ if (!globalStore._matrixPlayersStore) {
 }
 if (!globalStore._pendingInspectQueue) {
   globalStore._pendingInspectQueue = [];
+}
+if (!globalStore._matrixChatStore) {
+  globalStore._matrixChatStore = [];
 }
 
 function getDataFilePath(): string {
@@ -188,4 +201,46 @@ export function deletePlayerByName(name: string): boolean {
     return true;
   }
   return false;
+}
+
+// Chat Store Functions
+export function getAllChatMessages(): ChatMessage[] {
+  return globalStore._matrixChatStore || [];
+}
+
+export function saveChatMessage(data: {
+  channel: string;
+  sender: string;
+  recipient?: string;
+  message: string;
+}): ChatMessage {
+  if (!globalStore._matrixChatStore) {
+    globalStore._matrixChatStore = [];
+  }
+
+  const validChannel = (['MAP', 'WORLD', 'PRIVATE', 'CLAN'].includes(data.channel?.toUpperCase())
+    ? data.channel.toUpperCase()
+    : 'MAP') as ChatMessage['channel'];
+
+  const msg: ChatMessage = {
+    id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    channel: validChannel,
+    sender: data.sender || 'UNKNOWN',
+    recipient: data.recipient,
+    message: data.message,
+    timestamp: new Date().toISOString(),
+  };
+
+  globalStore._matrixChatStore.unshift(msg);
+
+  // Keep latest 100 chat messages
+  if (globalStore._matrixChatStore.length > 100) {
+    globalStore._matrixChatStore = globalStore._matrixChatStore.slice(0, 100);
+  }
+
+  return msg;
+}
+
+export function clearAllChatMessages() {
+  globalStore._matrixChatStore = [];
 }
