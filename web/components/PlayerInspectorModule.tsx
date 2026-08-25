@@ -73,7 +73,7 @@ export function PlayerInspectorModule() {
   const [targetName, setTargetName] = useState('');
   const [fetching, setFetching] = useState(false);
   const [refreshingTarget, setRefreshingTarget] = useState<string | null>(null);
-  const [fetchMsg, setFetchMsg] = useState<{ type: 'success' | 'info' | 'error'; text: string } | null>(null);
+  const [fetchMsg, setFetchMsg] = useState<{ type: 'success' | 'info' | 'loading' | 'error'; text: string } | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedPlayer, setSelectedPlayer] = useState<PlayerProfile | null>(null);
   const [equipmentPlayer, setEquipmentPlayer] = useState<PlayerProfile | null>(null);
@@ -215,6 +215,9 @@ export function PlayerInspectorModule() {
     if (!userId) return;
     const isSaved = isTargetSaved(userId, player.name);
     if (isSaved) {
+      if (refreshingTarget?.toLowerCase() === player.name.toLowerCase()) {
+        setRefreshingTarget(null);
+      }
       const updated = removeTarget(userId, player.name);
       setSavedPlayers(updated);
       setFetchMsg({ type: 'info', text: `Removed "${player.name}" from your saved targets.` });
@@ -226,6 +229,9 @@ export function PlayerInspectorModule() {
   };
 
   const handleDismissPlayer = async (playerName: string) => {
+    if (refreshingTarget?.toLowerCase() === playerName.toLowerCase()) {
+      setRefreshingTarget(null);
+    }
     setSessionPlayers((prev) => prev.filter((p) => p.name.toLowerCase() !== playerName.toLowerCase()));
     if (selectedPlayer?.name.toLowerCase() === playerName.toLowerCase()) setSelectedPlayer(null);
     if (equipmentPlayer?.name.toLowerCase() === playerName.toLowerCase()) setEquipmentPlayer(null);
@@ -252,7 +258,7 @@ export function PlayerInspectorModule() {
     }
 
     setRefreshingTarget(cleanName);
-    setFetchMsg({ type: 'info', text: `Refreshing live stats for "${cleanName}"...` });
+    setFetchMsg({ type: 'loading', text: `Refreshing live stats for "${cleanName}"...` });
 
     // Set 60-second cooldown immediately
     setRefreshCooldown(userId, cleanName);
@@ -345,7 +351,7 @@ export function PlayerInspectorModule() {
 
     stopPolling();
     setFetching(true);
-    setFetchMsg({ type: 'info', text: `Requesting player info for "${cleanName}"...` });
+    setFetchMsg({ type: 'loading', text: `Requesting player info for "${cleanName}"...` });
 
     try {
       const res = await fetch('/api/v1/inspect', {
@@ -361,7 +367,7 @@ export function PlayerInspectorModule() {
         return;
       }
 
-      setFetchMsg({ type: 'info', text: `Waiting for game client to inspect "${cleanName}"...` });
+      setFetchMsg({ type: 'loading', text: `Waiting for game client to inspect "${cleanName}"...` });
 
       const startTime = Date.now();
       const pollTarget = async () => {
@@ -563,7 +569,8 @@ export function PlayerInspectorModule() {
         >
           <div className="flex items-start sm:items-center space-x-2.5 min-w-0 flex-1">
             {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />}
-            {fetchMsg.type === 'info' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
+            {fetchMsg.type === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
+            {fetchMsg.type === 'info' && <Radio className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
             {fetchMsg.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 sm:mt-0" />}
             <span className="break-words leading-relaxed whitespace-normal">{fetchMsg.text}</span>
           </div>
