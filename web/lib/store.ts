@@ -87,6 +87,31 @@ function getUserTargetsFilePath(): string {
   return path.join(process.cwd(), 'data', 'user_targets.json');
 }
 
+function getChatFilePath(): string {
+  if (process.env.VERCEL || process.env.NODE_ENV === 'production') {
+    return path.join(os.tmpdir(), 'chat.json');
+  }
+  return path.join(process.cwd(), 'data', 'chat.json');
+}
+
+/**
+ * OS-level atomic JSON file write helper (POSIX atomic rename).
+ * Writes to a temporary file first, then performs an atomic renameSync.
+ */
+function safeAtomicWriteJson(filePath: string, data: any) {
+  try {
+    const dir = path.dirname(filePath);
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+    }
+    const tempPath = `${filePath}.${Date.now()}.${Math.random().toString(36).substring(2, 7)}.tmp`;
+    fs.writeFileSync(tempPath, JSON.stringify(data, null, 2), 'utf8');
+    fs.renameSync(tempPath, filePath);
+  } catch (e) {
+    console.warn(`[STORE] Atomic file write warning for ${filePath}:`, e);
+  }
+}
+
 /**
  * Automatically prunes profiles older than 30 minutes (1,800,000 ms).
  */
@@ -124,16 +149,7 @@ export function getAllPlayers(): PlayerProfile[] {
 
 export function saveAllPlayers(players: PlayerProfile[]) {
   globalStore._matrixPlayersStore = players;
-  const filePath = getDataFilePath();
-  try {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filePath, JSON.stringify(players, null, 2), 'utf8');
-  } catch (e) {
-    console.warn('[STORE] File write warning (relying on in-memory store):', e);
-  }
+  safeAtomicWriteJson(getDataFilePath(), players);
 }
 
 export function clearAllPlayers() {
@@ -216,8 +232,34 @@ export function deletePlayerByName(name: string): boolean {
 }
 
 // Chat Store Functions
+function loadChatMessagesFromDisk(): ChatMessage[] {
+  const filePath = getChatFilePath();
+  let loaded: ChatMessage[] = globalStore._matrixChatStore || [];
+  try {
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        loaded = parsed;
+        globalStore._matrixChatStore = parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[STORE] Error reading chat file, using in-memory store:', e);
+  }
+  return loaded;
+}
+
+function saveAllChatMessages(messages: ChatMessage[]) {
+  globalStore._matrixChatStore = messages;
+  safeAtomicWriteJson(getChatFilePath(), messages);
+}
+
 export function getAllChatMessages(): ChatMessage[] {
-  return globalStore._matrixChatStore || [];
+  if (!globalStore._matrixChatStore || globalStore._matrixChatStore.length === 0) {
+    return loadChatMessagesFromDisk();
+  }
+  return globalStore._matrixChatStore;
 }
 
 export function saveChatMessage(data: {
@@ -226,9 +268,7 @@ export function saveChatMessage(data: {
   recipient?: string;
   message: string;
 }): ChatMessage {
-  if (!globalStore._matrixChatStore) {
-    globalStore._matrixChatStore = [];
-  }
+  let currentMessages = getAllChatMessages();
 
   const validChannel = (['MAP', 'WORLD', 'PRIVATE', 'CLAN'].includes(data.channel?.toUpperCase())
     ? data.channel.toUpperCase()
@@ -243,18 +283,19 @@ export function saveChatMessage(data: {
     timestamp: new Date().toISOString(),
   };
 
-  globalStore._matrixChatStore.unshift(msg);
+  currentMessages.unshift(msg);
 
-  // Keep latest 100 chat messages
-  if (globalStore._matrixChatStore.length > 100) {
-    globalStore._matrixChatStore = globalStore._matrixChatStore.slice(0, 100);
+  // Keep latest 500 chat messages for robust telemetry history
+  if (currentMessages.length > 500) {
+    currentMessages = currentMessages.slice(0, 500);
   }
 
+  saveAllChatMessages(currentMessages);
   return msg;
 }
 
 export function clearAllChatMessages() {
-  globalStore._matrixChatStore = [];
+  saveAllChatMessages([]);
 }
 
 export function queueOutboundChatMessage(data: {
@@ -307,16 +348,7 @@ function loadUserTargetsMap(): Record<string, PlayerProfile[]> {
 
 function saveUserTargetsMap(map: Record<string, PlayerProfile[]>) {
   globalStore._userSavedTargetsStore = map;
-  const filePath = getUserTargetsFilePath();
-  try {
-    const dir = path.dirname(filePath);
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
-    fs.writeFileSync(filePath, JSON.stringify(map, null, 2), 'utf8');
-  } catch (e) {
-    console.warn('[STORE] Warning saving user targets map:', e);
-  }
+  safeAtomicWriteJson(getUserTargetsFilePath(), map);
 }
 
 export function getUserSavedTargets(userId: string): PlayerProfile[] {

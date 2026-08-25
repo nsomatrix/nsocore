@@ -19,7 +19,17 @@ import {
 import { ChatMessage } from '@/lib/store';
 
 export function LiveChatModule() {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const cached = localStorage.getItem('mtx_chat_telemetry_cache');
+        return cached ? JSON.parse(cached) : [];
+      } catch (e) {
+        return [];
+      }
+    }
+    return [];
+  });
   const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -37,16 +47,37 @@ export function LiveChatModule() {
 
   const fetchChatMessages = useCallback(async () => {
     try {
-      const url = selectedChannel === 'ALL' ? '/api/v1/chat' : `/api/v1/chat?channel=${selectedChannel}`;
-      const res = await fetch(url);
+      const res = await fetch('/api/v1/chat');
       if (res.ok) {
         const data = await res.json();
-        setMessages(data.messages || []);
+        const incoming: ChatMessage[] = data.messages || [];
+        setMessages((prevMessages) => {
+          // Smart deduplication & merging by message ID
+          const messageMap = new Map<string, ChatMessage>();
+          
+          // Seed existing messages first
+          prevMessages.forEach((msg) => messageMap.set(msg.id, msg));
+          
+          // Merge incoming server messages
+          incoming.forEach((msg) => messageMap.set(msg.id, msg));
+
+          // Convert back to array sorted by timestamp descending
+          const merged = Array.from(messageMap.values()).sort(
+            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
+          ).slice(0, 500);
+
+          if (typeof window !== 'undefined') {
+            try {
+              localStorage.setItem('mtx_chat_telemetry_cache', JSON.stringify(merged));
+            } catch (e) {}
+          }
+          return merged;
+        });
       }
     } catch (e) {
       console.error('Error fetching chat messages:', e);
     }
-  }, [selectedChannel]);
+  }, []);
 
   useEffect(() => {
     fetchChatMessages();
@@ -57,6 +88,22 @@ export function LiveChatModule() {
     const interval = setInterval(fetchChatMessages, 3000);
     return () => clearInterval(interval);
   }, [autoRefresh, fetchChatMessages]);
+
+  // Industry Standard: Refetch immediately when tab visibility changes or window gains focus
+  useEffect(() => {
+    const handleVisibilityOrFocus = () => {
+      if (typeof document !== 'undefined' && document.visibilityState === 'visible') {
+        fetchChatMessages();
+      }
+    };
+
+    window.addEventListener('focus', handleVisibilityOrFocus);
+    document.addEventListener('visibilitychange', handleVisibilityOrFocus);
+    return () => {
+      window.removeEventListener('focus', handleVisibilityOrFocus);
+      document.removeEventListener('visibilitychange', handleVisibilityOrFocus);
+    };
+  }, [fetchChatMessages]);
 
   // Click outside listener for custom channel dropdown
   useEffect(() => {
@@ -76,6 +123,9 @@ export function LiveChatModule() {
       const res = await fetch('/api/v1/chat', { method: 'DELETE' });
       if (res.ok) {
         setMessages([]);
+        if (typeof window !== 'undefined') {
+          localStorage.removeItem('mtx_chat_telemetry_cache');
+        }
       }
     } catch (e) {
       console.error('Error clearing chat history:', e);
@@ -167,6 +217,10 @@ export function LiveChatModule() {
       return '';
     }
   };
+
+  const filteredMessages = selectedChannel === 'ALL'
+    ? messages
+    : messages.filter((m) => m.channel === selectedChannel);
 
   const channels = [
     { id: 'ALL', label: 'All Channels' },
@@ -267,12 +321,12 @@ export function LiveChatModule() {
         {/* Terminal Sub-header */}
         <div className="px-3 py-2.5 bg-zinc-900/80 border-b border-zinc-800/80 flex items-center justify-between text-xs font-mono">
           <span className="text-zinc-400 text-[11px] uppercase tracking-wider font-semibold">FEED TELEMETRY</span>
-          <span className="text-zinc-500 text-[11px]">{messages.length} LOGS</span>
+          <span className="text-zinc-500 text-[11px]">{filteredMessages.length} LOGS</span>
         </div>
 
         {/* Message Log Feed */}
         <div className="p-3 sm:p-4 max-h-[420px] overflow-y-auto space-y-2 font-mono text-xs">
-          {messages.length === 0 ? (
+          {filteredMessages.length === 0 ? (
             <div className="py-12 text-center space-y-2">
               <div className="w-10 h-10 rounded-full bg-zinc-900 border border-zinc-800 flex items-center justify-center mx-auto text-zinc-600">
                 <MessageSquare className="w-5 h-5" />
@@ -283,7 +337,7 @@ export function LiveChatModule() {
               </p>
             </div>
           ) : (
-            messages.map((msg) => (
+            filteredMessages.map((msg) => (
               <div
                 key={msg.id}
                 className="p-2.5 sm:p-3 rounded-lg bg-zinc-900/40 border border-zinc-800/60 hover:border-zinc-700/80 transition-all flex flex-col gap-1 min-w-0"
