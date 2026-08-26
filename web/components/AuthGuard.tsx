@@ -70,40 +70,44 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
       <div className="min-h-screen w-full bg-black flex items-center justify-center p-4 relative overflow-hidden">
         {/* Background Grid Pattern & Glowing Orbs */}
         <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10"></div>
-        <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-96 h-96 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Lock Screen Card */}
-        <div className="relative w-full max-w-md bg-zinc-950/90 border border-zinc-800/90 backdrop-blur-2xl rounded-3xl shadow-[0_0_60px_rgba(16,185,129,0.15)] overflow-hidden">
+        <div className="relative w-full max-w-[360px] bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden transition-all">
           {/* Glowing Top Bar */}
-          <div className="h-1.5 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+          <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
 
           {/* Card Header */}
-          <div className="p-8 pb-4 text-center">
-            <div className="mx-auto w-14 h-14 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-[0_0_20px_rgba(16,185,129,0.2)] mb-4">
-              <Lock className="w-7 h-7" />
+          <div className="p-4 sm:p-5 pb-3 flex items-center space-x-3 border-b border-zinc-900/80">
+            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] shrink-0">
+              <Shield className="w-4 h-4" />
             </div>
-            <div className="inline-flex items-center space-x-2 px-2.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[10px] font-mono text-emerald-400 uppercase tracking-wider mb-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-ping"></span>
-              <span>CORE ACCESS</span>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center space-x-2">
+                <h1 className="text-sm font-bold text-white font-mono tracking-wide uppercase truncate">
+                  MTX CORE
+                </h1>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-mono text-emerald-400 uppercase tracking-wider shrink-0">
+                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
+                  <span>LIVE</span>
+                </span>
+              </div>
+              <p className="text-[11px] text-zinc-400 truncate">
+                Authentication required
+              </p>
             </div>
-            <h1 className="text-2xl font-extrabold text-white font-display tracking-tight uppercase">
-              mtx-api
-            </h1>
-            <p className="text-xs text-zinc-400 mt-1">
-              Authentication required to access telemetry features
-            </p>
           </div>
 
           {/* Tab Selector */}
-          <div className="px-8 pt-2">
-            <div className="grid grid-cols-2 p-1 bg-zinc-900/90 rounded-xl border border-zinc-800/80 text-xs font-medium">
+          <div className="px-4 sm:px-5 pt-3">
+            <div className="grid grid-cols-2 p-0.5 bg-zinc-900/90 rounded-lg border border-zinc-800/80 text-xs font-medium">
               <button
                 type="button"
                 onClick={() => {
                   setTab('signin');
                   setError(null);
                 }}
-                className={`py-2.5 rounded-lg transition-all font-mono uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
+                className={`py-1.5 rounded-md transition-all font-mono text-[11px] uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                   tab === 'signin'
                     ? 'bg-zinc-800 text-emerald-400 font-bold shadow-sm'
                     : 'text-zinc-400 hover:text-white'
@@ -117,7 +121,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                   setTab('signup');
                   setError(null);
                 }}
-                className={`py-2.5 rounded-lg transition-all font-mono uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
+                className={`py-1.5 rounded-md transition-all font-mono text-[11px] uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                   tab === 'signup'
                     ? 'bg-zinc-800 text-emerald-400 font-bold shadow-sm'
                     : 'text-zinc-400 hover:text-white'
@@ -129,52 +133,52 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
           </div>
 
           {/* Form */}
-          <div className="p-8 space-y-4">
+          <div className="p-4 sm:p-5 pt-3 space-y-3">
             {error && (
-              <div className="p-3.5 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs flex items-start space-x-2.5">
-                <AlertCircle className="w-4 h-4 shrink-0 mt-0.5" />
-                <span>{error}</span>
+              <div className="p-2.5 rounded-lg bg-rose-500/10 border border-rose-500/30 text-rose-400 text-[11px] flex items-start space-x-2">
+                <AlertCircle className="w-3.5 h-3.5 shrink-0 mt-0.5" />
+                <span className="leading-snug">{error}</span>
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-3">
               <div>
-                <label className="block text-[11px] font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[10px] font-mono text-zinc-400 mb-1 uppercase tracking-wider">
                   {tab === 'signin' ? 'Username' : 'Choose Username'}
                 </label>
                 <div className="relative">
-                  <UserIcon className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" />
+                  <UserIcon className="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-500" />
                   <input
                     type="text"
                     required
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={tab === 'signin' ? 'Enter username' : 'Choose a username'}
-                    className="w-full pl-10 pr-4 py-3 bg-zinc-900/80 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+                    className="w-full h-9 pl-8 pr-3 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 transition-colors"
                   />
                 </div>
               </div>
 
               <div>
-                <label className="block text-[11px] font-mono text-zinc-400 mb-1.5 uppercase tracking-wider">
+                <label className="block text-[10px] font-mono text-zinc-400 mb-1 uppercase tracking-wider">
                   Password
                 </label>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-3.5 w-4 h-4 text-zinc-500" />
+                  <Lock className="absolute left-3 top-2.5 w-3.5 h-3.5 text-zinc-500" />
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full pl-10 pr-10 py-3 bg-zinc-900/80 border border-zinc-800 rounded-xl text-xs text-white placeholder-zinc-600 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/50 transition-colors"
+                    className="w-full h-9 pl-8 pr-8 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 transition-colors"
                   />
                   <button
                     type="button"
                     onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-3.5 text-zinc-500 hover:text-zinc-300 transition-colors border-0 outline-none focus:outline-none"
+                    className="absolute right-2.5 top-2.5 text-zinc-500 hover:text-zinc-300 transition-colors border-0 outline-none focus:outline-none"
                   >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    {showPassword ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                   </button>
                 </div>
               </div>
@@ -182,18 +186,18 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full flex items-center justify-center space-x-2 py-3.5 px-4 rounded-xl bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold font-mono tracking-widest uppercase transition-all shadow-[0_0_25px_rgba(16,185,129,0.25)] hover:shadow-[0_0_35px_rgba(16,185,129,0.4)] disabled:opacity-50 mt-4 border-0 outline-none focus:outline-none"
+                className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold font-mono tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.35)] disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />
                 ) : tab === 'signin' ? (
                   <>
-                    <LogIn className="w-4 h-4" />
+                    <LogIn className="w-3.5 h-3.5" />
                     <span>AUTHENTICATE</span>
                   </>
                 ) : (
                   <>
-                    <UserPlus className="w-4 h-4" />
+                    <UserPlus className="w-3.5 h-3.5" />
                     <span>GENERATE ACCOUNT</span>
                   </>
                 )}
