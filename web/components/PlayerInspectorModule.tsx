@@ -258,7 +258,7 @@ export function PlayerInspectorModule() {
     }
 
     setRefreshingTarget(cleanName);
-    setFetchMsg({ type: 'loading', text: `Refreshing live stats for "${cleanName}"...` });
+    setFetchMsg({ type: 'loading', text: `Refreshing live stats for "${cleanName}"` });
 
     // Set 60-second cooldown immediately
     setRefreshCooldown(userId, cleanName);
@@ -351,7 +351,7 @@ export function PlayerInspectorModule() {
 
     stopPolling();
     setFetching(true);
-    setFetchMsg({ type: 'loading', text: `Requesting player info for "${cleanName}"...` });
+    setFetchMsg({ type: 'loading', text: `Requesting player info for "${cleanName}"` });
 
     try {
       const res = await fetch('/api/v1/inspect', {
@@ -367,7 +367,7 @@ export function PlayerInspectorModule() {
         return;
       }
 
-      setFetchMsg({ type: 'loading', text: `Waiting for game client to inspect "${cleanName}"...` });
+      setFetchMsg({ type: 'loading', text: `Waiting for game client to inspect "${cleanName}"` });
 
       const startTime = Date.now();
       const pollTarget = async () => {
@@ -489,12 +489,20 @@ export function PlayerInspectorModule() {
     return schoolStr.replace(/^School:\s*/i, '').trim();
   };
 
+  const formatGender = (genderStr?: string) => {
+    if (!genderStr) return 'Male';
+    const clean = genderStr.trim().toLowerCase();
+    if (clean === 'nữ' || clean === 'female' || clean === '1') return 'Female';
+    return 'Male';
+  };
+
   const displayedList = activeTab === 'session' ? sessionPlayers : savedPlayers;
 
   const filteredPlayers = displayedList.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cleanSchoolName(p.school).toLowerCase().includes(searchQuery.toLowerCase()) ||
     p.class.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.gender || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
     (p.clan || p.giaToc || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
@@ -534,7 +542,7 @@ export function PlayerInspectorModule() {
             type="text"
             value={targetName}
             onChange={(e) => setTargetName(e.target.value)}
-            placeholder="Enter character name..."
+            placeholder="Enter character name"
             className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 w-full sm:w-[220px]"
           />
           <button
@@ -545,7 +553,7 @@ export function PlayerInspectorModule() {
             {fetching ? (
               <>
                 <Loader2 className="w-4 h-4 animate-spin text-black" />
-                <span>Fetching...</span>
+                <span>Fetching</span>
               </>
             ) : (
               <>
@@ -619,7 +627,7 @@ export function PlayerInspectorModule() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search target cards..."
+              placeholder="Search target cards"
               className="w-full pl-8 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
             />
           </form>
@@ -697,11 +705,18 @@ export function PlayerInspectorModule() {
                         <p className="text-xs text-zinc-400 font-sans">
                           {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>
                         </p>
-                        {(p.clan || p.giaToc) && (
-                          <p className="text-xs text-purple-400 font-medium font-mono">
-                            Clan: {p.clan || p.giaToc}
-                          </p>
-                        )}
+                        <p className="text-[11px] font-mono text-zinc-400">
+                          <span>Gender: <span className="text-zinc-300 font-medium">{formatGender(p.gender)}</span></span>
+                          {p.clan || p.giaToc ? (
+                            <span className="text-purple-400 font-medium ml-2">
+                              • Clan: {p.clan || p.giaToc}
+                            </span>
+                          ) : (
+                            <span className="text-zinc-500 font-normal ml-2">
+                              • Clan: None
+                            </span>
+                          )}
+                        </p>
                       </div>
                     </div>
 
@@ -842,14 +857,23 @@ export function PlayerInspectorModule() {
                       <span>LIVE</span>
                     </span>
                   </div>
-                  <p className="text-xs text-zinc-400 font-mono truncate">
-                    {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
-                  </p>
-                  {(selectedPlayer.clan || selectedPlayer.giaToc) && (
-                    <p className="text-xs text-purple-400 font-medium font-mono mt-0.5 truncate">
-                      Clan: {selectedPlayer.clan || selectedPlayer.giaToc}
+                  <div className="space-y-0.5 mt-0.5">
+                    <p className="text-xs text-zinc-400 font-mono truncate">
+                      {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
                     </p>
-                  )}
+                    <p className="text-xs font-mono text-zinc-400 truncate">
+                      Gender: <span className="text-zinc-200 font-semibold">{formatGender(selectedPlayer.gender)}</span>
+                      {selectedPlayer.clan || selectedPlayer.giaToc ? (
+                        <span className="text-purple-400 font-semibold ml-2">
+                          • Clan: {selectedPlayer.clan || selectedPlayer.giaToc}
+                        </span>
+                      ) : (
+                        <span className="text-zinc-500 font-normal ml-2">
+                          • Clan: None
+                        </span>
+                      )}
+                    </p>
+                  </div>
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end space-x-2 w-full sm:w-auto">
@@ -895,8 +919,13 @@ export function PlayerInspectorModule() {
             {/* Stats Panel */}
             <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
-                <span className="text-zinc-400 font-sans font-medium">Clan / Gia Tộc</span>
-                <span className="text-purple-400 font-extrabold">{selectedPlayer.clan || selectedPlayer.giaToc || 'Chưa có'}</span>
+                <span className="text-zinc-400 font-sans font-medium">Gender</span>
+                <span className="text-emerald-400 font-extrabold">{formatGender(selectedPlayer.gender)}</span>
+              </div>
+
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Clan</span>
+                <span className="text-purple-400 font-extrabold">{selectedPlayer.clan || selectedPlayer.giaToc || 'None'}</span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">

@@ -22,7 +22,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         </div>
         <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400">
           <Loader2 className="w-4 h-4 animate-spin" />
-          <span className="tracking-widest uppercase font-semibold">VERIFYING AUTH ACCESS...</span>
+          <span className="tracking-widest uppercase font-semibold">VERIFYING AUTH ACCESS</span>
         </div>
       </div>
     );

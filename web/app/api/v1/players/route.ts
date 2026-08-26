@@ -63,6 +63,7 @@ export async function POST(request: Request) {
       level: Number(body.level) || 1,
       class: body.class || 'Unknown',
       school: body.school || 'Unknown',
+      gender: body.gender || '',
       clan: body.clan !== undefined ? body.clan : (body.giaToc !== undefined ? body.giaToc : ''),
       giaToc: body.giaToc !== undefined ? body.giaToc : (body.clan !== undefined ? body.clan : ''),
       hp: Number(body.hp) || 0,
