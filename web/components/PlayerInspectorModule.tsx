@@ -3,6 +3,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { PlayerProfile } from '@/lib/store';
 import { useAuth } from '@/context/AuthContext';
+import { copyToClipboard } from '@/lib/copy';
 import {
   getSavedTargets,
   saveTarget,
@@ -478,10 +479,13 @@ export function PlayerInspectorModule() {
     setFetchMsg(null);
   };
 
-  const handleCopyJson = (player: PlayerProfile) => {
-    navigator.clipboard.writeText(JSON.stringify(player, null, 2));
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleCopyJson = async (player: PlayerProfile) => {
+    const jsonStr = JSON.stringify(player, null, 2);
+    const success = await copyToClipboard(jsonStr);
+    if (success) {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   const cleanSchoolName = (schoolStr: string) => {

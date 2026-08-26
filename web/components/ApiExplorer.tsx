@@ -2,6 +2,7 @@
 
 import React, { useState } from 'react';
 import { Code2, ExternalLink, Copy, Check } from 'lucide-react';
+import { copyToClipboard } from '@/lib/copy';
 
 export function ApiExplorer() {
   const [copiedEndpoint, setCopiedEndpoint] = useState<string | null>(null);
@@ -45,11 +46,13 @@ export function ApiExplorer() {
     },
   ];
 
-  const copyUrl = (path: string) => {
+  const copyUrl = async (path: string) => {
     const fullUrl = `${window.location.origin}${path}`;
-    navigator.clipboard.writeText(fullUrl);
-    setCopiedEndpoint(path);
-    setTimeout(() => setCopiedEndpoint(null), 2000);
+    const success = await copyToClipboard(fullUrl);
+    if (success) {
+      setCopiedEndpoint(path);
+      setTimeout(() => setCopiedEndpoint(null), 2000);
+    }
   };
 
   return (

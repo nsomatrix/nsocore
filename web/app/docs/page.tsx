@@ -5,16 +5,19 @@ import { Navbar } from '@/components/Navbar';
 import { Footer } from '@/components/Footer';
 import { AuthGuard } from '@/components/AuthGuard';
 import { Code2, Copy, Check, Terminal, Server } from 'lucide-react';
+import { copyToClipboard } from '@/lib/copy';
 
 export default function ApiDocsPage() {
   const [copiedIndex, setCopiedIndex] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<'all' | 'players' | 'inspect' | 'chat'>('all');
   const [activeSnippetTabs, setActiveSnippetTabs] = useState<Record<string, 'curl' | 'js' | 'response'>>({});
 
-  const copyCode = (text: string, id: string) => {
-    navigator.clipboard.writeText(text);
-    setCopiedIndex(id);
-    setTimeout(() => setCopiedIndex(null), 2000);
+  const copyCode = async (text: string, id: string) => {
+    const success = await copyToClipboard(text);
+    if (success) {
+      setCopiedIndex(id);
+      setTimeout(() => setCopiedIndex(null), 2000);
+    }
   };
 
   const setSnippetTab = (endpointId: string, tab: 'curl' | 'js' | 'response') => {
@@ -388,42 +391,42 @@ const data = await response.json();`,
 
                     {/* Mobile Segmented Switcher Header (< 1024px) */}
                     <div className="block lg:hidden space-y-2.5 w-full min-w-0">
-                      <div className="flex flex-wrap items-center justify-between gap-2 w-full min-w-0">
-                        {/* Segmented Tab Buttons */}
-                        <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-xl border border-zinc-800 text-[10px] sm:text-[11px] font-mono overflow-x-auto max-w-full no-scrollbar">
-                          <button
-                            onClick={() => setSnippetTab(ep.id, 'curl')}
-                            className={`px-2 sm:px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
-                              currentSnippetTab === 'curl'
-                                ? 'bg-zinc-800 text-emerald-400 font-bold'
-                                : 'text-zinc-400 hover:text-white'
-                            }`}
-                          >
-                            cURL
-                          </button>
-                          <button
-                            onClick={() => setSnippetTab(ep.id, 'js')}
-                            className={`px-2 sm:px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
-                              currentSnippetTab === 'js'
-                                ? 'bg-zinc-800 text-emerald-400 font-bold'
-                                : 'text-zinc-400 hover:text-white'
-                            }`}
-                          >
-                            JS Fetch
-                          </button>
-                          <button
-                            onClick={() => setSnippetTab(ep.id, 'response')}
-                            className={`px-2 sm:px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
-                              currentSnippetTab === 'response'
-                                ? 'bg-zinc-800 text-blue-400 font-bold'
-                                : 'text-zinc-400 hover:text-white'
-                            }`}
-                          >
-                            200 OK Response
-                          </button>
-                        </div>
+                      {/* Segmented Tab Buttons */}
+                      <div className="flex items-center gap-1 p-1 bg-zinc-900 rounded-xl border border-zinc-800 text-[10px] sm:text-[11px] font-mono overflow-x-auto max-w-full no-scrollbar w-full">
+                        <button
+                          onClick={() => setSnippetTab(ep.id, 'curl')}
+                          className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
+                            currentSnippetTab === 'curl'
+                              ? 'bg-zinc-800 text-emerald-400 font-bold'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          cURL
+                        </button>
+                        <button
+                          onClick={() => setSnippetTab(ep.id, 'js')}
+                          className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
+                            currentSnippetTab === 'js'
+                              ? 'bg-zinc-800 text-emerald-400 font-bold'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          JS Fetch
+                        </button>
+                        <button
+                          onClick={() => setSnippetTab(ep.id, 'response')}
+                          className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
+                            currentSnippetTab === 'response'
+                              ? 'bg-zinc-800 text-blue-400 font-bold'
+                              : 'text-zinc-400 hover:text-white'
+                          }`}
+                        >
+                          200 OK Response
+                        </button>
+                      </div>
 
-                        {/* Copy Code Action Button */}
+                      {/* Scrollable Code Box Container with Absolute Fixed Copy Button */}
+                      <div className="relative w-full min-w-0 max-w-full overflow-hidden rounded-xl bg-black border border-zinc-800 group">
                         <button
                           onClick={() => {
                             const codeToCopy =
@@ -434,25 +437,16 @@ const data = await response.json();`,
                                 : ep.responseJson;
                             copyCode(codeToCopy, `${ep.id}-${currentSnippetTab}`);
                           }}
-                          className="flex items-center space-x-1 px-2 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white transition-colors ml-auto text-[11px] font-mono shrink-0"
+                          className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-400 hover:text-white transition-all shadow-md active:scale-95"
+                          title="Copy snippet"
                         >
                           {copiedIndex === `${ep.id}-${currentSnippetTab}` ? (
-                            <>
-                              <Check className="w-3 h-3 text-emerald-400" />
-                              <span className="text-emerald-400 font-bold">Copied</span>
-                            </>
+                            <Check className="w-3.5 h-3.5 text-emerald-400" />
                           ) : (
-                            <>
-                              <Copy className="w-3 h-3" />
-                              <span>Copy</span>
-                            </>
+                            <Copy className="w-3.5 h-3.5" />
                           )}
                         </button>
-                      </div>
-
-                      {/* Scrollable Code Box Container */}
-                      <div className="relative w-full min-w-0 max-w-full overflow-hidden rounded-xl bg-black border border-zinc-800">
-                        <pre className="p-3 sm:p-4 text-[10px] sm:text-xs font-mono leading-relaxed overflow-x-auto max-h-64 scrollbar-thin text-zinc-300 w-full min-w-0">
+                        <pre className="p-3.5 sm:p-4 text-[10px] sm:text-xs font-mono leading-relaxed overflow-x-auto max-h-64 scrollbar-thin text-zinc-300 w-full min-w-0 pr-11">
                           <code>
                             {currentSnippetTab === 'curl'
                               ? ep.curlSnippet
@@ -473,25 +467,20 @@ const data = await response.json();`,
                             <Terminal className="w-3.5 h-3.5 text-emerald-400" />
                             <span>cURL Request</span>
                           </span>
+                        </div>
+                        <div className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black border border-zinc-800 group">
                           <button
                             onClick={() => copyCode(ep.curlSnippet, `${ep.id}-curl`)}
-                            className="flex items-center space-x-1 text-[11px] hover:text-white transition-colors"
+                            className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-400 hover:text-white transition-all shadow-md active:scale-95"
+                            title="Copy snippet"
                           >
                             {copiedIndex === `${ep.id}-curl` ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400">Copied</span>
-                              </>
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
                             ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>Copy</span>
-                              </>
+                              <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
-                        </div>
-                        <div className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black border border-zinc-800">
-                          <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto leading-relaxed scrollbar-thin max-h-64">
+                          <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto leading-relaxed scrollbar-thin max-h-64 pr-11">
                             <code>{ep.curlSnippet}</code>
                           </pre>
                         </div>
@@ -504,25 +493,20 @@ const data = await response.json();`,
                             <Server className="w-3.5 h-3.5 text-blue-400" />
                             <span>200 OK Response Schema</span>
                           </span>
+                        </div>
+                        <div className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black border border-zinc-800 group">
                           <button
                             onClick={() => copyCode(ep.responseJson, `${ep.id}-json`)}
-                            className="flex items-center space-x-1 text-[11px] hover:text-white transition-colors"
+                            className="absolute top-2.5 right-2.5 z-10 w-7 h-7 rounded-lg bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-700/60 flex items-center justify-center text-zinc-400 hover:text-white transition-all shadow-md active:scale-95"
+                            title="Copy snippet"
                           >
                             {copiedIndex === `${ep.id}-json` ? (
-                              <>
-                                <Check className="w-3 h-3 text-emerald-400" />
-                                <span className="text-emerald-400">Copied</span>
-                              </>
+                              <Check className="w-3.5 h-3.5 text-emerald-400" />
                             ) : (
-                              <>
-                                <Copy className="w-3 h-3" />
-                                <span>Copy</span>
-                              </>
+                              <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
-                        </div>
-                        <div className="relative w-full min-w-0 overflow-hidden rounded-xl bg-black border border-zinc-800">
-                          <pre className="p-4 text-xs font-mono text-zinc-300 overflow-x-auto max-h-64 leading-relaxed scrollbar-thin">
+                          <pre className="p-4 text-xs font-mono text-zinc-300 overflow-x-auto max-h-64 leading-relaxed scrollbar-thin pr-11">
                             <code>{ep.responseJson}</code>
                           </pre>
                         </div>
