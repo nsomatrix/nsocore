@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect, useRef } from 'react';
+import { createPortal } from 'react-dom';
 import { PlayerProfile } from '@/lib/store';
 import { useAuth } from '@/context/AuthContext';
 import { copyToClipboard } from '@/lib/copy';
@@ -66,6 +67,11 @@ function AnimatedNumber({ value, duration = 750, prefix = '', suffix = '' }: { v
 export function PlayerInspectorModule() {
   const { user } = useAuth();
   const userId = user?.uid || user?.email || 'anonymous';
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const [sessionPlayers, setSessionPlayers] = useState<PlayerProfile[]>([]);
   const [savedPlayers, setSavedPlayers] = useState<PlayerProfile[]>([]);
@@ -844,8 +850,8 @@ export function PlayerInspectorModule() {
       )}
 
       {/* 18-Attribute Modal Detail Dialog */}
-      {selectedPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      {mounted && selectedPlayer && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 sm:space-y-6 shadow-2xl font-sans">
             {/* Modal Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
@@ -1006,12 +1012,13 @@ export function PlayerInspectorModule() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       {/* Equipment Box Modal */}
-      {equipmentPlayer && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
+      {mounted && equipmentPlayer && createPortal(
+        <div className="fixed inset-0 z-[9999] flex items-center justify-center p-3 sm:p-4 bg-black/85 backdrop-blur-md animate-fade-in">
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-2xl font-sans text-white">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
               <div className="flex items-center space-x-3">
@@ -1108,7 +1115,8 @@ export function PlayerInspectorModule() {
               </button>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
     </div>
   );

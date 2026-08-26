@@ -1,6 +1,7 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { X, Lock, User as UserIcon, LogIn, AlertCircle, Eye, EyeOff, Loader2, Key, UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 
@@ -11,6 +12,7 @@ interface AuthModalProps {
 
 export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const { signInWithUsernameOrEmail, signUpWithUsername } = useAuth();
+  const [mounted, setMounted] = useState(false);
   const [tab, setTab] = useState<'signin' | 'signup'>('signin');
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
@@ -18,7 +20,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -57,8 +63,8 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     }
   };
 
-  return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
+  return createPortal(
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
       <div className="relative w-full max-w-md bg-zinc-950 border border-zinc-800 rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.1)] overflow-hidden">
         {/* Glowing top border accent */}
         <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
@@ -190,6 +196,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
           </form>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
