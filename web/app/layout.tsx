@@ -5,7 +5,7 @@ import { StatusProvider } from '@/context/StatusContext';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export const metadata: Metadata = {
-  title: 'mtx-api — Live Player Inspector & REST Portal',
+  title: 'mtx-api — NSO Core Access - RestAPI',
   description: 'Real-time player inspector and REST API synchronization portal for Ninja School Online.',
 };
 
