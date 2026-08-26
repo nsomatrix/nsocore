@@ -109,8 +109,6 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                   <span className="text-zinc-400 font-medium text-[11px] tracking-wide">CLIENT OFFLINE</span>
                 </>
               )}
-              <span className="text-zinc-800">|</span>
-              <span className="text-zinc-300 font-medium text-[11px]">{livePlayerCount} TARGETS</span>
             </div>
 
             {/* Authentication Action Button / Profile */}
