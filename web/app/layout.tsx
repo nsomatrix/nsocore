@@ -1,6 +1,7 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
 import { AuthProvider } from '@/context/AuthContext';
+import { StatusProvider } from '@/context/StatusContext';
 import { AuthGuard } from '@/components/AuthGuard';
 
 export const metadata: Metadata = {
@@ -23,7 +24,9 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="bg-black text-white min-h-screen antialiased">
         <AuthProvider>
-          <AuthGuard>{children}</AuthGuard>
+          <StatusProvider>
+            <AuthGuard>{children}</AuthGuard>
+          </StatusProvider>
         </AuthProvider>
       </body>
     </html>

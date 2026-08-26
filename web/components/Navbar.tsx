@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Shield, Menu, X, Activity, Search, MessageSquare, FileText, LogIn, LogOut, User as UserIcon, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { useStatus } from '@/context/StatusContext';
 import { AuthModal } from '@/components/AuthModal';
 
 interface NavbarProps {
@@ -17,31 +18,10 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
-  const [modClientOnline, setModClientOnline] = useState<boolean>(false);
-  const [livePlayerCount, setLivePlayerCount] = useState<number>(playerCount);
   const pathname = usePathname();
   const { user, logout, loading } = useAuth();
-
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch('/api/v1/status');
-        if (res.ok) {
-          const data = await res.json();
-          setModClientOnline(!!data.modClientOnline);
-          if (typeof data.playerCount === 'number') {
-            setLivePlayerCount(data.playerCount);
-          }
-        }
-      } catch (e) {
-        setModClientOnline(false);
-      }
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 4000);
-    return () => clearInterval(interval);
-  }, []);
+  const { modClientOnline, playerCount: statusPlayerCount } = useStatus();
+  const livePlayerCount = playerCount || statusPlayerCount;
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', href: '/', icon: Activity },

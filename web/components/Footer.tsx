@@ -1,28 +1,11 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React from 'react';
 import { Shield } from 'lucide-react';
+import { useStatus } from '@/context/StatusContext';
 
 export function Footer() {
-  const [modClientOnline, setModClientOnline] = useState<boolean>(false);
-
-  useEffect(() => {
-    const fetchStatus = async () => {
-      try {
-        const res = await fetch('/api/v1/status');
-        if (res.ok) {
-          const data = await res.json();
-          setModClientOnline(!!data.modClientOnline);
-        }
-      } catch (e) {
-        setModClientOnline(false);
-      }
-    };
-
-    fetchStatus();
-    const interval = setInterval(fetchStatus, 4000);
-    return () => clearInterval(interval);
-  }, []);
+  const { modClientOnline } = useStatus();
 
   return (
     <footer className="w-full border-t border-zinc-800/80 bg-black text-zinc-400 font-sans text-xs">
