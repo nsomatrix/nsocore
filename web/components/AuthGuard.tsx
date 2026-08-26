@@ -13,6 +13,41 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateViewport = () => {
+      if (window.visualViewport && containerRef.current) {
+        const vv = window.visualViewport;
+        containerRef.current.style.height = `${vv.height}px`;
+        containerRef.current.style.top = `${vv.offsetTop}px`;
+      }
+    };
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', updateViewport);
+      vv.addEventListener('scroll', updateViewport);
+      updateViewport();
+    }
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', updateViewport);
+        vv.removeEventListener('scroll', updateViewport);
+      }
+    };
+  }, [user]);
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    const el = e.currentTarget;
+    setTimeout(() => {
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    }, 150);
+  };
+
   // 1. Loading State Screen
   if (loading) {
     return (
@@ -67,13 +102,16 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     };
 
     return (
-      <div className="min-h-screen w-full bg-black flex items-center justify-center p-4 relative overflow-hidden">
+      <div
+        ref={containerRef}
+        className="fixed inset-0 z-[9999] h-[100dvh] w-full bg-black overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-[height] duration-200"
+      >
         {/* Background Grid Pattern & Glowing Orbs */}
-        <div className="absolute inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10"></div>
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        <div className="fixed inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
 
         {/* Lock Screen Card */}
-        <div className="relative w-full max-w-[360px] bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden transition-all">
+        <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden transition-all duration-300">
           {/* Glowing Top Bar */}
           <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
 
@@ -151,6 +189,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                   <input
                     type="text"
                     required
+                    autoComplete="username"
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    spellCheck={false}
+                    onFocus={handleInputFocus}
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={tab === 'signin' ? 'Enter username' : 'Choose a username'}
@@ -168,6 +211,10 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                   <input
                     type={showPassword ? 'text' : 'password'}
                     required
+                    autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+                    autoCapitalize="none"
+                    autoCorrect="off"
+                    onFocus={handleInputFocus}
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"

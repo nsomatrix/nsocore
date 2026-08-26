@@ -37,6 +37,41 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
     };
   }, [isOpen]);
 
+  const containerRef = React.useRef<HTMLDivElement>(null);
+
+  React.useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const updateViewport = () => {
+      if (window.visualViewport && containerRef.current) {
+        const vv = window.visualViewport;
+        containerRef.current.style.height = `${vv.height}px`;
+        containerRef.current.style.top = `${vv.offsetTop}px`;
+      }
+    };
+
+    const vv = window.visualViewport;
+    if (vv) {
+      vv.addEventListener('resize', updateViewport);
+      vv.addEventListener('scroll', updateViewport);
+      updateViewport();
+    }
+
+    return () => {
+      if (vv) {
+        vv.removeEventListener('resize', updateViewport);
+        vv.removeEventListener('scroll', updateViewport);
+      }
+    };
+  }, [isOpen]);
+
+  const handleInputFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    const el = e.currentTarget;
+    setTimeout(() => {
+      el.scrollIntoView({ block: 'center', inline: 'nearest', behavior: 'smooth' });
+    }, 150);
+  };
+
   if (!isOpen || !mounted) return null;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -77,8 +112,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
   };
 
   return createPortal(
-    <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fade-in">
-      <div className="relative w-full max-w-[360px] bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden transition-all">
+    <div
+      ref={containerRef}
+      className="fixed inset-0 z-[9999] h-[100dvh] w-full bg-black/80 backdrop-blur-md overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] transition-[height] duration-200 animate-fade-in"
+    >
+      <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden transition-all duration-300">
         {/* Glowing top border accent */}
         <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
 
@@ -157,6 +195,11 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <input
                   type="text"
                   required
+                  autoComplete="username"
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  spellCheck={false}
+                  onFocus={handleInputFocus}
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
                   placeholder={tab === 'signin' ? 'Enter username' : 'Choose a username'}
@@ -174,6 +217,10 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   required
+                  autoComplete={tab === 'signin' ? 'current-password' : 'new-password'}
+                  autoCapitalize="none"
+                  autoCorrect="off"
+                  onFocus={handleInputFocus}
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   placeholder="••••••••••••"
