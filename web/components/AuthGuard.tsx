@@ -47,11 +47,11 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // 1. Loading State Screen
   if (loading) {
     return (
-      <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center space-y-4">
-        <div className="w-12 h-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/30 flex items-center justify-center text-emerald-400 shadow-[0_0_30px_rgba(16,185,129,0.2)] animate-pulse">
+      <div className="min-h-screen w-full bg-[#0a0a1a] flex flex-col items-center justify-center space-y-4">
+        <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_30px_rgba(119,68,255,0.25)] animate-pulse">
           <Shield className="w-6 h-6" />
         </div>
-        <div className="flex items-center space-x-2 text-xs font-mono text-emerald-400">
+        <div className="flex items-center space-x-2 text-xs font-mono text-violet-400">
           <Loader2 className="w-4 h-4 animate-spin" />
           <span className="tracking-widest uppercase font-semibold">VERIFYING AUTH ACCESS</span>
         </div>
@@ -106,13 +106,13 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         <BHBG />
 
         {/* Lock Screen Card */}
-        <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden">
+        <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(119,68,255,0.18)] overflow-hidden">
           {/* Glowing Top Bar */}
-          <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
+          <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-pink-500 to-amber-500"></div>
 
           {/* Card Header */}
           <div className="p-4 sm:p-5 pb-3 flex items-center space-x-3 border-b border-zinc-900/80">
-            <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] shrink-0">
+            <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_15px_rgba(119,68,255,0.2)] shrink-0">
               <Shield className="w-4 h-4" />
             </div>
             <div className="min-w-0 flex-1">
@@ -120,8 +120,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 <h1 className="text-sm font-bold text-white font-mono tracking-wide uppercase truncate">
                   MTX CORE
                 </h1>
-                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-[9px] font-mono text-emerald-400 uppercase tracking-wider shrink-0">
-                  <span className="w-1 h-1 rounded-full bg-emerald-400 animate-ping"></span>
+                <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-[9px] font-mono text-violet-400 uppercase tracking-wider shrink-0">
+                  <span className="w-1 h-1 rounded-full bg-violet-400 animate-ping"></span>
                   <span>LIVE</span>
                 </span>
               </div>
@@ -142,7 +142,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 }}
                 className={`py-1.5 rounded-md transition-all font-mono text-[11px] uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                   tab === 'signin'
-                    ? 'bg-zinc-800 text-emerald-400 font-bold shadow-sm'
+                    ? 'bg-zinc-800 text-violet-400 font-bold shadow-sm'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -156,7 +156,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 }}
                 className={`py-1.5 rounded-md transition-all font-mono text-[11px] uppercase tracking-wider border-0 outline-none focus:outline-none select-none ${
                   tab === 'signup'
-                    ? 'bg-zinc-800 text-emerald-400 font-bold shadow-sm'
+                    ? 'bg-zinc-800 text-violet-400 font-bold shadow-sm'
                     : 'text-zinc-400 hover:text-white'
                 }`}
               >
@@ -191,7 +191,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                     value={username}
                     onChange={(e) => setUsername(e.target.value)}
                     placeholder={tab === 'signin' ? 'Enter username' : 'Choose a username'}
-                    className="w-full h-9 pl-8 pr-3 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 transition-colors"
+                    className="w-full h-9 pl-8 pr-3 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
                   />
                 </div>
               </div>
@@ -211,7 +211,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                     value={password}
                     onChange={(e) => setPassword(e.target.value)}
                     placeholder="••••••••••••"
-                    className="w-full h-9 pl-8 pr-8 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-emerald-500/60 focus:ring-1 focus:ring-emerald-500/60 transition-colors"
+                    className="w-full h-9 pl-8 pr-8 bg-zinc-900/70 border border-zinc-800 rounded-lg text-xs text-white placeholder-zinc-500 focus:outline-none focus:border-violet-500/60 focus:ring-1 focus:ring-violet-500/60 transition-colors"
                   />
                   <button
                     type="button"
@@ -226,7 +226,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-emerald-500 hover:bg-emerald-400 text-black text-xs font-bold font-mono tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(16,185,129,0.2)] hover:shadow-[0_0_25px_rgba(16,185,129,0.35)] disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
+                className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-xs font-bold font-mono tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(119,68,255,0.35)] hover:shadow-[0_0_25px_rgba(119,68,255,0.5)] disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

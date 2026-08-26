@@ -231,7 +231,7 @@ export function BHBG({ className = '' }: BHBGProps) {
           float fresnel = 1.0 - abs(dot(vNormal, viewDirection));
           fresnel = pow(fresnel, 2.5);
           
-          vec3 glowColor = vec3(0.1, 0.8, 0.6); // Emerald core accent
+          vec3 glowColor = vec3(0.47, 0.27, 1.0); // Cosmic Violet core accent
           float pulse = sin(uTime * 2.5) * 0.15 + 0.85;
           
           gl_FragColor = vec4(glowColor * fresnel * pulse, fresnel * 0.4);
@@ -258,10 +258,10 @@ export function BHBG({ className = '' }: BHBGProps) {
       uniforms: {
         uTime: { value: 0.0 },
         uColorHot: { value: new THREE.Color(0xffffff) },
-        uColorMid1: { value: new THREE.Color(0x10b981) }, // Emerald accent
-        uColorMid2: { value: new THREE.Color(0x14b8a6) }, // Teal accent
-        uColorMid3: { value: new THREE.Color(0x06b6d4) }, // Cyan accent
-        uColorOuter: { value: new THREE.Color(0x3b82f6) }, // Deep Blue outer
+        uColorMid1: { value: new THREE.Color(0xff7733) }, // Plasma Orange accent
+        uColorMid2: { value: new THREE.Color(0xff4477) }, // Magenta Flare accent
+        uColorMid3: { value: new THREE.Color(0x7744ff) }, // Nebula Violet accent
+        uColorOuter: { value: new THREE.Color(0x4477ff) }, // Electric Blue outer
         uNoiseScale: { value: 2.5 },
         uFlowSpeed: { value: 0.22 },
         uDensity: { value: 1.3 }

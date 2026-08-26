@@ -14,6 +14,16 @@ const config: Config = {
         mono: ['"JetBrains Mono"', 'monospace'],
       },
       colors: {
+        cosmic: {
+          void: "#0a0a1a",
+          core: "#03030a",
+          card: "#0d0d21",
+          border: "rgba(180, 180, 220, 0.15)",
+          violet: "#7744ff",
+          orange: "#ff7733",
+          magenta: "#ff4477",
+          blue: "#4477ff",
+        },
         supabase: {
           bg: "#000000",
           card: "#09090b",
