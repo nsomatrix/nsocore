@@ -122,7 +122,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
                 </h1>
                 <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-[9px] font-mono text-violet-400 uppercase tracking-wider shrink-0">
                   <span className="w-1 h-1 rounded-full bg-violet-400 animate-ping"></span>
-                  <span>LIVE</span>
+                  <span>ONLINE</span>
                 </span>
               </div>
               <p className="text-[11px] text-zinc-400 truncate">
