@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Shield, Lock, User as UserIcon, LogIn, AlertCircle, Eye, EyeOff, Loader2, UserPlus } from 'lucide-react';
+import { BHBG } from './BHBG';
 
 export function AuthGuard({ children }: { children: React.ReactNode }) {
   const { user, loading, signInWithUsernameOrEmail, signUpWithUsername } = useAuth();
@@ -101,9 +102,8 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         ref={containerRef}
         className="fixed inset-0 z-[9999] h-[100dvh] w-full bg-black overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] will-change-[height]"
       >
-        {/* Background Grid Pattern & Glowing Orbs */}
-        <div className="fixed inset-0 bg-[radial-gradient(#10b981_1px,transparent_1px)] [background-size:24px_24px] opacity-10 pointer-events-none"></div>
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 bg-emerald-500/10 rounded-full blur-3xl pointer-events-none"></div>
+        {/* Interactive 3D Black Hole Background */}
+        <BHBG />
 
         {/* Lock Screen Card */}
         <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden">

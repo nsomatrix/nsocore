@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { X, Lock, User as UserIcon, LogIn, AlertCircle, Eye, EyeOff, Loader2, Key, UserPlus } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { BHBG } from './BHBG';
 
 interface AuthModalProps {
   isOpen: boolean;
@@ -111,6 +112,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       ref={containerRef}
       className="fixed inset-0 z-[9999] h-[100dvh] w-full bg-black/80 backdrop-blur-md overflow-y-auto flex flex-col items-center justify-center p-4 sm:p-6 pb-[calc(1rem+env(safe-area-inset-bottom))] animate-fade-in will-change-[height]"
     >
+      <BHBG />
       <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(16,185,129,0.12)] overflow-hidden">
         {/* Glowing top border accent */}
         <div className="h-1 w-full bg-gradient-to-r from-emerald-500 via-teal-500 to-cyan-500"></div>
