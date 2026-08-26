@@ -262,12 +262,28 @@ export function deletePlayerByName(name: string): boolean {
   return false;
 }
 
-// Chat Store Functions (Pure Ephemeral In-Memory Ring Buffer)
+// Chat Store Functions (Atomic JSON File Persistence + Ephemeral Memory Cache)
 export function getAllChatMessages(): ChatMessage[] {
-  if (!globalStore._matrixChatStore) {
-    globalStore._matrixChatStore = [];
+  const filePath = getChatFilePath();
+  let loaded: ChatMessage[] = globalStore._matrixChatStore || [];
+  try {
+    if (fs.existsSync(filePath)) {
+      const raw = fs.readFileSync(filePath, 'utf8');
+      const parsed = JSON.parse(raw);
+      if (Array.isArray(parsed)) {
+        loaded = parsed;
+        globalStore._matrixChatStore = parsed;
+      }
+    }
+  } catch (e) {
+    console.warn('[STORE] Error reading chat file, using in-memory store:', e);
   }
-  return globalStore._matrixChatStore;
+  return loaded;
+}
+
+export function saveAllChatMessages(messages: ChatMessage[]) {
+  globalStore._matrixChatStore = messages;
+  safeAtomicWriteJson(getChatFilePath(), messages);
 }
 
 export function saveChatMessage(data: {
@@ -276,42 +292,57 @@ export function saveChatMessage(data: {
   recipient?: string;
   message: string;
 }): ChatMessage {
-  if (!globalStore._matrixChatStore) {
-    globalStore._matrixChatStore = [];
-  }
+  let messages = getAllChatMessages();
 
   const validChannel = (['MAP', 'WORLD', 'PRIVATE', 'CLAN'].includes(data.channel?.toUpperCase())
     ? data.channel.toUpperCase()
     : 'MAP') as ChatMessage['channel'];
 
+  const cleanMessage = data.message.trim();
+  const cleanSender = data.sender || 'UNKNOWN';
+  const cleanRecipient = data.recipient ? data.recipient.trim() : undefined;
+
+  // Deduplication check: ignore if exact same channel, sender, recipient, and message received within 1500ms
+  const nowMs = Date.now();
+  const duplicate = messages.find((m) => {
+    if (m.channel !== validChannel || m.sender !== cleanSender || m.message !== cleanMessage) {
+      return false;
+    }
+    if (cleanRecipient && m.recipient !== cleanRecipient) {
+      return false;
+    }
+    const msgTime = new Date(m.timestamp).getTime();
+    return !isNaN(msgTime) && nowMs - msgTime < 1500;
+  });
+
+  if (duplicate) {
+    return duplicate;
+  }
+
   const msg: ChatMessage = {
-    id: `msg_${Date.now()}_${Math.random().toString(36).substring(2, 7)}`,
+    id: `msg_${nowMs}_${Math.random().toString(36).substring(2, 7)}`,
     channel: validChannel,
-    sender: data.sender || 'UNKNOWN',
-    recipient: data.recipient,
-    message: data.message,
+    sender: cleanSender,
+    recipient: cleanRecipient,
+    message: cleanMessage,
     timestamp: new Date().toISOString(),
   };
 
-  globalStore._matrixChatStore.unshift(msg);
+  messages.unshift(msg);
 
-  // Maintain latest 500 live messages in memory buffer
-  if (globalStore._matrixChatStore.length > 500) {
-    globalStore._matrixChatStore = globalStore._matrixChatStore.slice(0, 500);
+  // Maintain latest 500 live messages in memory & disk buffer
+  if (messages.length > 500) {
+    messages = messages.slice(0, 500);
   }
 
+  saveAllChatMessages(messages);
   return msg;
 }
 
 export function clearAllChatMessages() {
   globalStore._matrixChatStore = [];
   globalStore._pendingOutboundChatQueue = [];
-  try {
-    const filePath = getChatFilePath();
-    if (fs.existsSync(filePath)) {
-      fs.unlinkSync(filePath);
-    }
-  } catch (e) {}
+  saveAllChatMessages([]);
 }
 
 export function queueOutboundChatMessage(data: {
