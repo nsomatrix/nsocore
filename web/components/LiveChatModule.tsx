@@ -19,17 +19,7 @@ import {
 import { ChatMessage } from '@/lib/store';
 
 export function LiveChatModule() {
-  const [messages, setMessages] = useState<ChatMessage[]>(() => {
-    if (typeof window !== 'undefined') {
-      try {
-        const cached = localStorage.getItem('mtx_chat_telemetry_cache');
-        return cached ? JSON.parse(cached) : [];
-      } catch (e) {
-        return [];
-      }
-    }
-    return [];
-  });
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [selectedChannel, setSelectedChannel] = useState<string>('ALL');
   const [loading, setLoading] = useState(false);
   const [autoRefresh, setAutoRefresh] = useState(true);
@@ -51,28 +41,8 @@ export function LiveChatModule() {
       if (res.ok) {
         const data = await res.json();
         const incoming: ChatMessage[] = data.messages || [];
-        setMessages((prevMessages) => {
-          // Smart deduplication & merging by message ID
-          const messageMap = new Map<string, ChatMessage>();
-          
-          // Seed existing messages first
-          prevMessages.forEach((msg) => messageMap.set(msg.id, msg));
-          
-          // Merge incoming server messages
-          incoming.forEach((msg) => messageMap.set(msg.id, msg));
-
-          // Convert back to array sorted by timestamp descending
-          const merged = Array.from(messageMap.values()).sort(
-            (a, b) => new Date(b.timestamp).getTime() - new Date(a.timestamp).getTime()
-          ).slice(0, 500);
-
-          if (typeof window !== 'undefined') {
-            try {
-              localStorage.setItem('mtx_chat_telemetry_cache', JSON.stringify(merged));
-            } catch (e) {}
-          }
-          return merged;
-        });
+        // Atomic single source of truth: direct state update from server
+        setMessages(incoming);
       }
     } catch (e) {
       console.error('Error fetching chat messages:', e);
@@ -124,7 +94,9 @@ export function LiveChatModule() {
       if (res.ok) {
         setMessages([]);
         if (typeof window !== 'undefined') {
-          localStorage.removeItem('mtx_chat_telemetry_cache');
+          try {
+            localStorage.removeItem('mtx_chat_telemetry_cache');
+          } catch (e) {}
         }
       }
     } catch (e) {

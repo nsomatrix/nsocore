@@ -262,33 +262,10 @@ export function deletePlayerByName(name: string): boolean {
   return false;
 }
 
-// Chat Store Functions
-function loadChatMessagesFromDisk(): ChatMessage[] {
-  const filePath = getChatFilePath();
-  let loaded: ChatMessage[] = globalStore._matrixChatStore || [];
-  try {
-    if (fs.existsSync(filePath)) {
-      const raw = fs.readFileSync(filePath, 'utf8');
-      const parsed = JSON.parse(raw);
-      if (Array.isArray(parsed)) {
-        loaded = parsed;
-        globalStore._matrixChatStore = parsed;
-      }
-    }
-  } catch (e) {
-    console.warn('[STORE] Error reading chat file, using in-memory store:', e);
-  }
-  return loaded;
-}
-
-function saveAllChatMessages(messages: ChatMessage[]) {
-  globalStore._matrixChatStore = messages;
-  safeAtomicWriteJson(getChatFilePath(), messages);
-}
-
+// Chat Store Functions (Pure Ephemeral In-Memory Ring Buffer)
 export function getAllChatMessages(): ChatMessage[] {
-  if (!globalStore._matrixChatStore || globalStore._matrixChatStore.length === 0) {
-    return loadChatMessagesFromDisk();
+  if (!globalStore._matrixChatStore) {
+    globalStore._matrixChatStore = [];
   }
   return globalStore._matrixChatStore;
 }
@@ -299,7 +276,9 @@ export function saveChatMessage(data: {
   recipient?: string;
   message: string;
 }): ChatMessage {
-  let currentMessages = getAllChatMessages();
+  if (!globalStore._matrixChatStore) {
+    globalStore._matrixChatStore = [];
+  }
 
   const validChannel = (['MAP', 'WORLD', 'PRIVATE', 'CLAN'].includes(data.channel?.toUpperCase())
     ? data.channel.toUpperCase()
@@ -314,19 +293,25 @@ export function saveChatMessage(data: {
     timestamp: new Date().toISOString(),
   };
 
-  currentMessages.unshift(msg);
+  globalStore._matrixChatStore.unshift(msg);
 
-  // Keep latest 500 chat messages for robust telemetry history
-  if (currentMessages.length > 500) {
-    currentMessages = currentMessages.slice(0, 500);
+  // Maintain latest 500 live messages in memory buffer
+  if (globalStore._matrixChatStore.length > 500) {
+    globalStore._matrixChatStore = globalStore._matrixChatStore.slice(0, 500);
   }
 
-  saveAllChatMessages(currentMessages);
   return msg;
 }
 
 export function clearAllChatMessages() {
-  saveAllChatMessages([]);
+  globalStore._matrixChatStore = [];
+  globalStore._pendingOutboundChatQueue = [];
+  try {
+    const filePath = getChatFilePath();
+    if (fs.existsSync(filePath)) {
+      fs.unlinkSync(filePath);
+    }
+  } catch (e) {}
 }
 
 export function queueOutboundChatMessage(data: {
