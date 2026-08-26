@@ -710,7 +710,7 @@ export function PlayerInspectorModule() {
                           {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>
                         </p>
                         <p className="text-[11px] font-mono text-zinc-400">
-                          <span>Gender: <span className="text-zinc-300 font-medium">{formatGender(p.gender)}</span></span>
+                          <span><span className="text-zinc-300 font-medium">{formatGender(p.gender)}</span></span>
                           {p.clan || p.giaToc ? (
                             <span className="text-purple-400 font-medium ml-2">
                               • Clan: {p.clan || p.giaToc}
@@ -866,7 +866,7 @@ export function PlayerInspectorModule() {
                       {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
                     </p>
                     <p className="text-xs font-mono text-zinc-400 truncate">
-                      Gender: <span className="text-zinc-200 font-semibold">{formatGender(selectedPlayer.gender)}</span>
+                      <span className="text-zinc-200 font-semibold">{formatGender(selectedPlayer.gender)}</span>
                       {selectedPlayer.clan || selectedPlayer.giaToc ? (
                         <span className="text-purple-400 font-semibold ml-2">
                           • Clan: {selectedPlayer.clan || selectedPlayer.giaToc}
@@ -922,16 +922,6 @@ export function PlayerInspectorModule() {
 
             {/* Stats Panel */}
             <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
-              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
-                <span className="text-zinc-400 font-sans font-medium">Gender</span>
-                <span className="text-emerald-400 font-extrabold">{formatGender(selectedPlayer.gender)}</span>
-              </div>
-
-              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
-                <span className="text-zinc-400 font-sans font-medium">Clan</span>
-                <span className="text-purple-400 font-extrabold">{selectedPlayer.clan || selectedPlayer.giaToc || 'None'}</span>
-              </div>
-
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Min</span>
                 <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMin} /></span>
