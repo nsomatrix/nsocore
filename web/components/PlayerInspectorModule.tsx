@@ -494,7 +494,8 @@ export function PlayerInspectorModule() {
   const filteredPlayers = displayedList.filter((p) =>
     p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
     cleanSchoolName(p.school).toLowerCase().includes(searchQuery.toLowerCase()) ||
-    p.class.toLowerCase().includes(searchQuery.toLowerCase())
+    p.class.toLowerCase().includes(searchQuery.toLowerCase()) ||
+    (p.clan || p.giaToc || '').toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -692,9 +693,16 @@ export function PlayerInspectorModule() {
                           </span>
                         )}
                       </div>
-                      <p className="text-xs text-zinc-400 mt-1 font-sans">
-                        {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>
-                      </p>
+                      <div className="space-y-0.5 mt-1">
+                        <p className="text-xs text-zinc-400 font-sans">
+                          {p.class} • <span className="text-zinc-300 font-medium">{schoolName}</span>
+                        </p>
+                        {(p.clan || p.giaToc) && (
+                          <p className="text-xs text-purple-400 font-medium font-mono">
+                            Clan: {p.clan || p.giaToc}
+                          </p>
+                        )}
+                      </div>
                     </div>
 
                     <div className="flex items-center space-x-1" onClick={(e) => e.stopPropagation()}>
@@ -837,6 +845,11 @@ export function PlayerInspectorModule() {
                   <p className="text-xs text-zinc-400 font-mono truncate">
                     {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
                   </p>
+                  {(selectedPlayer.clan || selectedPlayer.giaToc) && (
+                    <p className="text-xs text-purple-400 font-medium font-mono mt-0.5 truncate">
+                      Clan: {selectedPlayer.clan || selectedPlayer.giaToc}
+                    </p>
+                  )}
                 </div>
               </div>
               <div className="flex items-center justify-between sm:justify-end space-x-2 w-full sm:w-auto">
@@ -881,6 +894,11 @@ export function PlayerInspectorModule() {
 
             {/* Stats Panel */}
             <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
+              <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
+                <span className="text-zinc-400 font-sans font-medium">Clan / Gia Tộc</span>
+                <span className="text-purple-400 font-extrabold">{selectedPlayer.clan || selectedPlayer.giaToc || 'Chưa có'}</span>
+              </div>
+
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Min</span>
                 <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMin} /></span>

@@ -419,6 +419,9 @@ public class MatrixWebClient {
         sb.append("\"level\":").append(player.w).append(",");
         sb.append("\"class\":").append(quote(className)).append(",");
         sb.append("\"school\":").append(quote(schoolName)).append(",");
+        String clanName = (player.ac != null && player.ac.trim().length() > 0) ? player.ac.trim() : "";
+        sb.append("\"clan\":").append(quote(clanName)).append(",");
+        sb.append("\"giaToc\":").append(quote(clanName)).append(",");
         sb.append("\"hp\":").append(player.z).append(",");
         sb.append("\"maxHp\":").append(player.B).append(",");
         sb.append("\"mp\":").append(player.x).append(",");

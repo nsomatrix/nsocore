@@ -16,6 +16,8 @@ export interface PlayerProfile {
   level: number;
   class: string;
   school: string;
+  clan?: string;
+  giaToc?: string;
   hp: number;
   maxHp: number;
   mp: number;
@@ -186,6 +188,8 @@ export function saveOrUpdatePlayer(playerData: Partial<PlayerProfile> & { name: 
     level: playerData.level !== undefined ? playerData.level : (existing ? existing.level : 0),
     class: playerData.class || (existing ? existing.class : 'Unknown'),
     school: playerData.school || (existing ? existing.school : 'Unknown'),
+    clan: playerData.clan !== undefined ? playerData.clan : (playerData.giaToc !== undefined ? playerData.giaToc : (existing ? existing.clan : '')),
+    giaToc: playerData.giaToc !== undefined ? playerData.giaToc : (playerData.clan !== undefined ? playerData.clan : (existing ? existing.giaToc : '')),
     hp: playerData.hp !== undefined ? playerData.hp : (existing ? existing.hp : 0),
     maxHp: playerData.maxHp !== undefined ? playerData.maxHp : (existing ? existing.maxHp : 0),
     mp: playerData.mp !== undefined ? playerData.mp : (existing ? existing.mp : 0),
