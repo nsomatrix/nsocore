@@ -23,7 +23,7 @@ export function PlatformHero({ activeModuleCount, totalTargetCount }: PlatformHe
 
         {/* Headline & Subtitle */}
         <h1 className="text-3xl sm:text-5xl font-display font-extrabold tracking-tight text-white leading-tight">
-          mtx-api <span className="bg-gradient-to-r from-violet-400 via-pink-400 to-amber-400 bg-clip-text text-transparent">Control Hub</span>
+          mtx-api
         </h1>
         <p className="text-xs sm:text-base text-zinc-400 leading-relaxed max-w-2xl font-sans">
           The REST synchronization gateway and target inspection portal for Ninja School Online. Stream character profiles live from game clients.
