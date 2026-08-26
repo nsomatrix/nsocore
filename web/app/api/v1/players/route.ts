@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers, deletePlayerByName } from '@/lib/store';
+import { getAllPlayers, saveOrUpdatePlayer, clearAllPlayers, deletePlayerByName, touchModClientHeartbeat } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -41,6 +41,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  touchModClientHeartbeat();
   const ip = getClientIp(request);
   // Rate limit: Max 120 requests per minute per IP (handles up to 4 live accounts @ 5s interval safely)
   const rate = checkRateLimit(ip, 120, 60000);

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { getAllChatMessages, saveChatMessage, clearAllChatMessages } from '@/lib/store';
+import { getAllChatMessages, saveChatMessage, clearAllChatMessages, touchModClientHeartbeat } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -33,6 +33,7 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  touchModClientHeartbeat();
   const ip = getClientIp(request);
   const rate = checkRateLimit(ip, 120, 60000);
   if (rate.isLimited) {

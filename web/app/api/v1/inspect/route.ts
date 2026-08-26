@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { popInspectQueue, pushInspectQueue } from '@/lib/store';
+import { popInspectQueue, pushInspectQueue, touchModClientHeartbeat } from '@/lib/store';
 import { checkRateLimit, getClientIp, rateLimitResponse } from '@/lib/rateLimit';
 
 export const dynamic = 'force-dynamic';
@@ -10,6 +10,7 @@ const NO_CACHE_HEADERS = {
 };
 
 export async function GET() {
+  touchModClientHeartbeat();
   const target = popInspectQueue();
   return NextResponse.json(
     {

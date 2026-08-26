@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { Shield, Menu, X, Activity, Search, MessageSquare, FileText, LogIn, LogOut, User as UserIcon, ChevronDown } from 'lucide-react';
@@ -17,8 +17,31 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [authModalOpen, setAuthModalOpen] = useState(false);
   const [userDropdownOpen, setUserDropdownOpen] = useState(false);
+  const [modClientOnline, setModClientOnline] = useState<boolean>(false);
+  const [livePlayerCount, setLivePlayerCount] = useState<number>(playerCount);
   const pathname = usePathname();
   const { user, logout, loading } = useAuth();
+
+  useEffect(() => {
+    const fetchStatus = async () => {
+      try {
+        const res = await fetch('/api/v1/status');
+        if (res.ok) {
+          const data = await res.json();
+          setModClientOnline(!!data.modClientOnline);
+          if (typeof data.playerCount === 'number') {
+            setLivePlayerCount(data.playerCount);
+          }
+        }
+      } catch (e) {
+        setModClientOnline(false);
+      }
+    };
+
+    fetchStatus();
+    const interval = setInterval(fetchStatus, 4000);
+    return () => clearInterval(interval);
+  }, []);
 
   const navItems = [
     { id: 'dashboard', label: 'Dashboard', href: '/', icon: Activity },
@@ -38,17 +61,9 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <div className="flex items-center space-x-2">
-                  <span className="font-display font-extrabold text-base tracking-tight text-white uppercase group-hover:text-emerald-400 transition-colors">
-                    mtx-api
-                  </span>
-                  <span className="px-2 py-0.5 text-[10px] font-mono font-medium bg-emerald-500/10 text-emerald-400 rounded-md border border-emerald-500/20">
-                    v1.0 REST
-                  </span>
-                </div>
-                <p className="text-[11px] text-zinc-400 hidden sm:block font-sans">
-                  Ninja School Remote Target Inspector
-                </p>
+                <span className="font-display font-extrabold text-base tracking-tight text-white uppercase group-hover:text-emerald-400 transition-colors">
+                  mtx-api
+                </span>
               </div>
             </Link>
 
@@ -78,13 +93,24 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
           {/* Right: Status Pill & Auth (Desktop) */}
           <div className="hidden md:flex items-center space-x-3">
             <div className="flex items-center space-x-2 px-3 py-1.5 rounded-lg bg-zinc-900/80 border border-zinc-800 text-xs font-mono">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-zinc-400 text-[11px]">REST ONLINE</span>
+              {modClientOnline ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-emerald-400 font-bold text-[11px] tracking-wide">CLIENT ONLINE</span>
+                </>
+              ) : (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+                  </span>
+                  <span className="text-zinc-400 font-medium text-[11px] tracking-wide">CLIENT OFFLINE</span>
+                </>
+              )}
               <span className="text-zinc-800">|</span>
-              <span className="text-emerald-400 font-medium text-[11px]">{playerCount} TARGETS</span>
+              <span className="text-zinc-300 font-medium text-[11px]">{livePlayerCount} TARGETS</span>
             </div>
 
             {/* Authentication Action Button / Profile */}
@@ -118,16 +144,16 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                   <div className="absolute right-0 mt-2 w-48 bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-1.5 z-50 animate-fade-in">
                     <div className="px-3 py-2 border-b border-zinc-900 mb-1">
                       <p className="text-xs font-semibold text-white truncate">
-                        {user.displayName || 'Operator'}
+                        {user.displayName || 'User Profile'}
                       </p>
-                      <p className="text-[10px] text-zinc-500 truncate font-mono">{user.email}</p>
+                      <p className="text-[10px] text-zinc-500 truncate">{user.email}</p>
                     </div>
                     <button
                       onClick={() => {
-                        logout();
                         setUserDropdownOpen(false);
+                        logout();
                       }}
-                      className="w-full flex items-center space-x-2 px-3 py-2 rounded-lg text-xs text-rose-400 hover:bg-rose-500/10 hover:text-rose-300 transition-colors"
+                      className="w-full flex items-center space-x-2 px-3 py-2 text-xs text-rose-400 hover:bg-rose-500/10 rounded-lg transition-colors"
                     >
                       <LogOut className="w-3.5 h-3.5" />
                       <span>Sign Out</span>
@@ -149,11 +175,22 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
           {/* Mobile Hamburger Toggle Button */}
           <div className="flex items-center space-x-2 md:hidden">
             <div className="flex items-center space-x-1.5 px-2.5 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-[10px] font-mono">
-              <span className="relative flex h-2 w-2">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
-              </span>
-              <span className="text-emerald-400 font-semibold">{playerCount}</span>
+              {modClientOnline ? (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                  </span>
+                  <span className="text-emerald-400 font-bold">ONLINE</span>
+                </>
+              ) : (
+                <>
+                  <span className="relative flex h-2 w-2">
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-rose-500 shadow-[0_0_8px_rgba(244,63,94,0.6)]"></span>
+                  </span>
+                  <span className="text-rose-400 font-semibold">OFFLINE</span>
+                </>
+              )}
             </div>
 
             <button

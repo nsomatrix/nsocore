@@ -61,6 +61,7 @@ const globalStore = globalThis as unknown as {
   _matrixChatStore?: ChatMessage[];
   _pendingOutboundChatQueue?: ChatMessage[];
   _userSavedTargetsStore?: Record<string, PlayerProfile[]>;
+  _lastModClientActivityTimestamp?: number;
 };
 
 if (!globalStore._matrixPlayersStore) {
@@ -74,6 +75,30 @@ if (!globalStore._matrixChatStore) {
 }
 if (!globalStore._userSavedTargetsStore) {
   globalStore._userSavedTargetsStore = {};
+}
+if (!globalStore._lastModClientActivityTimestamp) {
+  globalStore._lastModClientActivityTimestamp = 0;
+}
+
+/**
+ * Touch the mod client activity timestamp whenever an active mod client
+ * polls inspect targets or posts telemetry/chat payloads.
+ */
+export function touchModClientHeartbeat() {
+  globalStore._lastModClientActivityTimestamp = Date.now();
+}
+
+/**
+ * Returns whether a mod client is currently active based on the last heartbeat.
+ * Default max age: 20 seconds.
+ */
+export function getModClientStatus(maxAgeMs = 20000) {
+  const lastActive = globalStore._lastModClientActivityTimestamp || 0;
+  const isOnline = lastActive > 0 && (Date.now() - lastActive < maxAgeMs);
+  return {
+    isOnline,
+    lastSeenMsAgo: lastActive > 0 ? Date.now() - lastActive : null,
+  };
 }
 
 function getDataFilePath(): string {
