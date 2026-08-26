@@ -115,7 +115,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
       <BHBG />
       <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(119,68,255,0.18)] overflow-hidden">
         {/* Glowing top border accent */}
-        <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-pink-500 to-amber-500"></div>
+        <div className="h-1 w-full bg-violet-600"></div>
 
         {/* Modal Header */}
         <div className="p-4 sm:p-5 pb-3 flex items-center justify-between border-b border-zinc-900/80">
@@ -234,7 +234,7 @@ export function AuthModal({ isOpen, onClose }: AuthModalProps) {
             <button
               type="submit"
               disabled={loading}
-              className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-xs font-bold font-mono tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(119,68,255,0.35)] hover:shadow-[0_0_25px_rgba(119,68,255,0.5)] disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
+              className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold font-mono tracking-wider uppercase transition-all disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
             >
               {loading ? (
                 <Loader2 className="w-4 h-4 animate-spin" />

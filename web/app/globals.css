@@ -5,13 +5,13 @@
 @tailwind utilities;
 
 :root {
-  --background: #0a0a1a;
+  --background: #000000;
   --foreground: #e0e0ff;
 }
 
 body {
   color: var(--foreground);
-  background: radial-gradient(ellipse at center, #0a0a1a 0%, #000002 70%);
+  background: #000000;
   font-family: 'Inter', sans-serif;
   min-height: 100vh;
   overflow-x: hidden;
@@ -24,7 +24,7 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: #0a0a1a;
+  background: #000000;
 }
 
 ::-webkit-scrollbar-thumb {

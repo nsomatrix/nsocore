@@ -192,11 +192,11 @@ export function PlayerInspectorModule() {
     } else if (upgrade === 3) {
       return { badge: 'bg-blue-500/20 text-blue-400 font-extrabold border border-blue-500/60 shadow-[0_0_8px_rgba(59,130,246,0.2)]', title: 'text-blue-400 font-bold' };
     } else if (upgrade === 4) {
-      return { badge: 'bg-emerald-500/10 text-emerald-300 border border-emerald-500/30', title: 'text-emerald-300' };
+      return { badge: 'bg-violet-500/10 text-violet-300 border border-violet-500/30', title: 'text-violet-300' };
     } else if (upgrade === 5) {
-      return { badge: 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40', title: 'text-emerald-300' };
+      return { badge: 'bg-violet-500/15 text-violet-400 border border-violet-500/40', title: 'text-violet-300' };
     } else if (upgrade === 6) {
-      return { badge: 'bg-emerald-500/20 text-emerald-400 font-extrabold border border-emerald-500/50', title: 'text-emerald-400' };
+      return { badge: 'bg-violet-500/20 text-violet-400 font-extrabold border border-violet-500/50', title: 'text-violet-400' };
     } else if (upgrade === 7) {
       return { badge: 'bg-green-500/25 text-green-400 font-extrabold border border-green-500/60 shadow-[0_0_8px_rgba(34,197,94,0.25)]', title: 'text-green-400 font-bold' };
     } else if (upgrade === 8) {
@@ -538,12 +538,12 @@ export function PlayerInspectorModule() {
             <h3 className="text-base sm:text-lg font-display font-extrabold text-white">
               Player Inspector Module
             </h3>
-            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+            <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-violet-500/10 text-violet-400 border border-violet-500/20">
               REST TELEMETRY
             </span>
             {sessionPlayers.length > 0 && (
-              <span className="flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/20 text-emerald-300 border border-emerald-500/30">
-                <Radio className="w-3 h-3 text-emerald-400" />
+              <span className="flex items-center space-x-1 px-2 py-0.5 rounded text-[10px] font-mono bg-violet-500/20 text-violet-300 border border-violet-500/30">
+                <Radio className="w-3 h-3 text-violet-400" />
                 <span>SESSION ({sessionPlayers.length}/{MAX_LIVE_CARDS})</span>
               </span>
             )}
@@ -566,16 +566,16 @@ export function PlayerInspectorModule() {
             value={targetName}
             onChange={(e) => setTargetName(e.target.value)}
             placeholder="Enter character name"
-            className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 w-full sm:w-[220px]"
+            className="px-3.5 py-2.5 rounded-xl bg-black border border-zinc-800 focus:border-violet-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600 w-full sm:w-[220px]"
           />
           <button
             type="submit"
             disabled={fetching || !targetName.trim()}
-            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-emerald-500 text-black font-bold text-xs hover:bg-emerald-400 transition-all disabled:opacity-50 shrink-0 shadow-[0_0_15px_rgba(16,185,129,0.2)] w-full sm:w-auto border-0 outline-none"
+            className="flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl bg-violet-600 hover:bg-violet-500 text-white font-bold text-xs transition-all disabled:opacity-50 shrink-0 w-full sm:w-auto border-0 outline-none"
           >
             {fetching ? (
               <>
-                <Loader2 className="w-4 h-4 animate-spin text-black" />
+                <Loader2 className="w-4 h-4 animate-spin text-white" />
                 <span>Fetching</span>
               </>
             ) : (
@@ -593,14 +593,14 @@ export function PlayerInspectorModule() {
         <div
           className={`p-3.5 rounded-xl border text-xs font-mono flex items-start sm:items-center justify-between gap-2.5 animate-fade-in ${
             fetchMsg.type === 'success'
-              ? 'bg-emerald-500/10 border-emerald-500/20 text-emerald-400'
+              ? 'bg-violet-500/10 border-violet-500/20 text-violet-400'
               : fetchMsg.type === 'error'
               ? 'bg-rose-500/10 border-rose-500/20 text-rose-400'
               : 'bg-cyan-500/10 border-cyan-500/20 text-cyan-400'
           }`}
         >
           <div className="flex items-start sm:items-center space-x-2.5 min-w-0 flex-1">
-            {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-emerald-400 shrink-0 mt-0.5 sm:mt-0" />}
+            {fetchMsg.type === 'success' && <Sparkles className="w-4 h-4 text-violet-400 shrink-0 mt-0.5 sm:mt-0" />}
             {fetchMsg.type === 'loading' && <Loader2 className="w-4 h-4 animate-spin text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
             {fetchMsg.type === 'info' && <Radio className="w-4 h-4 text-cyan-400 shrink-0 mt-0.5 sm:mt-0" />}
             {fetchMsg.type === 'error' && <AlertTriangle className="w-4 h-4 text-rose-400 shrink-0 mt-0.5 sm:mt-0" />}
@@ -620,7 +620,7 @@ export function PlayerInspectorModule() {
             onClick={() => setActiveTab('session')}
             className={`flex-1 sm:flex-initial flex items-center justify-center space-x-2 px-4 py-2.5 rounded-xl text-xs font-bold transition-all border-0 outline-none select-none ${
               activeTab === 'session'
-                ? 'bg-zinc-800 text-emerald-400 shadow-sm'
+                ? 'bg-zinc-800 text-violet-400 shadow-sm'
                 : 'text-zinc-400 hover:text-white'
             }`}
           >
@@ -651,7 +651,7 @@ export function PlayerInspectorModule() {
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               placeholder="Search target cards"
-              className="w-full pl-8 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-emerald-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
+              className="w-full pl-8 pr-3 py-2 rounded-xl bg-zinc-900 border border-zinc-800 focus:border-violet-500 focus:outline-none text-xs text-white font-mono placeholder:text-zinc-600"
             />
           </form>
 
@@ -676,7 +676,7 @@ export function PlayerInspectorModule() {
             {activeTab === 'saved' ? (
               <Bookmark className="w-6 h-6 text-amber-400" />
             ) : (
-              <Shield className="w-6 h-6 text-emerald-400" />
+              <Shield className="w-6 h-6 text-violet-400" />
             )}
           </div>
           <div className="space-y-1">
@@ -704,14 +704,14 @@ export function PlayerInspectorModule() {
               <div
                 key={p.name}
                 onClick={() => setSelectedPlayer(p)}
-                className="group p-5 rounded-2xl bg-zinc-900/80 border border-zinc-800/80 hover:border-emerald-500/50 hover:bg-zinc-900 transition-all cursor-pointer space-y-4 flex flex-col justify-between relative overflow-hidden"
+                className="group p-5 rounded-2xl bg-zinc-900/80 border border-zinc-800/80 hover:border-violet-500/50 hover:bg-zinc-900 transition-all cursor-pointer space-y-4 flex flex-col justify-between relative overflow-hidden"
               >
                 <div>
                   {/* Top Header: Name, Level & Bookmark / Dismiss buttons */}
                   <div className="flex items-start justify-between">
                     <div>
                       <div className="flex items-center space-x-2">
-                        <h4 className="font-display font-bold text-base text-white group-hover:text-emerald-400 transition-colors">
+                        <h4 className="font-display font-bold text-base text-white group-hover:text-violet-400 transition-colors">
                           {p.name}
                         </h4>
                         {p.online === false || p.status === 'OFFLINE' ? (
@@ -719,7 +719,7 @@ export function PlayerInspectorModule() {
                             OFFLINE
                           </span>
                         ) : (
-                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                          <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-violet-500/10 text-violet-400 border border-violet-500/20">
                             Lvl {p.level}
                           </span>
                         )}
@@ -766,11 +766,11 @@ export function PlayerInspectorModule() {
                         className={`p-1.5 rounded-lg transition-colors border-0 outline-none flex items-center space-x-1 text-[11px] font-mono ${
                           remainingSecs > 0
                             ? 'bg-zinc-800/80 text-zinc-500 cursor-not-allowed'
-                            : 'text-emerald-400 hover:bg-emerald-500/10'
+                            : 'text-violet-400 hover:bg-violet-500/10'
                         }`}
                         title={remainingSecs > 0 ? `Refresh cooldown: ${remainingSecs}s remaining` : 'Refresh live stats'}
                       >
-                        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingThis ? 'animate-spin text-emerald-400' : ''}`} />
+                        <RefreshCw className={`w-3.5 h-3.5 ${isRefreshingThis ? 'animate-spin text-violet-400' : ''}`} />
                         {remainingSecs > 0 && <span className="font-bold text-amber-400">{remainingSecs}s</span>}
                       </button>
 
@@ -819,19 +819,19 @@ export function PlayerInspectorModule() {
                   <div className="space-y-1.5 mt-3 pt-3 border-t border-zinc-800/80 font-mono text-[11px]">
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Attack DMG</span>
-                      <span className="text-emerald-400 font-extrabold">
+                      <span className="text-violet-400 font-extrabold">
                         <AnimatedNumber value={p.attackMin} /> - <AnimatedNumber value={p.attackMax} />
                       </span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Critical Strike</span>
-                      <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={p.critical} /></span>
+                      <span className="text-violet-400 font-extrabold"><AnimatedNumber value={p.critical} /></span>
                     </div>
 
                     <div className="flex items-center justify-between py-1.5 px-3 rounded-xl bg-zinc-950/80 border border-zinc-800/80">
                       <span className="text-[11px] text-zinc-400 font-sans font-medium">Reduce Pain</span>
-                      <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={p.reducePain} /></span>
+                      <span className="text-violet-400 font-extrabold"><AnimatedNumber value={p.reducePain} /></span>
                     </div>
                   </div>
                 </div>
@@ -851,7 +851,7 @@ export function PlayerInspectorModule() {
                       setEquipmentPlayer(p);
                       setEquipmentTab(1);
                     }}
-                    className="py-2 px-3 rounded-xl bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 transition-all border border-emerald-500/20 flex items-center space-x-1.5 text-[11px] font-bold outline-none"
+                    className="py-2 px-3 rounded-xl bg-violet-500/10 text-violet-400 hover:bg-violet-500/20 transition-all border border-violet-500/20 flex items-center space-x-1.5 text-[11px] font-bold outline-none"
                   >
                     <span>View Equipment</span>
                   </button>
@@ -869,20 +869,20 @@ export function PlayerInspectorModule() {
             {/* Modal Header */}
             <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 border-b border-zinc-800 pb-4">
               <div className="flex items-center space-x-3 min-w-0">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 font-mono font-bold text-sm shrink-0">
                   {selectedPlayer.level}
                 </div>
                 <div className="min-w-0">
                   <div className="flex items-center space-x-2">
                     <h3 className="text-base sm:text-lg font-display font-bold text-white truncate">{selectedPlayer.name}</h3>
-                    <span className="flex items-center space-x-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 shrink-0">
-                      <Radio className="w-2.5 h-2.5 text-emerald-400" />
+                    <span className="flex items-center space-x-1 px-1.5 py-0.5 rounded text-[9px] font-mono bg-violet-500/20 text-violet-400 border border-violet-500/30 shrink-0">
+                      <Radio className="w-2.5 h-2.5 text-violet-400" />
                       <span>LIVE</span>
                     </span>
                   </div>
                   <div className="space-y-0.5 mt-0.5">
                     <p className="text-xs text-zinc-400 font-mono truncate">
-                      {selectedPlayer.class} • <span className="text-emerald-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
+                      {selectedPlayer.class} • <span className="text-violet-400 font-medium">{cleanSchoolName(selectedPlayer.school)}</span>
                     </p>
                     <p className="text-xs font-mono text-zinc-400 truncate">
                       <span className="text-zinc-200 font-semibold">{formatGender(selectedPlayer.gender)}</span>
@@ -943,67 +943,67 @@ export function PlayerInspectorModule() {
             <div className="bg-zinc-950 rounded-2xl border border-zinc-800 overflow-hidden divide-y divide-zinc-800/80 text-xs font-mono shadow-2xl">
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Min</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMin} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMin} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Attack Max</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMax} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.attackMax} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Speed</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.speed} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.speed} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Critical Strike</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.critical} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.critical} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Accurate Point</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.accurate} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.accurate} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Dodge Ability</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.dodge} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.dodge} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Fire</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiFire} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiFire} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Ice</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiIce} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiIce} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Wind</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiWind} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiWind} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Reduce Pain</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.reducePain} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.reducePain} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Counter Strike</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.counterStrike} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.counterStrike} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Chakra</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakra} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakra} /></span>
               </div>
 
               <div className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/60 hover:bg-zinc-900 transition-colors">
                 <span className="text-zinc-400 font-sans font-medium">Anti Chakra Back</span>
-                <span className="text-emerald-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakraBack} /></span>
+                <span className="text-violet-400 font-extrabold"><AnimatedNumber value={selectedPlayer.antiChakraBack} /></span>
               </div>
             </div>
 
@@ -1013,7 +1013,7 @@ export function PlayerInspectorModule() {
                 onClick={() => handleCopyJson(selectedPlayer)}
                 className="flex items-center space-x-2 px-3.5 py-2 rounded-xl border border-zinc-800 bg-black text-xs text-zinc-400 hover:text-white font-mono transition-colors border-0 outline-none"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                {copied ? <Check className="w-3.5 h-3.5 text-violet-400" /> : <Copy className="w-3.5 h-3.5" />}
                 <span>{copied ? 'Copied JSON!' : 'Copy Raw Payload'}</span>
               </button>
 
@@ -1035,13 +1035,13 @@ export function PlayerInspectorModule() {
           <div className="bg-zinc-900 border border-zinc-800 rounded-2xl w-full max-w-lg max-h-[88vh] overflow-y-auto p-4 sm:p-6 space-y-4 shadow-2xl font-sans text-white">
             <div className="flex items-center justify-between border-b border-zinc-800 pb-4">
               <div className="flex items-center space-x-3">
-                <div className="w-10 h-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 font-mono font-bold text-sm shrink-0">
+                <div className="w-10 h-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400 font-mono font-bold text-sm shrink-0">
                   {equipmentPlayer.level}
                 </div>
                 <div>
                   <div className="flex items-center space-x-2">
                     <h3 className="text-lg font-display font-bold text-white">{equipmentPlayer.name}</h3>
-                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
+                    <span className="px-2 py-0.5 rounded text-[10px] font-mono bg-violet-500/10 text-violet-400 border border-violet-500/20">
                       {equipmentPlayer.class}
                     </span>
                   </div>
@@ -1061,7 +1061,7 @@ export function PlayerInspectorModule() {
                 onClick={() => setEquipmentTab(1)}
                 className={`flex-1 py-2.5 px-4 text-xs font-bold transition-all text-center border-0 outline-none ${
                   equipmentTab === 1
-                    ? 'bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500'
+                    ? 'bg-violet-500/10 text-violet-400 border-b-2 border-violet-500'
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                 }`}
               >
@@ -1071,7 +1071,7 @@ export function PlayerInspectorModule() {
                 onClick={() => setEquipmentTab(2)}
                 className={`flex-1 py-2.5 px-4 text-xs font-bold transition-all text-center border-0 outline-none ${
                   equipmentTab === 2
-                    ? 'bg-emerald-500/10 text-emerald-400 border-b-2 border-emerald-500'
+                    ? 'bg-violet-500/10 text-violet-400 border-b-2 border-violet-500'
                     : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                 }`}
               >

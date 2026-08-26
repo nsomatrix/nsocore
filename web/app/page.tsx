@@ -30,7 +30,7 @@ export default function Home() {
   }, [fetchPlayers]);
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-400">
       {/* Industry Standard Responsive Navbar */}
       <Navbar playerCount={players.length} />
 

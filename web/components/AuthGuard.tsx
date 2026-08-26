@@ -47,7 +47,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   // 1. Loading State Screen
   if (loading) {
     return (
-      <div className="min-h-screen w-full bg-[#0a0a1a] flex flex-col items-center justify-center space-y-4">
+      <div className="min-h-screen w-full bg-black flex flex-col items-center justify-center space-y-4">
         <div className="w-12 h-12 rounded-2xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_30px_rgba(119,68,255,0.25)] animate-pulse">
           <Shield className="w-6 h-6" />
         </div>
@@ -108,7 +108,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
         {/* Lock Screen Card */}
         <div className="relative my-auto w-full max-w-[360px] shrink-0 bg-zinc-950/95 border border-zinc-800/90 backdrop-blur-2xl rounded-2xl shadow-[0_0_50px_rgba(119,68,255,0.18)] overflow-hidden">
           {/* Glowing Top Bar */}
-          <div className="h-1 w-full bg-gradient-to-r from-violet-500 via-pink-500 to-amber-500"></div>
+          <div className="h-1 w-full bg-violet-600"></div>
 
           {/* Card Header */}
           <div className="p-4 sm:p-5 pb-3 flex items-center space-x-3 border-b border-zinc-900/80">
@@ -118,7 +118,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
             <div className="min-w-0 flex-1">
               <div className="flex items-center space-x-2">
                 <h1 className="text-sm font-bold text-white font-mono tracking-wide uppercase truncate">
-                  MTX CORE
+                  MTX-API
                 </h1>
                 <span className="inline-flex items-center space-x-1 px-1.5 py-0.5 rounded-full bg-violet-500/10 border border-violet-500/20 text-[9px] font-mono text-violet-400 uppercase tracking-wider shrink-0">
                   <span className="w-1 h-1 rounded-full bg-violet-400 animate-ping"></span>
@@ -226,7 +226,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
               <button
                 type="submit"
                 disabled={isSubmitting}
-                className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-gradient-to-r from-violet-600 via-purple-600 to-pink-600 hover:from-violet-500 hover:to-pink-500 text-white text-xs font-bold font-mono tracking-wider uppercase transition-all shadow-[0_0_20px_rgba(119,68,255,0.35)] hover:shadow-[0_0_25px_rgba(119,68,255,0.5)] disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
+                className="w-full h-9.5 flex items-center justify-center space-x-2 py-2 px-4 rounded-lg bg-violet-600 hover:bg-violet-500 text-white text-xs font-bold font-mono tracking-wider uppercase transition-all disabled:opacity-50 mt-1 border-0 outline-none focus:outline-none"
               >
                 {isSubmitting ? (
                   <Loader2 className="w-4 h-4 animate-spin" />

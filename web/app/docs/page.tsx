@@ -236,21 +236,21 @@ const data = await response.json();`,
 
   return (
     <AuthGuard>
-      <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400 overflow-x-hidden w-full">
+      <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-400 overflow-x-hidden w-full">
         <Navbar />
 
         <main className="flex-1 max-w-7xl w-full mx-auto px-3 sm:px-6 lg:px-8 py-4 sm:py-8 space-y-5 sm:space-y-8 min-w-0">
           {/* Mobile-Optimized Glassmorphic Hero Banner */}
           <div className="relative rounded-2xl bg-gradient-to-b from-zinc-900/90 via-zinc-900/50 to-black border border-zinc-800/80 p-4 sm:p-8 overflow-hidden shadow-2xl space-y-3 sm:space-y-4 w-full min-w-0">
-            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-72 sm:w-96 h-72 sm:h-96 bg-emerald-500/5 rounded-full blur-3xl pointer-events-none" />
+            <div className="absolute top-0 right-0 -mt-12 -mr-12 w-72 sm:w-96 h-72 sm:h-96 bg-violet-500/10 rounded-full blur-3xl pointer-events-none" />
 
-            <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-[11px] sm:text-xs font-semibold">
+            <div className="inline-flex items-center space-x-2 px-2.5 py-1 rounded-full bg-violet-500/10 border border-violet-500/20 text-violet-400 text-[11px] sm:text-xs font-semibold">
               <Code2 className="w-3.5 h-3.5 shrink-0" />
               <span>Developer REST Interface v1.0</span>
             </div>
 
             <h1 className="text-2xl sm:text-4xl font-display font-extrabold tracking-tight text-white leading-tight">
-              mtx-api <span className="text-emerald-400">REST Documentation</span>
+              mtx-api <span className="text-violet-400">REST Documentation</span>
             </h1>
 
             <p className="text-xs sm:text-sm text-zinc-400 max-w-3xl leading-relaxed font-sans">
@@ -270,7 +270,7 @@ const data = await response.json();`,
                   onClick={() => setActiveTab(tab.id as any)}
                   className={`px-3 py-1.5 rounded-xl border whitespace-nowrap transition-all text-xs border-0 outline-none shrink-0 ${
                     activeTab === tab.id
-                      ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 font-bold shadow-sm'
+                      ? 'bg-violet-500/10 text-violet-400 border border-violet-500/30 font-bold shadow-sm'
                       : 'bg-zinc-900/80 text-zinc-400 border border-zinc-800 hover:text-white'
                   }`}
                 >
@@ -298,7 +298,7 @@ const data = await response.json();`,
                       <span
                         className={`px-2 py-0.5 rounded text-[10px] sm:text-xs font-mono font-extrabold border shrink-0 ${
                           ep.method === 'GET'
-                            ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20'
+                            ? 'bg-violet-500/10 text-violet-400 border-violet-500/20'
                             : 'bg-blue-500/10 text-blue-400 border-blue-500/20'
                         }`}
                       >
@@ -334,7 +334,7 @@ const data = await response.json();`,
                               className="p-3 rounded-xl bg-zinc-900/60 border border-zinc-800/80 space-y-1.5 w-full min-w-0"
                             >
                               <div className="flex items-center justify-between gap-2 w-full min-w-0">
-                                <span className="text-emerald-400 font-bold text-xs truncate min-w-0">{param.name}</span>
+                                <span className="text-violet-400 font-bold text-xs truncate min-w-0">{param.name}</span>
                                 <div className="flex items-center space-x-1.5 text-[10px] shrink-0">
                                   <span className="text-zinc-400">{param.type}</span>
                                   {param.required ? (
@@ -369,7 +369,7 @@ const data = await response.json();`,
                             <tbody className="divide-y divide-zinc-800/60">
                               {paramsList.map((param: any) => (
                                 <tr key={param.name} className="hover:bg-zinc-900/40">
-                                  <td className="p-3 text-emerald-400 font-bold">{param.name}</td>
+                                  <td className="p-3 text-violet-400 font-bold">{param.name}</td>
                                   <td className="p-3 text-zinc-300">{param.type}</td>
                                   <td className="p-3">
                                     {param.required ? (
@@ -397,7 +397,7 @@ const data = await response.json();`,
                           onClick={() => setSnippetTab(ep.id, 'curl')}
                           className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
                             currentSnippetTab === 'curl'
-                              ? 'bg-zinc-800 text-emerald-400 font-bold'
+                              ? 'bg-zinc-800 text-violet-400 font-bold'
                               : 'text-zinc-400 hover:text-white'
                           }`}
                         >
@@ -407,7 +407,7 @@ const data = await response.json();`,
                           onClick={() => setSnippetTab(ep.id, 'js')}
                           className={`px-2.5 py-1 rounded-lg transition-all whitespace-nowrap ${
                             currentSnippetTab === 'js'
-                              ? 'bg-zinc-800 text-emerald-400 font-bold'
+                              ? 'bg-zinc-800 text-violet-400 font-bold'
                               : 'text-zinc-400 hover:text-white'
                           }`}
                         >
@@ -441,7 +441,7 @@ const data = await response.json();`,
                           title="Copy snippet"
                         >
                           {copiedIndex === `${ep.id}-${currentSnippetTab}` ? (
-                            <Check className="w-3.5 h-3.5 text-emerald-400" />
+                            <Check className="w-3.5 h-3.5 text-violet-400" />
                           ) : (
                             <Copy className="w-3.5 h-3.5" />
                           )}
@@ -464,7 +464,7 @@ const data = await response.json();`,
                       <div className="space-y-2 min-w-0">
                         <div className="flex items-center justify-between text-xs font-mono text-zinc-400">
                           <span className="flex items-center space-x-1.5">
-                            <Terminal className="w-3.5 h-3.5 text-emerald-400" />
+                            <Terminal className="w-3.5 h-3.5 text-violet-400" />
                             <span>cURL Request</span>
                           </span>
                         </div>
@@ -475,12 +475,12 @@ const data = await response.json();`,
                             title="Copy snippet"
                           >
                             {copiedIndex === `${ep.id}-curl` ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              <Check className="w-3.5 h-3.5 text-violet-400" />
                             ) : (
                               <Copy className="w-3.5 h-3.5" />
                             )}
                           </button>
-                          <pre className="p-4 text-xs font-mono text-emerald-300/90 overflow-x-auto leading-relaxed scrollbar-thin max-h-64 pr-11">
+                          <pre className="p-4 text-xs font-mono text-violet-300/90 overflow-x-auto leading-relaxed scrollbar-thin max-h-64 pr-11">
                             <code>{ep.curlSnippet}</code>
                           </pre>
                         </div>
@@ -501,7 +501,7 @@ const data = await response.json();`,
                             title="Copy snippet"
                           >
                             {copiedIndex === `${ep.id}-json` ? (
-                              <Check className="w-3.5 h-3.5 text-emerald-400" />
+                              <Check className="w-3.5 h-3.5 text-violet-400" />
                             ) : (
                               <Copy className="w-3.5 h-3.5" />
                             )}

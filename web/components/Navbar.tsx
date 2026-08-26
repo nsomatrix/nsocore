@@ -37,11 +37,11 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
           {/* Left: Brand Logo & Title */}
           <div className="flex items-center space-x-6">
             <Link href="/" className="flex items-center space-x-3 cursor-pointer group">
-              <div className="w-9 h-9 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.15)] group-hover:border-emerald-500/40 transition-colors">
+              <div className="w-9 h-9 rounded-xl bg-violet-500/10 border border-violet-500/30 flex items-center justify-center text-violet-400 shadow-[0_0_15px_rgba(119,68,255,0.2)] group-hover:border-violet-500/50 transition-colors">
                 <Shield className="w-5 h-5" />
               </div>
               <div>
-                <span className="font-display font-extrabold text-base tracking-tight text-white uppercase group-hover:text-emerald-400 transition-colors">
+                <span className="font-display font-extrabold text-base tracking-tight text-white uppercase group-hover:text-violet-400 transition-colors">
                   mtx-api
                 </span>
               </div>
@@ -58,7 +58,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                     href={item.href}
                     className={`flex items-center space-x-2 px-3 py-2 rounded-lg text-xs font-medium transition-all ${
                       isActive
-                        ? 'bg-zinc-900 text-emerald-400 font-semibold border border-zinc-800'
+                        ? 'bg-zinc-900 text-violet-400 font-semibold border border-zinc-800'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                     }`}
                   >
@@ -76,10 +76,10 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
               {modClientOnline ? (
                 <>
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
                   </span>
-                  <span className="text-emerald-400 font-bold text-[11px] tracking-wide">CLIENT ONLINE</span>
+                  <span className="text-violet-400 font-bold text-[11px] tracking-wide">CLIENT ONLINE</span>
                 </>
               ) : (
                 <>
@@ -104,10 +104,10 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                     <img
                       src={user.photoURL}
                       alt={user.displayName || 'User'}
-                      className="w-5 h-5 rounded-full border border-emerald-500/40 object-cover"
+                      className="w-5 h-5 rounded-full border border-violet-500/40 object-cover"
                     />
                   ) : (
-                    <div className="w-5 h-5 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center text-[10px] font-bold">
+                    <div className="w-5 h-5 rounded-full bg-violet-500/20 text-violet-400 flex items-center justify-center text-[10px] font-bold">
                       {(user.displayName || user.email || 'U').charAt(0).toUpperCase()}
                     </div>
                   )}
@@ -142,7 +142,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
             ) : (
               <button
                 onClick={() => setAuthModalOpen(true)}
-                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 hover:bg-emerald-500/20 hover:border-emerald-500/50 text-xs font-mono font-semibold transition-all shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+                className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-400 hover:bg-violet-500/20 hover:border-violet-500/50 text-xs font-mono font-semibold transition-all shadow-[0_0_15px_rgba(119,68,255,0.15)]"
               >
                 <LogIn className="w-3.5 h-3.5" />
                 <span>SIGN IN</span>
@@ -156,10 +156,10 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
               {modClientOnline ? (
                 <>
                   <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-emerald-500"></span>
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-violet-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-violet-500"></span>
                   </span>
-                  <span className="text-emerald-400 font-bold">ONLINE</span>
+                  <span className="text-violet-400 font-bold">ONLINE</span>
                 </>
               ) : (
                 <>
@@ -195,7 +195,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                     onClick={() => setMobileMenuOpen(false)}
                     className={`w-full flex items-center justify-between px-3.5 py-2.5 rounded-lg text-xs font-medium transition-all ${
                       isActive
-                        ? 'bg-zinc-900 text-emerald-400 font-semibold border border-zinc-800'
+                        ? 'bg-zinc-900 text-violet-400 font-semibold border border-zinc-800'
                         : 'text-zinc-400 hover:text-white hover:bg-zinc-900/60'
                     }`}
                   >
@@ -212,7 +212,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
               {user ? (
                 <div className="flex items-center justify-between p-2 rounded-lg bg-zinc-900 border border-zinc-800">
                   <div className="flex items-center space-x-2">
-                    <UserIcon className="w-4 h-4 text-emerald-400" />
+                    <UserIcon className="w-4 h-4 text-violet-400" />
                     <span className="text-xs font-mono text-white truncate">
                       {user.displayName || user.email}
                     </span>
@@ -230,7 +230,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
                     setMobileMenuOpen(false);
                     setAuthModalOpen(true);
                   }}
-                  className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs font-mono font-bold"
+                  className="w-full flex items-center justify-center space-x-2 py-2.5 rounded-xl bg-violet-500/10 border border-violet-500/30 text-violet-400 text-xs font-mono font-bold"
                 >
                   <LogIn className="w-4 h-4" />
                   <span>SIGN IN TO PORTAL</span>

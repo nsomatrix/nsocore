@@ -9,7 +9,7 @@ export default function InspectorPage() {
   const [activeTab, setActiveTab] = useState('inspector');
 
   return (
-    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-emerald-500/30 selection:text-emerald-400">
+    <div className="min-h-screen bg-black text-white flex flex-col font-sans selection:bg-violet-500/30 selection:text-violet-400">
       {/* Industry Standard Responsive Navbar */}
       <Navbar
         activeTab={activeTab}
@@ -22,7 +22,7 @@ export default function InspectorPage() {
         {/* Dedicated Module Header */}
         <div className="border-b border-zinc-800/80 pb-6">
           <div className="flex items-center space-x-2">
-            <span className="px-2.5 py-1 rounded-md bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-mono text-xs font-semibold">
+            <span className="px-2.5 py-1 rounded-md bg-violet-500/10 text-violet-400 border border-violet-500/20 font-mono text-xs font-semibold">
               MODULE 01
             </span>
             <span className="text-zinc-500 text-xs font-mono">•</span>

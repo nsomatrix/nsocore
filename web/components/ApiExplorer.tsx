@@ -12,37 +12,37 @@ export function ApiExplorer() {
       method: 'GET',
       path: '/api/v1/players',
       description: 'Fetches player profiles stored in memory/serverless cache.',
-      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     },
     {
       method: 'POST',
       path: '/api/v1/players',
       description: 'Stream incoming character profile telemetry directly from game client.',
-      badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      badgeColor: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
     },
     {
       method: 'GET',
       path: '/api/v1/inspect',
       description: 'Polled automatically by background client to fetch pending inspect targets.',
-      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     },
     {
       method: 'POST',
       path: '/api/v1/inspect',
       description: 'Queues a character name for remote profile inspection.',
-      badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      badgeColor: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
     },
     {
       method: 'GET',
       path: '/api/v1/chat',
       description: 'Fetches real-time chat message logs streamed from active clients.',
-      badgeColor: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
+      badgeColor: 'bg-violet-500/10 text-violet-400 border-violet-500/20',
     },
     {
       method: 'POST',
       path: '/api/v1/chat',
       description: 'Streams live Public, Global, PM, and Clan chat telemetry from J2ME mod client.',
-      badgeColor: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
+      badgeColor: 'bg-pink-500/10 text-pink-400 border-pink-500/20',
     },
   ];
 
@@ -58,7 +58,7 @@ export function ApiExplorer() {
   return (
     <section className="space-y-6 pt-6 border-t border-zinc-800/80">
       <div className="flex items-center space-x-3">
-        <div className="w-8 h-8 rounded-lg bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center text-emerald-400">
+        <div className="w-8 h-8 rounded-lg bg-violet-500/10 border border-violet-500/20 flex items-center justify-center text-violet-400">
           <Code2 className="w-4 h-4" />
         </div>
         <div>
@@ -83,7 +83,7 @@ export function ApiExplorer() {
                   className="p-1 rounded text-zinc-500 hover:text-white transition-colors"
                   title="Copy Full URL"
                 >
-                  {copiedEndpoint === ep.path ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+                  {copiedEndpoint === ep.path ? <Check className="w-3.5 h-3.5 text-violet-400" /> : <Copy className="w-3.5 h-3.5" />}
                 </button>
               </div>
               <p className="text-zinc-400 font-sans text-xs">{ep.description}</p>
@@ -93,7 +93,7 @@ export function ApiExplorer() {
                 href={ep.path}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="inline-flex items-center space-x-1 text-[11px] text-emerald-400 hover:underline font-sans"
+                className="inline-flex items-center space-x-1 text-[11px] text-violet-400 hover:underline font-sans"
               >
                 <span>Test Endpoint</span>
                 <ExternalLink className="w-3 h-3" />
