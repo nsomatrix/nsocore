@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { Shield, Menu, X, Activity, Search, MessageSquare, LogIn, LogOut, User as UserIcon, ChevronDown } from 'lucide-react';
+import { Shield, Menu, X, Activity, Search, MessageSquare, FileText, LogIn, LogOut, User as UserIcon, ChevronDown } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { AuthModal } from '@/components/AuthModal';
 
@@ -24,6 +24,7 @@ export function Navbar({ playerCount = 0 }: NavbarProps) {
     { id: 'dashboard', label: 'Dashboard', href: '/', icon: Activity },
     { id: 'inspector', label: 'Inspector', href: '/inspector', icon: Search },
     { id: 'chat', label: 'Live Chat', href: '/chat', icon: MessageSquare },
+    { id: 'docs', label: 'API Docs', href: '/docs', icon: FileText },
   ];
 
   return (

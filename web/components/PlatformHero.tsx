@@ -67,7 +67,7 @@ export function PlatformHero({ activeModuleCount, totalTargetCount }: PlatformHe
             </div>
             <div>
               <span className="text-[10px] text-zinc-500 block font-sans uppercase tracking-wider">REST Endpoints</span>
-              <span className="text-emerald-400 font-bold">2 Endpoints</span>
+              <span className="text-emerald-400 font-bold">3 API Routes</span>
             </div>
           </div>
         </div>
