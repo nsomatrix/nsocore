@@ -90,6 +90,19 @@ export function PlayerInspectorModule() {
   // Cooldown timer state mapping player name -> remaining seconds
   const [cooldowns, setCooldowns] = useState<Record<string, number>>({});
 
+  // Lock background page scrolling when a player details or equipment modal card is open
+  useEffect(() => {
+    if (selectedPlayer || equipmentPlayer) {
+      document.body.style.overflow = 'hidden';
+    } else {
+      document.body.style.overflow = '';
+    }
+
+    return () => {
+      document.body.style.overflow = '';
+    };
+  }, [selectedPlayer, equipmentPlayer]);
+
   const SLOT_NAMES: { [key: number]: string } = {
     0: 'Weapon',
     1: 'Coat / Armor',
